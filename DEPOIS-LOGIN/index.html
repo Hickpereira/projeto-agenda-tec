@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+    <title>AGENDA TEC</title>
+</head>
+<body>
+    <div class="top-section-background">
+        <div class="top-content-container">
+            <header id="topo">
+                <div class="logo-site">
+                    <img src="../IMG/LOGO-SITE.png" alt="">
+                </div>
+                <div class="botao-topo">
+                    <button>agendamento</button>
+                </div>
+            </header>
+
+            <section class="topo-site" >
+                <div class="texto-topo">
+                    <h1>
+                     Organize sua reunião <br><b>com eficiência e <br> praticidade</b>
+                    </h1>
+                  <a href="#agendamento"><button>Agende agora</button></a>  
+                    
+                </div>
+
+                <div class="">
+                    <img src="../IMG/CALENDARIO.png" alt="Calendário">
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <section class="agendamento" id="agendamento">
+        <div class="agendamento-quem">
+            <h2>Com quem você <br>quer agendar?</h2>
+            <div class="opcoes">
+                <div class="opcao-item">
+                    <input type="radio" id="valeria" name="pessoa" value="valeria">
+                    <label for="valeria">Valeria</label>
+                </div>
+                
+                <div class="opcao-item">
+                    <input type="radio" id="lucia" name="pessoa" value="lucia">
+                    <label for="lucia">Lucia</label>
+                </div>
+                
+                <div class="opcao-item">
+                    <input type="radio" id="vania" name="pessoa" value="vania">
+                    <label for="vania">Vania</label>
+                </div>
+            </div>
+            
+           <a href="#finalidade"> <button class="btn-confirmar-pessoa" id="btn-confirmar-pessoa" disabled>
+                Confirmar Pessoa
+            </button></a>
+        </div>
+
+        <div class="pessoa">
+            <img src="../IMG/COODENADOR.png" alt="Coordenador" class="img-coordenador">
+        </div>
+    </section>
+
+<section class="finalidade" id="finalidade">
+  <h1>Finalidade do Atendimento</h1>
+
+  <div class="conteudo_finalidade">
+    <div class="formulario_finalidade">
+      <input type="text" placeholder="Nome do responsável">
+      <input type="text" placeholder="Nome do aluno">
+      <textarea placeholder="Finalidade do Atendimento"></textarea>
+      <a href="#dia-horario"><button class="btn-confirm">Confirmar</button></a>
+    </div>
+
+    <div class="formulario_img">
+      <img src="../IMG/PENSANDO.png" alt="Pessoa pensando">
+    </div>
+  </div>
+</section>
+
+
+<section class="dia-horario" id="dia-horario">
+  <h2>Dia e Horario</h2>
+  <div class="conteudo">
+    <div class="calendario" id="calendario"></div>
+
+    <div class="horarios" id="horarios" style="display: none;">
+      <label><span>14:00 - 14:30</span><input type="checkbox"></label>
+      <label><span>14:30 - 15:00</span><input type="checkbox"></label>
+      <label><span>15:00 - 15:30</span><input type="checkbox"></label>
+      <label><span>15:30 - 16:00</span><input type="checkbox"></label>
+      <label><span>16:00 - 16:30</span><input type="checkbox"></label>
+      <label><span>16:30 - 17:00</span><input type="checkbox"></label>
+      <label><span>17:00 - 17:30</span><input type="checkbox"></label>
+    </div>
+  </div>
+  <a href="#topo"><button>Agendar</button></a>
+</section>
+
+
+
+
+
+<script src="script.js"></script>
+
+</body>
+</html>

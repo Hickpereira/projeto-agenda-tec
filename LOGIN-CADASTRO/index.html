@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loja | Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container" id="container">
+        <!-- Botões de alternância para mobile -->
+        <div class="tab-buttons">
+            <button class="tab-btn active" data-tab="login">
+                <i class="fas fa-sign-in-alt"></i>
+                Conecte-se
+            </button>
+            <button class="tab-btn" data-tab="register">
+                <i class="fas fa-user-plus"></i>
+                Cadastrar
+            </button>
+        </div>
+
+        <!-- Formulário de Login -->
+        <div class="form-container sign-in active" id="loginForm">
+            <form>
+                <h1>Conecte-se</h1>
+                <span>Use seu nome e senha para acessar</span>
+                <input type="text" placeholder="Nome" required>
+                <input type="password" placeholder="Senha" required>
+                <a href="#" class="forgot-password">Esqueceu sua senha?</a>
+                <a href="../DEPOIS-LOGIN/index.html"><button type="submit">Entrar</button></a>
+               
+            </form>
+        </div>
+
+        <!-- Formulário de Cadastro -->
+        <div class="form-container sign-up" id="registerForm">
+            <form>
+                <h1>Crie sua conta</h1>
+                <span>Preencha os dados para se registrar</span>
+                <input type="text" placeholder="Nome Completo" required>
+                <input type="text" placeholder="Grau de Parentesco" required>
+                <input type="email" placeholder="Email ou Telefone" required>
+                <input type="password" placeholder="Senha" required>
+                <button type="submit">Cadastrar</button>
+            </form>
+        </div>
+
+        <!-- Toggle container para desktop -->
+        <div class="toggle-container">
+            <div class="toggle">
+                <div class="toggle-panel toggle-left">
+                    <h1>Já tem uma conta?</h1>
+                    <p>Entre para acessar sua conta</p>
+                    <button class="hidden" id="login">Entrar</button>
+                </div>
+                <div class="toggle-panel toggle-right">
+                    <h1>Ainda não tem conta?</h1>
+                    <p>Cadastre-se para começar</p>
+                    <button class="hidden" id="register">Cadastrar</button>
+                </div>
+            </div>
+        </div>
+    </div>  
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,797 @@
+/*GERAL*/
+
+*{
+    margin: 0;
+    padding: 0;
+    font-family: "Rubik", sans-serif;
+    font-optical-sizing: auto;
+    box-sizing: border-box;
+    scroll-behavior: smooth
+}
+
+
+body {
+  margin: 0;
+  font-family: sans-serif;
+}
+
+/* Fundo específico para a área do topo até o calendário */
+.top-section-background {
+  background-image: url("../IMG/IMG-FUNDO.png");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center top;
+  background-attachment: fixed;
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Container para o conteúdo com fundo */
+.top-content-container {
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Fundo para as outras seções */
+section.agendamento,
+section.finalidade,
+section.dia-horario {
+  
+  position: relative;
+  z-index: 1;
+}
+
+/* Transição suave entre as seções */
+section.agendamento {
+  margin-top: 0;
+  border-top: 20px solid transparent;
+  background-clip: padding-box;
+}
+
+/* Efeito de sobreposição para transição suave */
+.top-section-background::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background: linear-gradient(to bottom, transparent, #f8f9fa);
+  z-index: 1;
+}
+
+/* FIM GERAL*/
+
+
+/*HEADER*/
+header{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 60px;
+}
+
+header img{
+    width: 200px;
+    height: auto;
+}
+
+header div button{
+    background-color:#0a57a2; 
+     border: none;
+     color: white;             
+     padding: 10px 20px;       
+     text-align: center;       
+     text-decoration: none;    
+     display: inline-block;    
+     font-size: 16px;          
+     margin: 4px 10px;         
+     cursor: pointer;
+     border-radius: 8px;
+     font-weight: 600;
+     transition: 0.2s;
+} 
+
+ button:hover{
+    transform: scale(1.1); 
+
+}
+
+/*FIM HEADER*/
+
+/*TOPO SITE*/
+section.topo-site {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0px 60px;
+    margin-bottom: 250px;
+
+}
+    
+section.topo-site img{
+    width: 400px;
+    height: auto;
+    margin: 30PX;
+    
+}
+
+section.topo-site .texto-topo{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    width: 50%;
+
+}
+
+section.topo-site .texto-topo h1{
+    font-size: 60px;
+    letter-spacing: 1px; 
+    font-weight: 400;
+    margin-bottom: 3%;
+    color: white;
+}
+
+section.topo-site .texto-topo button{
+     background-color:#ffffff; 
+     border: none;             
+     color: rgb(0, 0, 0);             
+     padding: 10px 50px;       
+     text-align: center;       
+     text-decoration: none;    
+     display: inline-block;    
+     font-size: 16px;          
+     margin: 4px 10px;          
+     cursor: pointer;
+     border-radius: 8px;
+     transition: 0.2s;
+     font-weight: 600;
+}
+
+/*FIM TOPO SITE*/
+
+
+/*AGENDAMENTO*/
+section.agendamento {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 60px;
+  padding: 20px 60px;
+  height: 100vh;
+  
+}
+
+section.agendamento div.agendamento-quem {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  max-width: 500px;
+}
+
+section.agendamento div.agendamento-quem h2 {
+  color: #2764ff;
+  font-size: 50px;
+  margin: 0;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+section.agendamento .opcoes {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+section.agendamento .opcao-item {
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+section.agendamento .opcao-item:hover {
+  transform: translateX(10px);
+}
+
+section.agendamento label {
+  background: linear-gradient(135deg, #87b7ff 0%, #6aa8ff 100%);
+  color: white;
+  padding: 18px 25px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin: 0;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(135, 183, 255, 0.3);
+  font-size: 16px;
+  min-width: 200px;
+}
+
+section.agendamento label:hover {
+  background: linear-gradient(135deg, #6aa8ff 0%, #5a9aff 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(135, 183, 255, 0.4);
+}
+
+section.agendamento input[type="radio"] {
+  display: none;
+}
+
+section.agendamento label::before {
+  content: "";
+  width: 22px;
+  height: 22px;
+  border: 3px solid white;
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+/* Quando selecionado */
+section.agendamento input[type="radio"]:checked + label {
+  background: linear-gradient(135deg, #2764ff 0%, #1e5ac8 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(39, 100, 255, 0.4);
+}
+
+section.agendamento input[type="radio"]:checked + label::before {
+  background: white;
+  border-color: white;
+  box-shadow: 0 0 0 5px #2764ff inset;
+}
+
+section.agendamento .pessoa {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+section.agendamento .img-coordenador {
+  width: 350px;
+  height: auto;
+  border-radius: 25px;
+ 
+  transition: transform 0.3s ease;
+}
+
+section.agendamento .img-coordenador:hover {
+  transform: scale(1.05);
+}
+
+
+/* FINALIDADE*/
+section.finalidade {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;      
+  padding: 40px 60px;
+  gap: 70px;
+  margin-top: -50px;
+}
+
+section.finalidade h1 {
+  color: #2764ff;
+  font-size: 50px;
+  font-weight: 800;
+  text-align: center;
+  margin: 0;
+}
+
+
+.conteudo_finalidade {
+  display: flex;
+  align-items: center;
+  justify-content: space-around; 
+  gap: 70px;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  flex-wrap: wrap; 
+}
+
+
+.formulario_finalidade {
+  background-color: #056ec3 ;
+  padding: 30px;
+  border-radius: 20px;
+  width: 400px;          
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+.formulario_finalidade input,
+.formulario_finalidade textarea {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  background: #ffffff;
+  color: #666;
+  border: 1px solid #e0e0e0;
+  transition: all 0.3s ease;
+}
+
+.formulario_finalidade input:focus,
+.formulario_finalidade textarea:focus {
+  border-color: #2764ff;
+  box-shadow: 0 0 0 3px rgba(39, 100, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.formulario_finalidade textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.formulario_finalidade .btn-confirm {
+  width: 100%;
+  max-width: 260px;
+  align-self: center;  
+  padding: 12px 18px;
+  border-radius: 14px;
+  border: none;
+  font-weight: 800;
+  color: #fff;
+  background-color: #004aad;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+.formulario_finalidade .btn-confirm:hover {
+  background-color: #003a88;
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(0, 74, 173, 0.3);
+}
+
+.formulario_finalidade .btn-confirm:active {
+  transform: scale(0.98);
+}
+
+
+.formulario_img img {
+  height: 400px;
+  width: auto;
+  display: block;
+}
+
+/* FIM FINALIDADE */
+
+
+
+
+/* HORARIOS */
+.dia-horario {
+  padding: 30px 20px;
+  background: linear-gradient(to right, #00aaff, #005bbb);
+  
+  text-align: center;
+  color: #fff;
+  width: 99vw;
+  height: 90vh;
+  margin: 30px auto;
+  font-family: 'Rubik', sans-serif;
+}
+
+.dia-horario h2 {
+  font-size: 50px;
+  font-weight: 700;
+  margin-bottom: 35px;
+  margin-top: 5%;
+}
+
+.dia-horario .conteudo {
+  display: flex;
+  justify-content: center;
+  gap: 50px;
+  flex-wrap: wrap;
+}
+
+/* Calendário */
+.calendario {
+  background: #fff;
+  border-radius: 15px;
+  padding: 25px 20px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  width: 320px;
+  user-select: none;
+}
+
+.calendario table {
+  border-collapse: collapse;
+  width: 100%;
+  text-align: center;
+}
+
+.calendario th {
+  padding: 10px 0;
+  color: #ca5e54;
+  font-weight: 600;
+  font-size: 0.85rem;
+  font-family: 'Rubik', sans-serif;
+}
+
+.calendario td {
+  padding: 12px 0;
+  cursor: pointer;
+  color: #5f8fa8;
+  font-weight: 500;
+  font-size: 1rem;
+  border-radius: 10px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  width: 14.28%; /* para ficar igual distribuição */
+}
+
+.calendario td:hover {
+  background-color: #f6c8c8;
+  color: #ca5e54;
+}
+
+.calendario .dia-atual {
+  font-weight: 600;
+  color: #1e72e9;
+}
+
+.calendario .dia-selecionado {
+  background-color: #e7baba;
+  border-radius: 10px;
+  color: #912a2a;
+  font-weight: 700;
+}
+
+/* Horários */
+.horarios {
+  background: #fff;
+  border-radius: 15px;
+  padding: 25px 20px;
+  width: 320px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  display: none; /* Começa oculto */
+  flex-direction: column;
+  gap: 14px;
+  user-select: none;
+  position: relative;
+  z-index: 10;
+}
+
+/* Quando exibido via JavaScript */
+.horarios[style*="display: flex"] {
+  display: flex !important;
+}
+
+.horarios.visivel {
+  display: flex !important;
+}
+
+.horarios label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1.5px solid #ccc;
+  padding-bottom: 8px;
+  font-weight: 600;
+  color: #222;
+  font-family: 'Rubik', sans-serif;
+  font-size: 1rem;
+}
+
+.horarios label:last-child {
+  border-bottom: none;
+}
+
+.horarios input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #ca5e54;
+}
+
+.dia-horario button{
+  background-color:#0a57a2; 
+  border: none;
+  color: white;             
+  padding: 10px 20px;       
+  text-align: center;       
+  text-decoration: none;    
+  display: inline-block;    
+  font-size: 16px;          
+  margin: 40px 10px;         
+  cursor: pointer;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+/* Responsividade para a seção de agendamento */
+@media (max-width: 768px) {
+  section.agendamento {
+    flex-direction: column;
+    gap: 40px;
+    padding: 20px 30px;
+    height: auto;
+    min-height: 100vh;
+  }
+  
+  section.agendamento div.agendamento-quem h2 {
+    font-size: 36px;
+    text-align: center;
+  }
+  
+  section.agendamento .img-coordenador {
+    width: 280px;
+  }
+  
+  section.agendamento label {
+    min-width: 180px;
+    padding: 15px 20px;
+  }
+}
+
+/* Melhorias gerais para inputs e botões */
+input, textarea, button {
+  transition: all 0.3s ease;
+}
+
+button {
+  transform-origin: center;
+  will-change: transform;
+}
+
+button:hover {
+  transform: scale(1.08);
+}
+
+input:focus, textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(39, 100, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+/* Efeitos de hover para elementos interativos */
+.opcao-item:hover label {
+  transform: translateX(5px) translateY(-2px);
+}
+
+/* Botão de confirmação da pessoa */
+.btn-confirmar-pessoa {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+  opacity: 0.6;
+  transform: scale(0.95);
+}
+
+.btn-confirmar-pessoa:hover:not(:disabled) {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+  background: linear-gradient(135deg, #20c997 0%, #1ea085 100%);
+}
+
+.btn-confirmar-pessoa:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn-confirmar-pessoa:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: scale(0.95);
+}
+
+.btn-confirmar-pessoa.ativo {
+  opacity: 1;
+  transform: scale(1);
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+/* Animação de entrada para a seção */
+section.agendamento {
+  animation: fadeInUp 0.8s ease;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animações de entrada para o site inteiro */
+header {
+  animation: fadeInDown 0.8s ease;
+}
+
+section.topo-site {
+  animation: fadeInUp 1s ease 0.2s both;
+}
+
+section.agendamento {
+  animation: fadeInUp 1s ease 0.4s both;
+}
+
+section.finalidade {
+  animation: fadeInUp 1s ease 0.6s both;
+}
+
+section.dia-horario {
+  animation: fadeInUp 1s ease 0.8s both;
+}
+
+/* Animações para elementos internos */
+.logo-site img {
+  animation: slideInLeft 0.8s ease 0.1s both;
+}
+
+.botao-topo button {
+  animation: slideInRight 0.8s ease 0.1s both;
+}
+
+.texto-topo h1 {
+  animation: fadeInUp 1s ease 0.4s both;
+}
+
+.texto-topo button {
+  animation: fadeInUp 1s ease 0.6s both;
+}
+
+.topo-site img {
+  animation: slideInRight 1s ease 0.5s both;
+}
+
+/* Animações para elementos da seção de agendamento */
+.agendamento-quem h2 {
+  animation: fadeInLeft 0.8s ease 0.5s both;
+}
+
+.opcao-item:nth-child(1) {
+  animation: fadeInLeft 0.8s ease 0.6s both;
+}
+
+.opcao-item:nth-child(2) {
+  animation: fadeInLeft 0.8s ease 0.7s both;
+}
+
+.opcao-item:nth-child(3) {
+  animation: fadeInLeft 0.8s ease 0.8s both;
+}
+
+.img-coordenador {
+  animation: slideInRight 1s ease 0.6s both;
+}
+
+/* Animações para a seção de finalidade */
+.finalidade h1 {
+  animation: fadeInUp 0.8s ease 0.7s both;
+}
+
+.formulario_finalidade {
+  animation: slideInLeft 0.8s ease 0.8s both;
+}
+
+.formulario_img img {
+  animation: slideInRight 0.8s ease 0.8s both;
+}
+
+/* Animações para a seção de dia e horário */
+.dia-horario h2 {
+  animation: fadeInUp 0.8s ease 0.9s both;
+}
+
+.calendario {
+  animation: slideInLeft 0.8s ease 1s both;
+}
+
+.horarios {
+  animation: slideInRight 0.8s ease 1s both;
+}
+
+.dia-horario button {
+  animation: fadeInUp 0.8s ease 1.1s both;
+}
+
+/* Definição das animações */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Efeito de fade-in geral para o body */
+body {
+  animation: fadeIn 1.5s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Melhorias para elementos com animação */
+.opcao-item, .formulario_finalidade, .calendario, .horarios {
+  opacity: 0;
+  animation-fill-mode: both;
+}
