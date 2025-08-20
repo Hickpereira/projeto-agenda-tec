@@ -28,8 +28,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 btnConfirmar.classList.add('ativo');
                 btnConfirmar.textContent = `Confirmar: ${pessoaSelecionada.charAt(0).toUpperCase() + pessoaSelecionada.slice(1)}`;
                 
-                // Mostrar mensagem de seleção
-                showSelectionMessage(this.value);
+                // Salvar coordenador selecionado
+                sessionStorage.setItem('coordenador', this.value);
             }
         });
     });
@@ -117,105 +117,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
     
-    // Função para mostrar mensagem de seleção
-    function showSelectionMessage(pessoa) {
-        // Remover mensagem anterior se existir
-        const existingMessage = document.querySelector('.selection-message');
-        if (existingMessage) {
-            existingMessage.remove();
-        }
-        
-        // Criar nova mensagem
-        const message = document.createElement('div');
-        message.className = 'selection-message';
-        message.innerHTML = `
-            <div class="message-content">
-                <span>✓ Selecionado: ${pessoa.charAt(0).toUpperCase() + pessoa.slice(1)}</span>
-                <button class="close-message">&times;</button>
-            </div>
-        `;
-        
-        // Adicionar estilos inline para a mensagem
-        message.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
-            padding: 15px 20px;
-            border-radius: 25px;
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-            z-index: 1000;
-            animation: slideIn 0.3s ease;
-        `;
-        
-        // Adicionar estilos para o conteúdo da mensagem
-        const messageContent = message.querySelector('.message-content');
-        messageContent.style.cssText = `
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            font-weight: 600;
-        `;
-        
-        // Adicionar estilos para o botão de fechar
-        const closeButton = message.querySelector('.close-message');
-        closeButton.style.cssText = `
-            background: none;
-            border: none;
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-            padding: 0;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: background 0.3s ease;
-        `;
-        
-        closeButton.addEventListener('mouseenter', function() {
-            this.style.background = 'rgba(255,255,255,0.2)';
-        });
-        
-        closeButton.addEventListener('mouseleave', function() {
-            this.style.background = 'transparent';
-        });
-        
-        // Adicionar evento de fechar
-        closeButton.addEventListener('click', function() {
-            message.remove();
-        });
-        
-        // Adicionar ao DOM
-        document.body.appendChild(message);
-        
-        // Auto-remover após 5 segundos
-        setTimeout(() => {
-            if (message.parentNode) {
-                message.remove();
-            }
-        }, 5000);
-    }
-    
     // Adicionar CSS para animação
     if (!document.querySelector('#message-styles')) {
         const style = document.createElement('style');
         style.id = 'message-styles';
         style.textContent = `
-            @keyframes slideIn {
-                from {
-                    transform: translateX(100%);
-                    opacity: 0;
-                }
-                to {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-            }
-            
             @keyframes confirmationPop {
                 from {
                     transform: translate(-50%, -50%) scale(0.8);
@@ -230,6 +136,8 @@ document.addEventListener('DOMContentLoaded', function() {
         document.head.appendChild(style);
     }
 });
+
+// Função para gerar calendário
 function gerarCalendario(mes, ano) {
     const diasSemana = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
     const data = new Date(ano, mes, 1);
@@ -287,8 +195,6 @@ function gerarCalendario(mes, ano) {
                         block: 'center'
                     });
                 }, 100);
-            } else {
-                console.error('Elemento de horários não encontrado');
             }
         });
     });
@@ -297,3 +203,449 @@ function gerarCalendario(mes, ano) {
 // Gerar calendário do mês atual
 const hoje = new Date();
 gerarCalendario(hoje.getMonth(), hoje.getFullYear());
+
+// Processo de agendamento simplificado
+document.addEventListener('DOMContentLoaded', function() {
+    // Capturar dados do formulário de finalidade
+    const btnConfirmFinalidade = document.querySelector('.btn-confirm');
+    if (btnConfirmFinalidade) {
+        btnConfirmFinalidade.addEventListener('click', function() {
+            const responsavel = document.querySelector('input[placeholder="Nome do responsável"]').value;
+            const aluno = document.querySelector('input[placeholder="Nome do aluno"]').value;
+            const finalidade = document.querySelector('textarea[placeholder="Finalidade do Atendimento"]').value;
+            
+            // Salvar dados temporariamente
+            sessionStorage.setItem('responsavel', responsavel);
+            sessionStorage.setItem('aluno', aluno);
+            sessionStorage.setItem('finalidade', finalidade);
+        });
+    }
+    
+    // Capturar dados do agendamento final
+    const btnAgendar = document.querySelector('.dia-horario button');
+    if (btnAgendar) {
+        btnAgendar.addEventListener('click', function() {
+            const coordenador = sessionStorage.getItem('coordenador');
+            const responsavel = sessionStorage.getItem('responsavel');
+            const aluno = sessionStorage.getItem('aluno');
+            const finalidade = sessionStorage.getItem('finalidade');
+            const dataSelecionada = document.querySelector('.dia-selecionado');
+            const horarioSelecionado = document.querySelector('.horarios input[type="checkbox"]:checked');
+            
+            if (coordenador && dataSelecionada && horarioSelecionado) {
+                const data = new Date();
+                data.setDate(parseInt(dataSelecionada.textContent));
+                
+                const horario = horarioSelecionado.parentElement.querySelector('span').textContent;
+                
+                const novoAgendamento = {
+                    coordenador: coordenador,
+                    responsavel: responsavel || 'Não informado',
+                    aluno: aluno || 'Não informado',
+                    finalidade: finalidade || 'Não informado',
+                    data: data.toISOString(),
+                    horario: horario,
+                    dataCriacao: new Date().toISOString()
+                };
+                
+                // Adicionar agendamento
+                if (window.adicionarAgendamento) {
+                    window.adicionarAgendamento(novoAgendamento);
+                }
+                
+                // Limpar dados temporários
+                sessionStorage.clear();
+                
+                // Resetar formulário
+                document.querySelectorAll('input[type="radio"]').forEach(radio => radio.checked = false);
+                document.querySelectorAll('input[type="text"], textarea').forEach(input => input.value = '');
+                document.querySelectorAll('.dia-selecionado').forEach(el => el.classList.remove('dia-selecionado'));
+                document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => checkbox.checked = false);
+                
+                // Resetar botão de confirmação
+                const btnConfirmar = document.getElementById('btn-confirmar-pessoa');
+                if (btnConfirmar) {
+                    btnConfirmar.disabled = true;
+                    btnConfirmar.classList.remove('ativo');
+                    btnConfirmar.textContent = 'Confirmar Pessoa';
+                    btnConfirmar.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+                    btnConfirmar.style.boxShadow = '0 4px 15px rgba(40, 167, 69, 0.3)';
+                }
+                
+                // Ocultar horários
+                const horariosElement = document.getElementById('horarios');
+                if (horariosElement) {
+                    horariosElement.classList.remove('visivel');
+                    horariosElement.style.display = 'none';
+                }
+                
+                // Mostrar mensagem de sucesso
+                setTimeout(() => {
+                    showNotification('Agendamento realizado', 'Agendamento realizado com sucesso! Verifique a aba de agendamentos.', 'success');
+                }, 500);
+                
+            } else {
+                showNotification('Erro de agendamento', 'Por favor, complete todas as etapas do agendamento:\n\n1. Selecione um coordenador\n2. Preencha os dados da finalidade\n3. Escolha uma data\n4. Selecione um horário', 'error');
+            }
+        });
+    }
+});
+
+// FUNCIONALIDADE DA ABA FLUTUANTE DE AGENDAMENTOS
+document.addEventListener('DOMContentLoaded', function() {
+    // Elementos da aba flutuante
+    const tabToggle = document.getElementById('tabToggle');
+    const tabContent = document.getElementById('tabContent');
+    const scheduleList = document.getElementById('scheduleList');
+    const noSchedules = document.getElementById('noSchedules');
+    const floatingTab = document.getElementById('floatingScheduleTab');
+    
+    // Botão de agendamento no header
+    const btnAgendamento = document.querySelector('.botao-topo button');
+    
+    // Estado da aba
+    let isTabCollapsed = false;
+    let isTabVisible = false;
+    
+    // Dados de agendamentos do localStorage
+    let agendamentos = JSON.parse(localStorage.getItem('agendamentos')) || [];
+    
+    // Função para alternar a aba
+    function toggleTab() {
+        isTabCollapsed = !isTabCollapsed;
+        
+        if (isTabCollapsed) {
+            tabContent.classList.add('collapsed');
+            tabToggle.textContent = '▶';
+            tabToggle.style.transform = 'rotate(-90deg)';
+        } else {
+            tabContent.classList.remove('collapsed');
+            tabToggle.textContent = '▼';
+            tabToggle.style.transform = 'rotate(0deg)';
+        }
+    }
+    
+    // Função para mostrar a aba flutuante
+    function showFloatingTab() {
+        if (!isTabVisible) {
+            floatingTab.classList.add('show');
+            isTabVisible = true;
+            
+            // Renderizar agendamentos quando a aba for mostrada
+            renderizarAgendamentos();
+        }
+    }
+    
+    // Função para ocultar a aba flutuante
+    function hideFloatingTab() {
+        if (isTabVisible) {
+            floatingTab.classList.remove('show');
+            isTabVisible = false;
+        }
+    }
+    
+    // Função para formatar data
+    function formatarData(data) {
+        const opcoes = { 
+            weekday: 'short', 
+            day: '2-digit', 
+            month: 'short',
+            year: 'numeric'
+        };
+        return new Date(data).toLocaleDateString('pt-BR', opcoes);
+    }
+    
+    // Função para formatar hora
+    function formatarHora(hora) {
+        return hora;
+    }
+    
+    // Função para renderizar agendamentos
+    function renderizarAgendamentos() {
+        if (agendamentos.length === 0) {
+            scheduleList.style.display = 'none';
+            noSchedules.style.display = 'block';
+        } else {
+            scheduleList.style.display = 'block';
+            noSchedules.style.display = 'none';
+            
+            // Ordenar agendamentos por data
+            agendamentos.sort((a, b) => new Date(a.data) - new Date(b.data));
+            
+            scheduleList.innerHTML = agendamentos.map((agendamento, index) => `
+                <div class="schedule-item" style="animation-delay: ${index * 0.1}s">
+                    <div class="schedule-header">
+                        <div class="schedule-date">${formatarData(agendamento.data)}</div>
+                        <div class="schedule-time">${formatarHora(agendamento.horario)}</div>
+                    </div>
+                    <div class="schedule-coordinator">${agendamento.coordenador}</div>
+                    ${agendamento.finalidade ? `<div class="schedule-purpose">${agendamento.finalidade}</div>` : ''}
+                </div>
+            `).join('');
+        }
+    }
+    
+    // Função para adicionar novo agendamento
+    function adicionarAgendamento(agendamento) {
+        agendamentos.push(agendamento);
+        localStorage.setItem('agendamentos', JSON.stringify(agendamentos));
+        renderizarAgendamentos();
+        atualizarIndicadorBotao();
+        
+        // Mostrar notificação moderna
+        showNotification(
+            'Agendamento Adicionado', 
+            `Agendamento com ${agendamento.coordenador} para ${agendamento.data ? new Date(agendamento.data).toLocaleDateString('pt-BR') : 'data não informada'} foi adicionado com sucesso!`,
+            'success'
+        );
+    }
+    
+
+    
+    // Função para mostrar notificação moderna
+    function showNotification(title, message, type = 'success', duration = 5000) {
+        const container = document.getElementById('notificationContainer');
+        if (!container) return;
+        
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        
+        const icon = type === 'success' ? '✅' : 
+                    type === 'error' ? '❌' : 
+                    type === 'warning' ? '⚠️' : 'ℹ️';
+        
+        notification.innerHTML = `
+            <div class="notification-icon">${icon}</div>
+            <div class="notification-content">
+                <div class="notification-title">${title}</div>
+                <div class="notification-message">${message}</div>
+            </div>
+            <button class="notification-close">&times;</button>
+            <div class="notification-progress"></div>
+        `;
+        
+        // Adicionar ao container
+        container.appendChild(notification);
+        
+        // Event listener para fechar
+        const closeBtn = notification.querySelector('.notification-close');
+        closeBtn.addEventListener('click', () => {
+            removeNotification(notification);
+        });
+        
+        // Auto-remover após duração
+        setTimeout(() => {
+            removeNotification(notification);
+        }, duration);
+        
+        return notification;
+    }
+    
+    // Função para remover notificação
+    function removeNotification(notification) {
+        if (notification && notification.parentNode) {
+            notification.style.animation = 'slideOutNotification 0.3s ease forwards';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 300);
+        }
+    }
+    
+    // Função para mostrar modal de confirmação
+    function showConfirmationModal(title, message, onConfirm) {
+        const modal = document.getElementById('confirmationModal');
+        const modalTitle = document.getElementById('confirmationTitle');
+        const modalMessage = document.getElementById('confirmationMessage');
+        
+        // Configurar conteúdo do modal
+        modalTitle.textContent = title;
+        modalMessage.textContent = message;
+        
+        // Mostrar modal
+        modal.classList.add('show');
+        
+        // Função para fechar modal
+        const closeModal = () => {
+            modal.classList.remove('show');
+        };
+        
+        // Event listeners
+        const confirmBtn = document.getElementById('confirmationConfirm');
+        const cancelBtn = document.getElementById('confirmationCancel');
+        
+        // Remover listeners anteriores e adicionar novos
+        confirmBtn.onclick = () => {
+            closeModal();
+            onConfirm();
+        };
+        
+        cancelBtn.onclick = closeModal;
+        
+        // Fechar ao clicar fora
+        modal.onclick = (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        };
+
+        
+        
+        // Fechar com ESC
+        const handleEscape = (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+                document.removeEventListener('keydown', handleEscape);
+            }
+        };
+        document.addEventListener('keydown', handleEscape);
+    }
+    
+    // Função para atualizar indicador visual do botão
+    function atualizarIndicadorBotao() {
+        if (btnAgendamento) {
+            if (agendamentos.length > 0) {
+                btnAgendamento.innerHTML = `agendamento <span class="badge">${agendamentos.length}</span>`;
+            } else {
+                btnAgendamento.innerHTML = 'agendamento';
+            }
+        }
+    }
+    
+    // Event listeners
+    tabToggle.addEventListener('click', toggleTab);
+    
+    // Botão de agendamento no header
+    if (btnAgendamento) {
+        btnAgendamento.addEventListener('click', function() {
+            showFloatingTab();
+        });
+    }
+    
+    // Fechar aba quando clicar fora dela
+    document.addEventListener('click', function(event) {
+        if (isTabVisible && !floatingTab.contains(event.target) && !btnAgendamento.contains(event.target)) {
+            hideFloatingTab();
+        }
+    });
+    
+    // Fechar aba com tecla ESC
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && isTabVisible) {
+            hideFloatingTab();
+        }
+    });
+    
+    // Botão de limpar agendamentos
+    const clearSchedulesBtn = document.getElementById('clearSchedules');
+    console.log('Botão de limpar encontrado:', clearSchedulesBtn);
+    
+    if (clearSchedulesBtn) {
+        clearSchedulesBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Botão de limpar clicado!');
+            
+            showConfirmationModal(
+                'Limpar Agendamentos',
+                'Tem certeza que deseja remover todos os agendamentos? Esta ação não pode ser desfeita.',
+                () => {
+                    console.log('Confirmando limpeza dos agendamentos');
+                    agendamentos = [];
+                    localStorage.removeItem('agendamentos');
+                    renderizarAgendamentos();
+                    atualizarIndicadorBotao();
+                    showNotification(
+                        'Agendamentos Removidos',
+                        'Todos os agendamentos foram removidos com sucesso!',
+                        'warning'
+                    );
+                }
+            );
+        });
+        
+        console.log('Event listener adicionado ao botão de limpar');
+    } else {
+        console.error('Botão de limpar agendamentos não encontrado!');
+    }
+    
+
+    
+    // Expor função globalmente para ser usada no processo de agendamento
+    window.adicionarAgendamento = adicionarAgendamento;
+    
+    // Inicializar indicador do botão
+    atualizarIndicadorBotao();
+    
+    // Configurar botão de limpar após renderização inicial
+    setTimeout(() => {
+        const clearSchedulesBtn = document.getElementById('clearSchedules');
+        if (clearSchedulesBtn) {
+            console.log('Configurando botão de limpar após renderização');
+            clearSchedulesBtn.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Botão de limpar clicado!');
+                
+                showConfirmationModal(
+                    'Limpar Agendamentos',
+                    'Tem certeza que deseja remover todos os agendamentos? Esta ação não pode ser desfeita.',
+                    () => {
+                        console.log('Confirmando limpeza dos agendamentos');
+                        agendamentos = [];
+                        localStorage.removeItem('agendamentos');
+                        renderizarAgendamentos();
+                        atualizarIndicadorBotao();
+                        showNotification(
+                            'Agendamentos Removidos',
+                            'Todos os agendamentos foram removidos com sucesso!',
+                            'warning'
+                        );
+                    }
+                );
+            };
+        }
+    }, 100);
+    
+    // Teste direto do botão de limpar
+setTimeout(() => {
+    const clearSchedulesBtn = document.getElementById('clearSchedules');
+    if (clearSchedulesBtn) {
+        console.log('Teste direto: Configurando botão de limpar');
+        
+        // Remover todos os event listeners anteriores
+        const newBtn = clearSchedulesBtn.cloneNode(true);
+        clearSchedulesBtn.parentNode.replaceChild(newBtn, clearSchedulesBtn);
+        
+        // Adicionar novo event listener
+        newBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('TESTE: Botão de limpar clicado!');
+            
+            showConfirmationModal(
+                'Limpar Agendamentos',
+                'Tem certeza que deseja remover todos os agendamentos? Esta ação não pode ser desfeita.',
+                () => {
+                    console.log('Confirmando limpeza dos agendamentos');
+                    agendamentos = [];
+                    localStorage.removeItem('agendamentos');
+                    renderizarAgendamentos();
+                    atualizarIndicadorBotao();
+                    showNotification(
+                        'Agendamentos Removidos',
+                        'Todos os agendamentos foram removidos com sucesso!',
+                        'warning'
+                    );
+                }
+            );
+        });
+        
+        console.log('Teste direto: Event listener adicionado');
+    } else {
+        console.error('Teste direto: Botão não encontrado!');
+    }
+}, 500);
+
+});

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -10,16 +10,52 @@
     <title>AGENDA TEC</title>
 </head>
 <body>
+    <!-- Container para notificações -->
+    <div class="notification-container" id="notificationContainer"></div>
+    
+    <!-- Modal de confirmação -->
+    <div class="confirmation-modal" id="confirmationModal">
+        <div class="confirmation-content">
+            <div class="confirmation-icon">⚠️</div>
+            <div class="confirmation-title" id="confirmationTitle">Confirmar ação</div>
+            <div class="confirmation-message" id="confirmationMessage">Tem certeza que deseja realizar esta ação?</div>
+            <div class="confirmation-buttons">
+                <button class="confirmation-btn cancel" id="confirmationCancel">Cancelar</button>
+                <button class="confirmation-btn confirm" id="confirmationConfirm">Confirmar</button>
+            </div>
+        </div>
+    </div>
+    
     <div class="top-section-background">
         <div class="top-content-container">
             <header id="topo">
-                <div class="logo-site">
+                <div class="logo-site"> 
                     <img src="../IMG/LOGO-SITE.png" alt="">
                 </div>
                 <div class="botao-topo">
                     <button>agendamento</button>
                 </div>
             </header>
+
+            <!-- Aba flutuante de agendamentos -->
+            <div class="floating-schedule-tab" id="floatingScheduleTab">
+                <div class="tab-header">
+                    <h3>📅 Meus Agendamentos</h3>
+                    <button class="tab-toggle" id="tabToggle">▼</button>
+                </div>
+                <div class="tab-content" id="tabContent">
+                    <div class="schedule-list" id="scheduleList">
+                        <!-- Os agendamentos serão inseridos aqui via JavaScript -->
+                    </div>
+                    <div class="no-schedules" id="noSchedules">
+                        <p>Nenhum agendamento encontrado</p>
+                        <small>Faça seu primeiro agendamento!</small>
+                    </div>
+                    <div class="tab-actions">
+                        <button class="clear-schedules" id="clearSchedules">Limpar Todos</button>
+                    </div>
+                </div>
+            </div>
 
             <section class="topo-site" >
                 <div class="texto-topo">
