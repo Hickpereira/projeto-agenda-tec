@@ -1,3 +1,12 @@
+/* =============================================
+   ESTILO PRINCIPAL
+   - Reset/geral
+   - Header e topo do site
+   - Seção Agendamento
+   - Seção Finalidade
+   - Seção Dia & Horário (calendário e horários)
+   ============================================= */
+
 /*GERAL*/
 
 *{
@@ -36,6 +45,16 @@ body {
   flex-direction: column;
 }
 
+/* Imagens responsivas */
+.topo-site img ,
+.img-coordenador,
+.formulario_img img{
+  max-width: 100%;
+  height: auto;
+}
+
+
+
 /* Fundo para as outras seções */
 section.agendamento,
 section.finalidade,
@@ -67,7 +86,7 @@ section.agendamento {
 /* FIM GERAL*/
 
 
-/*HEADER*/
+/* ===== HEADER ===== */
 header{
     display: flex;
     align-items: center;
@@ -130,20 +149,21 @@ header div button{
 
 /*FIM HEADER*/
 
-/*TOPO SITE*/
+/* ===== TOPO DO SITE ===== */
 section.topo-site {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0px 60px;
     margin-bottom: 250px;
+    margin: 70px;
 
 }
     
 section.topo-site img{
     width: 400px;
     height: auto;
-    margin: 30PX;
+   
     
 }
 
@@ -184,7 +204,7 @@ section.topo-site .texto-topo button{
 /*FIM TOPO SITE*/
 
 
-/*AGENDAMENTO*/
+/* ===== AGENDAMENTO ===== */
 section.agendamento {
   display: flex;
   align-items: center;
@@ -193,6 +213,99 @@ section.agendamento {
   padding: 20px 60px;
   height: 100vh;
   
+}
+
+/* =============================================
+   RESPONSIVO (BREAKPOINTS)
+   - 1024px: tablets/landscape
+   - 768px: tablets retrato
+   - 480px: mobile
+   ============================================= */
+/* Breakpoints responsivos */
+@media (max-width: 1024px) {
+  header{
+    padding: 16px 30px;
+  }
+  section.topo-site{
+    padding: 0 30px;
+    margin-bottom: 120px;
+  }
+
+  .topo-site img{
+    max-width: 70%;
+    margin: 0px;
+    margin-left: 30px;
+  
+  }
+
+  .topo-site h1 {
+    margin-top: 30px;
+  }
+  
+  section.agendamento{
+    gap: 40px;
+    padding: 20px 30px;
+    height: auto;
+    min-height: 100vh;
+    margin-bottom: 100px;
+  }
+  section.finalidade{
+    padding: 30px;
+    gap: 40px;
+  
+  }
+
+  section.finalidade img{
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  header{
+    padding: 16px 20px;
+  }
+  section.topo-site{
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+    margin-bottom: 60px;
+  }
+  section.topo-site .texto-topo{
+    width: 100%;
+  }
+  section.topo-site .texto-topo h1{
+    font-size: 36px;
+  }
+  section.agendamento{
+    flex-direction: column;
+  }
+  .conteudo_finalidade{
+    gap: 30px;
+  }
+  .formulario_finalidade{
+    width: 100%;
+    max-width: 500px;
+  }
+}
+
+@media (max-width: 480px) {
+  header img{
+    width: 150px;
+  }
+  section.topo-site .texto-topo h1{
+    font-size: 28px;
+    line-height: 1.2;
+  }
+  .formulario_finalidade{
+    padding: 20px;
+  }
+  .dia-horario{
+    padding: 20px 10px;
+    height: auto;
+  }
+  .calendario, .horarios{
+    width: 100%;
+  }
 }
 
 section.agendamento div.agendamento-quem {
@@ -295,7 +408,7 @@ section.agendamento .img-coordenador:hover {
 }
 
 
-/* FINALIDADE*/
+/* ===== FINALIDADE ===== */
 section.finalidade {
   display: flex;
   flex-direction: column;
@@ -402,16 +515,16 @@ section.finalidade h1 {
 
 
 
-/* HORARIOS */
+/* ===== DIA & HORÁRIO (CALENDÁRIO E HORÁRIOS) ===== */
 .dia-horario {
   padding: 30px 20px;
   background: linear-gradient(to right, #00aaff, #005bbb);
   
   text-align: center;
   color: #fff;
-  width: 99vw;
-  height: 90vh;
-  margin: 30px auto;
+  width: 100%;
+  min-height: 70vh;
+  margin: 30px 0;
   font-family: 'Rubik', sans-serif;
 }
 
@@ -423,10 +536,13 @@ section.finalidade h1 {
 }
 
 .dia-horario .conteudo {
-  display: flex;
-  justify-content: center;
-  gap: 50px;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  align-items: start;
+  justify-items: center;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 
 /* Calendário */
@@ -435,7 +551,8 @@ section.finalidade h1 {
   border-radius: 15px;
   padding: 25px 20px;
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-  width: 320px;
+  width: 100%;
+  max-width: 360px;
   user-select: none;
 }
 
@@ -486,7 +603,8 @@ section.finalidade h1 {
   background: #fff;
   border-radius: 15px;
   padding: 25px 20px;
-  width: 320px;
+  width: 100%;
+  max-width: 360px;
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
   display: none; /* Começa oculto */
   flex-direction: column;
@@ -510,7 +628,7 @@ section.finalidade h1 {
   justify-content: space-between;
   align-items: center;
   border-bottom: 1.5px solid #ccc;
-  padding-bottom: 8px;
+  padding: 8px 0;
   font-weight: 600;
   color: #222;
   font-family: 'Rubik', sans-serif;
@@ -537,7 +655,7 @@ section.finalidade h1 {
   text-decoration: none;    
   display: inline-block;    
   font-size: 16px;          
-  margin: 40px 10px;         
+  margin: 20px auto 0;        
   cursor: pointer;
   border-radius: 8px;
   font-weight: 600;
@@ -638,6 +756,14 @@ button:active {
   box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
 }
 
+
+
+
+
+
+
+
+
 /* Animação de entrada para a seção */
 section.agendamento {
   animation: fadeInUp 0.8s ease;
@@ -653,6 +779,12 @@ section.agendamento {
     transform: translateY(0);
   }
 }
+
+/* =============================================
+   ANIMAÇÕES DO SITE
+   - Entradas de seções e elementos
+   - Keyframes reutilizáveis
+   ============================================= */
 
 /* Animações de entrada para o site inteiro */
 header {
@@ -805,7 +937,7 @@ section.dia-horario {
 
 /* Efeito de fade-in geral para o body */
 body {
-  animation: fadeIn 1.5s ease;
+  animation: fadeIn 1s ease;
 }
 
 @keyframes fadeIn {
@@ -822,6 +954,25 @@ body {
   opacity: 0;
   animation-fill-mode: both;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* =============================================
+   NOTIFICAÇÕES E ABA DE AGENDAMENTOS
+   - Aba flutuante (lista)
+   - Notificações (toast)
+   - Modal de confirmação
+   ============================================= */
 
 /* ABA FLUTUANTE DE AGENDAMENTOS */
 .floating-schedule-tab {
@@ -1015,9 +1166,6 @@ body {
   position: relative;
   z-index: 10;
   pointer-events: auto;
-  /* Estilo temporário para debug */
-  border: 2px solid yellow !important;
-  box-shadow: 0 0 10px red !important;
 }
 
 .clear-schedules:hover {
@@ -1120,6 +1268,24 @@ body {
 .tab-content::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* SISTEMA DE NOTIFICAÇÕES MODERNO */
 .notification-container {
