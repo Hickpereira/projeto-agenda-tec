@@ -15,7 +15,7 @@ img{
 
 
 body {
-  background-image: url("IMG/IMG-FUNDO.png");
+  background-image: url("../IMG/IMG-FUNDO.png");
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center top;
