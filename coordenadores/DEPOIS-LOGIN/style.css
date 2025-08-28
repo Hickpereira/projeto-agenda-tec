@@ -1,0 +1,618 @@
+/* =============================================
+   ESTILO PRINCIPAL - COORDENADORES
+   ============================================= */
+
+/* Reset e estilos gerais */
+* {
+    margin: 0;
+    padding: 0;
+    font-family: "Rubik", sans-serif;
+    font-optical-sizing: auto;
+    box-sizing: border-box;
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    font-family: "Rubik", sans-serif;
+    background-image: url("../IMG/IMG-FUNDO.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center top;
+    background-attachment: fixed;
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Header */
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 60px;
+  
+}
+
+header img {
+    width: 200px;
+    height: auto;
+}
+
+.botao-topo {
+    display: flex;
+    gap: 20px;
+}
+
+.botao-topo button {
+    background-color: #0a57a2;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 10px;
+    cursor: pointer;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.botao-topo button:hover {
+    transform: scale(1.1);
+}
+
+/* Seção principal */
+.topo-site {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0px  60px;
+    min-height: calc(80vh - 100px);
+}
+
+.texto-topo {
+    flex: 1;
+    color: white;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.texto-topo h1 {
+    font-size: 50px;
+    letter-spacing: 1px;
+    font-weight: 400;
+    margin-bottom: 3%;
+    text-align: center;
+}
+
+.texto-topo h1 b {
+    font-weight: 700;
+}
+
+.texto-topo button {
+    background-color: #ffffff;
+    border: none;
+    color: rgb(0, 0, 0);
+    padding: 10px 50px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 10px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: 0.2s;
+    font-weight: 600;
+    width: 100%;
+    max-width: 260px;
+}
+
+.texto-topo button:hover {
+    transform: scale(1.1);
+}
+
+.topo-site img {
+    width: 400px;
+    height: auto;
+    margin: 30px;
+    filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3));
+}
+
+/* =============================================
+   MODAL DE AGENDAMENTOS
+   ============================================= */
+
+.modal-agendamentos {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    pointer-events: none;
+}
+
+.modal-agendamentos.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 1200px;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+}
+
+.modal-agendamentos.show .modal-content {
+    transform: scale(1);
+}
+
+.modal-header {
+    background: linear-gradient(135deg,  #0a57a2 0%, #0a57a2  100%);
+    color: white;
+    padding: 25px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.modal-header h2 {
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    transition: background 0.3s ease;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.modal-body {
+    padding: 30px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    max-height: calc(90vh - 100px);
+    overflow-y: auto;
+}
+
+/* =============================================
+   CALENDÁRIO
+   ============================================= */
+
+.calendario-container {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 25px;
+    border: 1px solid #e9ecef;
+}
+
+.calendario-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 25px;
+}
+
+.calendario-header button {
+    background: linear-gradient(135deg, #0a57a2 0%, #0a57a2 100%);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.calendario-header button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.calendario-header h3 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.calendario-grid {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.dias-semana {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.dia-semana {
+    padding: 15px 10px;
+    text-align: center;
+    font-weight: 600;
+    color: #6c757d;
+    font-size: 0.9rem;
+    border-right: 1px solid #e9ecef;
+}
+
+.dia-semana:last-child {
+    border-right: none;
+}
+
+.dia-semana.domingo {
+    color: #dc3545;
+}
+
+.dias-mes {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.dia {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    border-right: 1px solid #e9ecef;
+    border-bottom: 1px solid #e9ecef;
+    background: white;
+}
+
+.dia:nth-child(7n) {
+    border-right: none;
+}
+
+.dia:hover {
+    background: #f8f9fa;
+    transform: scale(1.05);
+}
+
+.dia.hoje {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    font-weight: bold;
+}
+
+.dia.selecionado {
+    background: linear-gradient(135deg, #667eea 0%, #0a57a2 100%);
+    color: white;
+    font-weight: bold;
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.dia.com-agendamentos {
+    background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+    color: white;
+    font-weight: bold;
+}
+
+.dia-vazio {
+    aspect-ratio: 1;
+    background: #f8f9fa;
+    border-right: 1px solid #e9ecef;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.dia-vazio:nth-child(7n) {
+    border-right: none;
+}
+
+.numero-dia {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.indicador-agendamentos {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: #dc3545;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: bold;
+}
+
+/* =============================================
+   LISTA DE AGENDAMENTOS
+   ============================================= */
+
+.agendamentos-container {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 25px;
+    border: 1px solid #e9ecef;
+}
+
+.agendamentos-container h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #667eea;
+}
+
+#diaSelecionado {
+    color: #667eea;
+    font-weight: 700;
+}
+
+.lista-agendamentos {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.sem-agendamentos {
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    padding: 40px 20px;
+    background: white;
+    border-radius: 10px;
+    border: 2px dashed #dee2e6;
+}
+
+.agendamento-item {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid #667eea;
+    transition: all 0.3s ease;
+}
+
+.agendamento-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.agendamento-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.horario {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.coordenador {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.agendamento-detalhes {
+    display: grid;
+    gap: 8px;
+}
+
+.agendamento-detalhes > div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.agendamento-detalhes > div::before {
+    font-weight: 600;
+    color: #667eea;
+    min-width: 80px;
+}
+
+.nome::before {
+    content: "👤 Nome:";
+}
+
+.parentesco::before {
+    content: "👨‍👩‍👧‍👦 Parentesco:";
+}
+
+.contato::before {
+    content: "📞 Contato:";
+}
+
+.finalidade::before {
+    content: "📋 Finalidade:";
+}
+
+/* =============================================
+   RESPONSIVIDADE
+   ============================================= */
+
+@media (max-width: 1024px) {
+    .modal-body {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+    
+    .topo-site {
+        flex-direction: column;
+        text-align: center;
+        gap: 40px;
+    }
+    
+    .texto-topo h1 {
+        font-size: 48px;
+    }
+    
+    .topo-site img {
+        width: 70%;
+        margin: 10px auto;
+    }
+}
+
+@media (max-width: 768px) {
+    header {
+        padding: 16px 20px;
+    }
+    
+    .topo-site {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+        padding: 0 30px;
+    }
+    
+    .texto-topo {
+        width: 100%;
+    }
+    
+    .texto-topo h1 {
+        font-size: 36px;
+    }
+    
+    .topo-site img {
+        width: 70%;
+        margin: 10px auto;
+    }
+    
+    .texto-topo button {
+        width: 100%;
+        max-width: 260px;
+    }
+    
+    .modal-content {
+        margin: 10px;
+        max-height: 95vh;
+    }
+    
+    .modal-body {
+        padding: 20px;
+        gap: 20px;
+    }
+    
+    .calendario-container,
+    .agendamentos-container {
+        padding: 15px;
+    }
+    
+    .calendario-header h3 {
+        font-size: 1.2rem;
+    }
+    
+    .dia-semana {
+        padding: 10px 5px;
+        font-size: 0.8rem;
+    }
+    
+    .numero-dia {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    header img {
+        width: 150px;
+    }
+    
+    .texto-topo h1 {
+        font-size: 28px;
+        line-height: 1.2;
+    }
+    
+    .topo-site img {
+        width: 85%;
+    }
+    
+    .texto-topo button {
+        padding: 12px 20px;
+        font-size: 14px;
+    }
+    
+    .modal-header {
+        padding: 20px;
+    }
+    
+    .modal-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .calendario-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .agendamento-item {
+        padding: 15px;
+    }
+    
+    .agendamento-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch;
+    }
+    
+    .horario,
+    .coordenador {
+        text-align: center;
+    }
+}
