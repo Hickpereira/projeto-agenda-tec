@@ -15,7 +15,7 @@ img{
 
 
 body {
-  background-image: url("../IMG/IMG-FUNDO.png");
+  background-image: url("IMG/IMG-FUNDO.png");
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center top;
@@ -42,7 +42,7 @@ header img{
 }
 
 header div button{
-    background-color:#FF161F; 
+    background-color:#0a57a2; 
      border: none;
      color: white;             
      padding: 10px 20px;       
