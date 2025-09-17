@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
     <title>AGENDA TEC</title>
+    <meta name="theme-color" content="#0a57a2">
 </head>
 <body>
     <!-- Container para notificações -->
@@ -26,24 +27,24 @@
         </div>
     </div>
     
-    <div class="top-section-background">
+    <div class="top-section-background" id="home">
         <div class="top-content-container">
-            <header id="topo">
+            <header id="topo" role="banner">
                 <div class="logo-site"> 
-                    <img src="../IMG/LOGO-SITE.png" alt="">
+                    <img src="../IMG/LOGO-SITE.png" alt="Logo do site AGENDA TEC" loading="lazy">
                 </div>
                 <div class="botao-topo">
-                    <button>agendamento</button>
+                    <button aria-controls="floatingScheduleTab" aria-expanded="false">agendamento</button>
                 </div>
             </header>
 
             <!-- Aba flutuante de agendamentos -->
-            <div class="floating-schedule-tab" id="floatingScheduleTab">
-                <div class="tab-header">
+            <div class="floating-schedule-tab" id="floatingScheduleTab" role="complementary" aria-live="polite">
+                <div class="tab-header" role="button" tabindex="0" aria-controls="tabContent" aria-expanded="true">
                     <h3>📅 Meus Agendamentos</h3>
-                    <button class="tab-toggle" id="tabToggle">▼</button>
+                    <button class="tab-toggle" id="tabToggle" aria-label="Recolher lista">▼</button>
                 </div>
-                <div class="tab-content" id="tabContent">
+                <div class="tab-content" id="tabContent" role="region" aria-label="Lista de agendamentos">
                     <div class="schedule-list" id="scheduleList">
                         <!-- Os agendamentos serão inseridos aqui via JavaScript -->
                     </div>
@@ -52,92 +53,84 @@
                         <small>Faça seu primeiro agendamento!</small>
                     </div>
                     <div class="tab-actions">
-                        <button class="clear-schedules" id="clearSchedules">Limpar Todos</button>
+                        <button class="clear-schedules" id="clearSchedules" aria-label="Limpar todos os agendamentos">Limpar Todos</button>
                     </div>
                 </div>
             </div>
 
-            <section class="topo-site" >
+            <section class="topo-site" aria-labelledby="hero-title">
                 <div class="texto-topo">
-                    <h1>
+                    <h1 id="hero-title">
                      Organize sua reunião <br><b>com eficiência e <br> praticidade</b>
                     </h1>
-                  <a href="#agendamento"><button>Agende agora</button></a>  
+                  <a href="#agendamento"><button id="btn-agende-agora" aria-label="Ir para a seção de agendamento">Agende agora</button></a>  
                     
                 </div>
 
                 <div >
-                    <img src="../IMG/CALENDARIO.png" alt="Calendário" class="img-topo">
+                    <img src="../IMG/CALENDARIO.png" alt="Ilustração de calendário" class="img-topo" loading="lazy">
                 </div>
             </section>
         </div>
     </div>
 
-    <section class="agendamento" id="agendamento">
+    <section class="agendamento is-hidden" id="agendamento" aria-labelledby="agendamento-title">
         <div class="agendamento-quem">
-            <h2>Com quem você <br>quer agendar?</h2>
+            <h2 id="agendamento-title">Com quem você <br>quer agendar?</h2>
             <div class="opcoes">
                 <div class="opcao-item">
-                    <input type="radio" id="valeria" name="pessoa" value="valeria">
-                    <label for="valeria">Valeria</label>
+                    <input type="radio" id="valeria" name="pessoa" value="Orientadora pedagógica">
+                    <label for="valeria">Orientadora pedagógica</label>
                 </div>
                 
-                <div class="opcao-item">
-                    <input type="radio" id="lucia" name="pessoa" value="lucia">
-                    <label for="lucia">Lucia</label>
-                </div>
-                
-                <div class="opcao-item">
-                    <input type="radio" id="vania" name="pessoa" value="vania">
-                    <label for="vania">Vania</label>
-                </div>
+              
             </div>
             
-           <a href="#finalidade"> <button class="btn-confirmar-pessoa" id="btn-confirmar-pessoa" disabled>
+           <a href="#finalidade"> <button class="btn-confirmar-pessoa" id="btn-confirmar-pessoa" disabled aria-disabled="true">
                 Confirmar Pessoa
             </button></a>
         </div>
 
         <div class="pessoa">
-            <img src="../IMG/COODENADOR.png" alt="Coordenador" class="img-coordenador">
+            <img src="../IMG/COORDENADOR.jpg" alt="Foto ilustrativa do coordenador" class="img-coordenador" loading="lazy">
         </div>
     </section>
 
-<section class="finalidade" id="finalidade">
+<section class="finalidade is-hidden" id="finalidade" aria-labelledby="finalidade-title">
   <h1>Finalidade do Atendimento</h1>
 
   <div class="conteudo_finalidade">
     <div class="formulario_finalidade">
-      <input type="text" placeholder="Nome do responsável">
-      <input type="text" placeholder="Nome do aluno">
-      <textarea placeholder="Finalidade do Atendimento"></textarea>
-      <a href="#dia-horario"><button class="btn-confirm">Confirmar</button></a>
+    <input type="text" placeholder="Nome do responsável" aria-label="Nome do responsável" autocomplete="name" inputmode="text">
+      <input type="text" placeholder="Nome do aluno" aria-label="Nome do aluno" inputmode="text">
+      <textarea placeholder="Finalidade do Atendimento" aria-label="Finalidade do Atendimento"></textarea>
+     <button class="btn-confirm"><a href="#dia-horario" aria-label="Ir para seleção de dia e horário">Confirmar</a></button>
     </div>
 
     <div class="formulario_img">
-      <img src="../IMG/PENSANDO.png" alt="Pessoa pensando">
-    </div>
+      <img src="../IMG/PENSANDO.png" alt="Pessoa pensando" loading="lazy">
+    </div> 
   </div>
 </section>
 
 
-<section class="dia-horario" id="dia-horario">
-  <h2>Dia e Horario</h2>
-  <div class="conteudo">
-    <div class="calendario" id="calendario"></div>
+    <section class="dia-horario is-hidden" id="dia-horario" aria-labelledby="dia-horario-title">
+    <h2 id="dia-horario-title">Dia e Horário</h2>
+    <div class="conteudo">
+        <div class="calendario" id="calendario" aria-live="polite"></div>
 
-    <div class="horarios" id="horarios" style="display: none;">
-      <label><span>14:00 - 14:30</span><input type="checkbox"></label>
-      <label><span>14:30 - 15:00</span><input type="checkbox"></label>
-      <label><span>15:00 - 15:30</span><input type="checkbox"></label>
-      <label><span>15:30 - 16:00</span><input type="checkbox"></label>
-      <label><span>16:00 - 16:30</span><input type="checkbox"></label>
-      <label><span>16:30 - 17:00</span><input type="checkbox"></label>
-      <label><span>17:00 - 17:30</span><input type="checkbox"></label>
+        <div class="horarios" id="horarios" style="display: none;">
+        <label><span>14:00 - 14:30</span><input type="checkbox" aria-label="14:00 - 14:30"></label>
+        <label><span>14:30 - 15:00</span><input type="checkbox" aria-label="14:30 - 15:00"></label>
+        <label><span>15:00 - 15:30</span><input type="checkbox" aria-label="15:00 - 15:30"></label>
+        <label><span>15:30 - 16:00</span><input type="checkbox" aria-label="15:30 - 16:00"></label>
+        <label><span>16:00 - 16:30</span><input type="checkbox" aria-label="16:00 - 16:30"></label>
+        <label><span>16:30 - 17:00</span><input type="checkbox" aria-label="16:30 - 17:00"></label>
+        <label><span>17:00 - 17:30</span><input type="checkbox" aria-label="17:00 - 17:30"></label>
+        </div>
     </div>
-  </div>
-  <a href="#topo"><button>Agendar</button></a>
-</section>
+    <a href="#topo"><button aria-label="Concluir agendamento e voltar ao topo">Agendar</button></a>
+    </section>
 
 
 
