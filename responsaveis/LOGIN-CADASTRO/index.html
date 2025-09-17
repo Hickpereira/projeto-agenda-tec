@@ -36,15 +36,16 @@
 
         <!-- Formulário de Cadastro -->
         <div class="form-container sign-up" id="registerForm">
-            <form>
-                <h1>Crie sua conta</h1>
-                <span>Preencha os dados para se registrar</span>
-                <input type="text" placeholder="Nome Completo" required>
-                <input type="text" placeholder="Grau de Parentesco" required>
-                <input type="email" placeholder="Email ou Telefone" required>
-                <input type="password" placeholder="Senha" required>
-                <button type="submit">Cadastrar</button>
+            
+            <form action="cadastrar.php" method="post">
+                <h2>Cadastro</h2>
+                <input type="text" name="nome" placeholder="Nome Completo" required>
+                <input type="text" name="cpf" placeholder="CPF" required>
+                <input type="text" name="email_telefone" placeholder="Email ou Telefone" required>
+                <input type="password" name="senha" placeholder="Senha" required>
+                <button type="submit">CADASTRAR</button>
             </form>
+            
         </div>
 
         <!-- Toggle container para desktop -->

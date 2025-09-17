@@ -1,5 +1,37 @@
 // Funcionalidade para os inputs de radio button da seção de agendamento
 document.addEventListener('DOMContentLoaded', function() {
+    // ===== Controle de navegação por seções =====
+    const sectionHome = document.getElementById('home');
+    const sectionAgendamento = document.getElementById('agendamento');
+    const sectionFinalidade = document.getElementById('finalidade');
+    const sectionDiaHorario = document.getElementById('dia-horario');
+
+    function showSection(sectionToShow) {
+        [sectionHome, sectionAgendamento, sectionFinalidade, sectionDiaHorario].forEach(sec => {
+            if (!sec) return;
+            if (sec === sectionToShow) {
+                sec.classList.remove('is-hidden');
+            } else {
+                sec.classList.add('is-hidden');
+            }
+        });
+        // Garantir topo visível nos trocas
+        try { sectionToShow.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+    }
+
+    // Inicializa: apenas HOME visível
+    if (sectionHome && sectionAgendamento && sectionFinalidade && sectionDiaHorario) {
+        showSection(sectionHome);
+    }
+
+    // Botão "Agende agora" vai para Agendamento
+    const btnAgendeAgora = document.getElementById('btn-agende-agora');
+    if (btnAgendeAgora) {
+        btnAgendeAgora.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection(sectionAgendamento);
+        });
+    }
     // Adicionar funcionalidade aos radio buttons
     const radioButtons = document.querySelectorAll('input[name="pessoa"]');
     const labels = document.querySelectorAll('label[for]');
@@ -49,13 +81,10 @@ document.addEventListener('DOMContentLoaded', function() {
             this.style.background = 'linear-gradient(135deg, #6c757d 0%, #495057 100%)';
             this.style.boxShadow = '0 4px 15px rgba(108, 117, 125, 0.3)';
             
-            // Scroll suave para a próxima seção
+            // Ir para a seção Finalidade
             setTimeout(() => {
-                document.getElementById('finalidade').scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }, 1500);
+                showSection(sectionFinalidade);
+            }, 1200);
         }
     });
     
@@ -70,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
         message.className = 'confirmation-message';
         message.innerHTML = `
             <div class="message-content">
-                <span>🎉 Agendamento confirmado com ${pessoa.charAt(0).toUpperCase() + pessoa.slice(1)}!</span>
+                <span>🎉 Agendamento em andamento com ${pessoa.charAt(0).toUpperCase() + pessoa.slice(1)}!</span>
                 <p>Redirecionando para próxima etapa...</p>
             </div>
         `;
@@ -175,17 +204,10 @@ function gerarCalendario(mes, ano) {
             if (horariosElement) {
                 if (!horariosElement.classList.contains('visivel')) {
                     horariosElement.classList.add('visivel');
-
-                    // Preparar para animação
                     horariosElement.style.display = 'flex';
-                    horariosElement.style.opacity = 0;
-                    horariosElement.style.transform = 'translateX(20px)';
-
-                    setTimeout(() => {
-                        horariosElement.style.transition = 'all 0.5s ease';
-                        horariosElement.style.opacity = 1;
-                        horariosElement.style.transform = 'translateX(0)';
-                    }, 50);
+                    horariosElement.style.opacity = 1;
+                    horariosElement.style.transform = 'none';
+                    horariosElement.style.transition = 'none';
                 }
 
                 // Scroll suave para os horários
@@ -209,7 +231,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Capturar dados do formulário de finalidade
     const btnConfirmFinalidade = document.querySelector('.btn-confirm');
     if (btnConfirmFinalidade) {
-        btnConfirmFinalidade.addEventListener('click', function() {
+        btnConfirmFinalidade.addEventListener('click', function(e) {
+            e.preventDefault();
             const responsavel = document.querySelector('input[placeholder="Nome do responsável"]').value;
             const aluno = document.querySelector('input[placeholder="Nome do aluno"]').value;
             const finalidade = document.querySelector('textarea[placeholder="Finalidade do Atendimento"]').value;
@@ -218,13 +241,29 @@ document.addEventListener('DOMContentLoaded', function() {
             sessionStorage.setItem('responsavel', responsavel);
             sessionStorage.setItem('aluno', aluno);
             sessionStorage.setItem('finalidade', finalidade);
+
+            // Navegar para Dia & Horário
+            const sectionDiaHorario = document.getElementById('dia-horario');
+            const sectionHome = document.getElementById('home');
+            const sectionAgendamento = document.getElementById('agendamento');
+            const sectionFinalidade = document.getElementById('finalidade');
+            [sectionHome, sectionAgendamento, sectionFinalidade].forEach(sec => sec && sec.classList.add('is-hidden'));
+            if (sectionDiaHorario) {
+                sectionDiaHorario.classList.remove('is-hidden');
+                sectionDiaHorario.classList.add('animate');
+                setTimeout(() => sectionDiaHorario.classList.remove('animate'), 500);
+                try { sectionDiaHorario.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+            }
+
+            // Horários só aparecem após clicar em um dia no calendário
         });
     }
     
     // Capturar dados do agendamento final
     const btnAgendar = document.querySelector('.dia-horario button');
     if (btnAgendar) {
-        btnAgendar.addEventListener('click', function() {
+        btnAgendar.addEventListener('click', function(e) {
+            e.preventDefault();
             const coordenador = sessionStorage.getItem('coordenador');
             const responsavel = sessionStorage.getItem('responsavel');
             const aluno = sessionStorage.getItem('aluno');
@@ -283,6 +322,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 setTimeout(() => {
                     showNotification('Agendamento realizado', 'Agendamento realizado com sucesso! Verifique a aba de agendamentos.', 'success');
                 }, 500);
+
+                // Voltar para HOME
+                const sectionHome = document.getElementById('home');
+                const sectionAgendamento = document.getElementById('agendamento');
+                const sectionFinalidade = document.getElementById('finalidade');
+                const sectionDiaHorario = document.getElementById('dia-horario');
+                if (sectionHome) {
+                    [sectionAgendamento, sectionFinalidade, sectionDiaHorario].forEach(sec => sec && sec.classList.add('is-hidden'));
+                    sectionHome.classList.remove('is-hidden');
+                    try { sectionHome.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+                }
                 
             } else {
                 showNotification('Erro de agendamento', 'Por favor, complete todas as etapas do agendamento:\n\n1. Selecione um coordenador\n2. Preencha os dados da finalidade\n3. Escolha uma data\n4. Selecione um horário', 'error');
@@ -463,12 +513,14 @@ document.addEventListener('DOMContentLoaded', function() {
         modalTitle.textContent = title;
         modalMessage.textContent = message;
         
-        // Mostrar modal
+        // Mostrar modal e bloquear scroll do fundo
         modal.classList.add('show');
+        document.body.classList.add('modal-open');
         
         // Função para fechar modal
         const closeModal = () => {
             modal.classList.remove('show');
+            document.body.classList.remove('modal-open');
         };
         
         // Event listeners
@@ -527,6 +579,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('click', function(event) {
         if (isTabVisible && !floatingTab.contains(event.target) && !btnAgendamento.contains(event.target)) {
             hideFloatingTab();
+            try {
+                btnAgendamento.setAttribute('aria-expanded', 'false');
+            } catch (e) {}
         }
     });
     
@@ -534,6 +589,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape' && isTabVisible) {
             hideFloatingTab();
+            try {
+                btnAgendamento.setAttribute('aria-expanded', 'false');
+            } catch (e) {}
         }
     });
     
@@ -648,4 +706,20 @@ setTimeout(() => {
     }
 }, 500);
 
+});
+
+// Single-select de horários: manter apenas um checkbox ativo
+document.addEventListener('DOMContentLoaded', function() {
+    const horariosContainer = document.getElementById('horarios');
+    if (!horariosContainer) return;
+    horariosContainer.addEventListener('change', function(e) {
+        const target = e.target;
+        if (target && target.matches('input[type="checkbox"]')) {
+            if (target.checked) {
+                horariosContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    if (cb !== target) cb.checked = false;
+                });
+            }
+        }
+    });
 });
