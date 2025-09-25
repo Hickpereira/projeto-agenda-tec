@@ -58,6 +58,12 @@ const calendarioGrid = document.getElementById('calendarioAgendamentos');
 const diaSelecionadoSpan = document.getElementById('diaSelecionado');
 const listaAgendamentos = document.getElementById('listaAgendamentos');
 
+// Elementos da notificação
+const btnHorarios = document.getElementById('btnHorarios');
+const btnRelatorios = document.getElementById('btnRelatorios');
+const notificacaoDev = document.getElementById('notificacaoDev');
+const notificacaoClose = document.querySelector('.notificacao-close');
+
 // Event Listeners
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM carregado, configurando event listeners...');
@@ -83,6 +89,25 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (btnMesProximo) {
         btnMesProximo.addEventListener('click', mesProximo);
+    }
+    
+    // Event listeners para os botões de desenvolvimento
+    if (btnHorarios) {
+        btnHorarios.addEventListener('click', function(e) {
+            e.preventDefault();
+            mostrarNotificacao();
+        });
+    }
+    
+    if (btnRelatorios) {
+        btnRelatorios.addEventListener('click', function(e) {
+            e.preventDefault();
+            mostrarNotificacao();
+        });
+    }
+    
+    if (notificacaoClose) {
+        notificacaoClose.addEventListener('click', esconderNotificacao);
     }
     
     if (modal) {
@@ -253,14 +278,16 @@ function selecionarDia(data) {
     
     // Atualizar texto do dia selecionado
     if (diaSelecionadoSpan) {
-        const dataObj = new Date(data);
-        const dia = dataObj.getDate();
-        const mes = dataObj.getMonth();
+        // Corrigir problema de timezone criando a data localmente
+        const [ano, mes, dia] = data.split('-').map(Number);
+        const dataObj = new Date(ano, mes - 1, dia); // mes - 1 porque Date usa 0-11 para meses
+        const diaNumero = dataObj.getDate();
+        const mesNumero = dataObj.getMonth();
         const nomesMeses = [
             'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
             'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
         ];
-        diaSelecionadoSpan.textContent = `${dia} de ${nomesMeses[mes]}`;
+        diaSelecionadoSpan.textContent = `${diaNumero} de ${nomesMeses[mesNumero]}`;
     }
     
     // Mostrar agendamentos do dia
@@ -308,4 +335,25 @@ function mostrarAgendamentosDia(data) {
     
     listaAgendamentos.innerHTML = html;
     console.log(`Mostrando ${agendamentosDia.length} agendamentos para ${data}`);
+}
+
+// =============================================
+// FUNÇÕES DA NOTIFICAÇÃO DE DESENVOLVIMENTO
+// =============================================
+
+function mostrarNotificacao() {
+    if (notificacaoDev) {
+        notificacaoDev.classList.add('show');
+        
+        // Auto-esconder após 3 segundos
+        setTimeout(() => {
+            esconderNotificacao();
+        }, 3000);
+    }
+}
+
+function esconderNotificacao() {
+    if (notificacaoDev) {
+        notificacaoDev.classList.remove('show');
+    }
 }

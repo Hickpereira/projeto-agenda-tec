@@ -23,17 +23,18 @@ body {
     min-height: 100vh;
     position: relative;
     overflow: hidden;
+    background-color: #F8F8FF;
 }
 
 /* Header */
-header {
+header{
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 20px 60px;
-  
+    height: 15vh;
+    background-color: #00000000;
 }
-
 header img {
     width: 200px;
     height: auto;
@@ -64,65 +65,118 @@ header img {
     transform: scale(1.1);
 }
 
-/* Seção principal */
-.topo-site {
+/* =============================================
+   NOTIFICAÇÃO DE DESENVOLVIMENTO
+   ============================================= */
+
+.notificacao-dev {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    z-index: 10000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(100%);
+    transition: all 0.3s ease;
+    max-width: 300px;
+    font-weight: 600;
+}
+
+.notificacao-dev.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+}
+
+.notificacao-content {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0px  60px;
-    min-height: calc(80vh - 100px);
+    gap: 10px;
 }
 
-.texto-topo {
+.notificacao-texto {
     flex: 1;
-    color: white;
-    max-width: 600px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    font-size: 14px;
 }
 
-.texto-topo h1 {
-    font-size: 50px;
-    letter-spacing: 1px;
-    font-weight: 400;
-    margin-bottom: 3%;
-    text-align: center;
-}
-
-.texto-topo h1 b {
-    font-weight: 700;
-}
-
-.texto-topo button {
-    background-color: #ffffff;
+.notificacao-close {
+    background: none;
     border: none;
-    color: rgb(0, 0, 0);
-    padding: 10px 50px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin: 4px 10px;
+    color: white;
+    font-size: 18px;
     cursor: pointer;
-    border-radius: 8px;
-    transition: 0.2s;
-    font-weight: 600;
-    width: 100%;
-    max-width: 260px;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s ease;
 }
 
-.texto-topo button:hover {
-    transform: scale(1.1);
+.notificacao-close:hover {
+    background: rgba(255, 255, 255, 0.2);
 }
 
-.topo-site img {
+/*TOPO SITE*/
+section.topo-site {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0px 100px; 
+    height: 70vh;
+
+}
+    
+section.topo-site img{
     width: 400px;
     height: auto;
-    margin: 30px;
-    filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3));
+    
+
 }
 
+section.topo-site .texto-topo{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    width: 50%;
+
+}
+
+section.topo-site .texto-topo h1{
+    font-size: 55px;
+    letter-spacing: 1px; 
+    font-weight: 400;
+    margin-bottom: 3%;
+    color: white;
+}
+
+section.topo-site .texto-topo button{
+     background-color:#ffffff; 
+     border: none;             
+     color: rgb(0, 0, 0);             
+     padding: 10px 50px;       
+     text-align: center;       
+     text-decoration: none;    
+     display: inline-block;    
+     font-size: 16px;          
+     margin: 4px 10px;          
+     cursor: pointer;
+     border-radius: 8px;
+     transition: 0.2s;
+     font-weight: 600;
+}
+
+/*FIM TOPO SITE*/
 /* =============================================
    MODAL DE AGENDAMENTOS
    ============================================= */

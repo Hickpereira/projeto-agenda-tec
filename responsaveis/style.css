@@ -23,6 +23,7 @@ body {
   min-height: 100vh;
   position: relative;
   overflow: hidden;
+  background-color: #F8F8FF;
 }
 
 /* FIM GERAL*/
@@ -71,9 +72,8 @@ section.topo-site {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0px 100px;
-    /* background-color: antiquewhite; */
-    height: 65vh;
+    padding: 0px 100px; 
+    height: 70vh;
 
 }
     

@@ -27,6 +27,7 @@
 body {
   margin: 0;
   font-family: sans-serif;
+  background-color:  #e6f0ff;
 }
 
 html, body {
@@ -80,35 +81,40 @@ section.agendamento {
 /* FIM GERAL*/
 
 
-/* ===== HEADER ===== */
-header {
+/*HEADER*/
+header{
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 20px 60px;
   height: 15vh;
+  background-color: #00000000;
 }
 
-header img {
+header img{
   width: 200px;
   height: auto;
 }
 
-header div button {
-  background-color: #0a57a2;
-  border: none;
-  color: white;
-  padding: 10px 20px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin: 4px 10px;
-  cursor: pointer;
-  border-radius: 8px;
-  font-weight: 600;
-  transition: 0.2s;
-  position: relative;
+header div button{
+  background-color:#0a57a2; 
+   border: none;
+   color: white;             
+   padding: 10px 20px;       
+   text-align: center;       
+   text-decoration: none;    
+   display: inline-block;    
+   font-size: 16px;          
+   margin: 4px 10px;         
+   cursor: pointer;
+   border-radius: 8px;
+   font-weight: 600;
+   transition: 0.2s;
+} 
+
+button:hover{
+  transform: scale(1.1); 
+
 }
 
 .badge {
@@ -149,9 +155,8 @@ section.topo-site {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0px 100px;
-  /* background-color: antiquewhite; */
-  height: 65vh;
+  padding: 0px 100px; 
+  height: 70vh;
 
 }
   
@@ -173,7 +178,7 @@ section.topo-site .texto-topo{
 }
 
 section.topo-site .texto-topo h1{
-  font-size: 44px;
+  font-size: 55px;
   letter-spacing: 1px; 
   font-weight: 400;
   margin-bottom: 3%;
@@ -196,7 +201,6 @@ section.topo-site .texto-topo button{
    font-weight: 600;
 }
 
-
 /*FIM TOPO SITE*/
 
 
@@ -204,8 +208,8 @@ section.topo-site .texto-topo button{
 section.agendamento {
   display: flex;
   align-items: center;
-  justify-content: space-around;
-  gap: 60px;
+  justify-content: space-evenly;
+  gap: 100px;
   padding: 20px 60px;
   height: auto;
   min-height: 100vh;
@@ -218,12 +222,15 @@ section.agendamento div.agendamento-quem {
   display: flex;
   flex-direction: column;
   gap: 30px;
-  max-width: 500px;
+  max-width: 600px;
+  padding: 70px 50px;
+  border-radius: 20px;
+ 
 }
 
 section.agendamento div.agendamento-quem h2 {
   color: #2764ff;
-  font-size: 38px;
+  font-size: 60px;
   margin: 0;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -321,6 +328,7 @@ section.finalidade {
   align-items: center;
   justify-content: center;
   height: 100vh;
+ 
   padding: 40px 60px;
   gap: 70px;
   margin-top: -50px;
@@ -355,7 +363,8 @@ section.finalidade h1 {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  -webkit-box-shadow: 12px 8px 25px 7px rgba(0,0,0,0.21); 
+  box-shadow: 12px 8px 25px 7px rgba(0,0,0,0.21);
 }
 
 .formulario_finalidade input,
@@ -444,7 +453,7 @@ section.finalidade h1 {
   font-size: 42px;
   font-weight: 700;
   margin-bottom: 35px;
-  margin-top: 8px;
+  margin-top: 70px;
   animation: none !important;
 }
 

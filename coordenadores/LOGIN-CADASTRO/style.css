@@ -8,8 +8,8 @@
 }
 
 body{
-    background-color: #fdecee;
-    background: linear-gradient(to right, #fff5f5, #fdecee);
+    background-color:#e6f0ff;
+    
     display: flex;
     align-items: center;
     justify-content: center;
@@ -48,7 +48,7 @@ body{
 }
 
 .container button{
-    background-color: #FF161F;
+    background-color:  #10dbdb;
     color: #fff;
     font-size: 12px;
     padding: 10px 45px;
@@ -63,9 +63,9 @@ body{
 }
 
 .container button:hover{
-    background-color: #842519;
+    background-color: #066bd7;
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(255, 22, 31, 0.3);
+    box-shadow: 0 5px 15px #066bd7;
 }
 
 .container button.hidden{
@@ -75,7 +75,7 @@ body{
 
 .container button.hidden:hover{
     background-color: #fff;
-    color: #FF161F;
+    color:  #10dbdb;
 }
 
 .container form{
@@ -106,14 +106,14 @@ body{
 }
 
 .forgot-password{
-    color: #FF161F;
+    color:  #10dbdb;
     font-size: 12px;
     text-decoration: underline;
     margin: 10px 0;
 }
 
 .forgot-password:hover{
-    color: #842519;
+    color: #066bd7;
 }
 
 .form-container{
@@ -198,7 +198,7 @@ body{
 
 .toggle{
     height: 100%;
-    background: linear-gradient(to right, #FF161F, #842519);
+    background: linear-gradient(to right, #10dbdb, #066bd7);
     color: #fff;
     position: relative;
     left: -100%;
@@ -272,17 +272,17 @@ body{
 }
 
 .tab-btn.active{
-    background: #FF161F;
+    background:  #10dbdb;
     color: #fff;
-    border-color: #FF161F;
+    border-color:  #10dbdb;
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(255, 22, 31, 0.3);
+    box-shadow: 0 5px 15px #066bd7;
    
 }
 
 .tab-btn:hover:not(.active){
-    border-color: #FF161F;
-    color: #FF161F;
+    border-color:  #10dbdb;
+    color:  #10dbdb;
 }
 
 .tab-btn i{

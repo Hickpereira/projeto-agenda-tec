@@ -36,6 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const radioButtons = document.querySelectorAll('input[name="pessoa"]');
     const labels = document.querySelectorAll('label[for]');
     const btnConfirmar = document.getElementById('btn-confirmar-pessoa');
+    const imgPessoa = document.querySelector('.pessoa .img-coordenador');
     let pessoaSelecionada = null;
     
     radioButtons.forEach((radio, index) => {
@@ -62,6 +63,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Salvar coordenador selecionado
                 sessionStorage.setItem('coordenador', this.value);
+
+                // Trocar imagem conforme seleção (Edu -> COORDENADOR.jpg, outras -> PENSANDO.png)
+                if (imgPessoa) {
+                    const isEdu = this.id.toLowerCase() === 'edu' || /\bedu\b/i.test(this.value);
+                    if (isEdu) {
+                        imgPessoa.src = '../IMG/COORDENADOR.PNG';
+                        imgPessoa.alt = 'Foto do coordenador';
+                    } else {
+                        imgPessoa.src = '../IMG/PENSANDO.png';
+                        imgPessoa.alt = 'Foto ilustrativa do coordenador';
+                    }
+                }
             }
         });
     });
@@ -309,6 +322,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     btnConfirmar.textContent = 'Confirmar Pessoa';
                     btnConfirmar.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
                     btnConfirmar.style.boxShadow = '0 4px 15px rgba(40, 167, 69, 0.3)';
+                }
+
+                // Voltar imagem para padrão após finalizar agendamento
+                const imgPessoa = document.querySelector('.pessoa .img-coordenador');
+                if (imgPessoa) {
+                    imgPessoa.src = '../IMG/PENSANDO.png';
+                    imgPessoa.alt = 'Foto ilustrativa do coordenador';
                 }
                 
                 // Ocultar horários
