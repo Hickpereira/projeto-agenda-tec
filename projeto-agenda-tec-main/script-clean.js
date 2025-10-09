@@ -428,39 +428,44 @@ class AgendaSystem {
             this.selectedOrientador = null;
         }
     }
-
-    handleScheduleRequest(e) {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const scheduleData = Object.fromEntries(formData);
-        
-        if (!this.selectedOrientador) {
-            this.showNotification('Por favor, selecione um orientador', 'error');
-            return;
-        }
-        
-        const request = {
-            id: Date.now().toString(),
-            userId: this.currentUser.id,
-            userName: this.currentUser.name,
-            userEmail: this.currentUser.email,
-            orientador: this.selectedOrientador,
-            date: scheduleData.date,
-            time: scheduleData.time,
-            subject: scheduleData.subject,
-            message: scheduleData.message,
-            status: 'pending',
-            createdAt: new Date().toISOString()
-        };
-        
-        this.requests.push(request);
-        this.saveRequests();
-        this.hideModal('scheduleModal');
-        this.showNotification(`Solicitação enviada para ${this.selectedOrientador.name} com sucesso!`, 'success');
-        
-        // Remover modal do DOM
-        document.getElementById('scheduleModal').remove();
+handleScheduleRequest(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const scheduleData = Object.fromEntries(formData);
+    
+    if (!this.selectedOrientador) {
+        this.showNotification('Por favor, selecione um orientador.', 'error');
+        return;
     }
+
+    // 1. Monta o objeto com os dados do formulário
+    const request = {
+        orientador: this.selectedOrientador,
+        date: scheduleData.date,
+        time: scheduleData.time,
+        subject: scheduleData.subject,
+        message: scheduleData.message || ""
+    };
+
+    // 2. Chama o novo serviço no app.js para salvar no Firebase
+    if (window.scheduleService && typeof window.scheduleService.createRequest === 'function') {
+        window.scheduleService.createRequest(request)
+            .then(() => {
+                // Se a promessa for resolvida com sucesso, a notificação já foi mostrada pelo app.js.
+                // Apenas fechamos o modal.
+                this.hideModal('scheduleModal');
+                const scheduleModal = document.getElementById('scheduleModal');
+                if (scheduleModal) scheduleModal.remove(); // Remove o modal para não duplicar
+            })
+            .catch((error) => {
+                // O app.js já mostra a notificação de erro na tela.
+                console.error("Erro ao criar a solicitação:", error);
+            });
+    } else {
+        console.error("Erro crítico: scheduleService não encontrado.");
+        this.showNotification("Erro de sistema. Não foi possível enviar a solicitação.", "error");
+    }
+}
 
     generateAvailableTimeSlots() {
         const timeSlots = [
