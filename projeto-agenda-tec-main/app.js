@@ -1,113 +1,104 @@
-// app.js - VERSÃO FINAL CORRIGIDA (com gestão de 'required')
+// app.js - Versão Final Refatorada e Corrigida
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Garante que o agendaSystem do script.js esteja pronto
+
     if (!window.agendaSystem) {
         console.error("CRÍTICO: O objeto global 'agendaSystem' não foi encontrado. Verifique se 'script.js' está sendo carregado ANTES de 'app.js'.");
         return;
     }
 
-    // --- Seleção dos Formulários ---
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
+    const loginGoogleBtn = document.getElementById('loginGoogleBtn');
+    const registerGoogleBtn = document.getElementById('registerGoogleBtn');
+    const forgotPasswordLink = document.getElementById('forgotPasswordLink');
 
-    // --- NOVA FUNÇÃO: Gerencia quais campos são obrigatórios ---
-    function toggleRequiredAttributes(activePane) {
-        if (!registerForm) return;
-        // Encontra todos os inputs e selects dentro do formulário de registro
-        const allInputs = registerForm.querySelectorAll('input, select');
-        
-        allInputs.forEach(input => {
-            // Verifica se o input está dentro do painel que está ativo
-            if (activePane.contains(input)) {
-                // Se o input não for o telefone do responsável (que é opcional), adiciona 'required'
-                if (input.id !== 'telefone_responsavel') {
-                    input.required = true;
-                }
-            } else {
-                // Se o input está em um painel escondido, remove 'required'
-                input.required = false;
+    const authService = {
+        async updateUserSession(firebaseUser, userType) {
+            const collectionName = userType === 'responsavel' ? 'responsaveis' : 'orientador_pedagogico';
+            const userDoc = await db.collection(collectionName).doc(firebaseUser.uid).get();
+            if (!userDoc.exists) {
+                await auth.signOut();
+                throw new Error("Dados do usuário não encontrados para este tipo de perfil.");
             }
-        });
-    }
+            const userData = userDoc.data();
+            window.agendaSystem.currentUser = {
+                id: firebaseUser.uid,
+                name: userData.nome_responsavel || userData.nome_orientador,
+                email: firebaseUser.email,
+                userType: userType,
+            };
+            window.agendaSystem.isLoggedIn = true;
+            window.agendaSystem.userType = userType;
+            window.agendaSystem.saveUserData();
+            window.agendaSystem.updateHeaderForLoggedUser();
+            window.agendaSystem.showDashboard();
+            window.agendaSystem.hideModal('loginModal');
+            window.agendaSystem.hideModal('registerModal');
+        },
 
-    // --- LÓGICA DE ABAS (MODIFICADA) ---
-    function setupTabs(formId) {
-        const form = document.getElementById(formId);
-        if (!form) return;
+        async logout() {
+            try {
+                await auth.signOut();
+                window.location.reload();
+            } catch (error) {
+                console.error("Erro ao fazer logout:", error);
+                window.agendaSystem.showNotification("Erro ao tentar sair.", "error");
+            }
+        },
 
-        const tabs = form.querySelectorAll('.tab-btn');
-        const panes = form.querySelectorAll('.tab-pane');
-        const userTypeInput = form.querySelector('input[name$="UserType"]');
+        async handleForgotPassword(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value || document.getElementById('loginEmailOrientador').value;
+            if (!email) {
+                window.agendaSystem.showNotification('Digite seu e-mail no campo para redefinir a senha.', 'error');
+                return;
+            }
+            try {
+                await auth.sendPasswordResetEmail(email);
+                window.agendaSystem.showNotification('E-mail de redefinição de senha enviado para ' + email, 'success');
+            } catch (error) {
+                console.error("Erro ao enviar e-mail de redefinição:", error);
+                window.agendaSystem.showNotification('Falha ao enviar e-mail. Verifique se o e-mail está correto.', 'error');
+            }
+        },
 
-        // Configuração inicial ao carregar a página
-        const initialActivePane = form.querySelector('.tab-pane.active');
-        if (initialActivePane && formId === 'registerForm') {
-            toggleRequiredAttributes(initialActivePane);
-        }
-
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                tabs.forEach(t => t.classList.remove('active'));
-                panes.forEach(p => p.classList.remove('active'));
-
-                tab.classList.add('active');
-                const targetPaneId = tab.getAttribute('data-target');
-                const targetPane = document.getElementById(targetPaneId);
-                targetPane.classList.add('active');
-
-                if (userTypeInput) {
-                    userTypeInput.value = targetPaneId.includes('Responsavel') ? 'responsavel' : 'orientador';
+        async handleGoogleSignIn() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            try {
+                const result = await auth.signInWithPopup(provider);
+                const user = result.user;
+                const responsavelRef = db.collection('responsaveis').doc(user.uid);
+                const orientadorRef = db.collection('orientador_pedagogico').doc(user.uid);
+                const [responsavelDoc, orientadorDoc] = await Promise.all([responsavelRef.get(), orientadorRef.get()]);
+                
+                if (responsavelDoc.exists) {
+                    await this.updateUserSession(user, 'responsavel'); // CORRIGIDO
+                    window.agendaSystem.showNotification('Login como Responsável efetuado com sucesso!', 'success');
+                } else if (orientadorDoc.exists) {
+                    await this.updateUserSession(user, 'coordenador'); // CORRIGIDO
+                    window.agendaSystem.showNotification('Login como Orientador efetuado com sucesso!', 'success');
+                } else {
+                    await responsavelRef.set({
+                        nome_responsavel: user.displayName,
+                        email_responsavel: user.email,
+                        telefone_responsavel: user.phoneNumber || "",
+                        grau_parentesco: "Não especificado"
+                    });
+                    await this.updateUserSession(user, 'responsavel'); // CORRIGIDO
+                    window.agendaSystem.showNotification('Cadastro como Responsável efetuado com sucesso!', 'success');
                 }
-
-                // CHAMA A NOVA FUNÇÃO A CADA TROCA DE ABA NO FORMULÁRIO DE REGISTRO
-                if (formId === 'registerForm') {
-                    toggleRequiredAttributes(targetPane);
+            } catch (error) {
+                console.error("Erro no login com Google:", error);
+                if (error.code !== 'auth/popup-closed-by-user') {
+                    window.agendaSystem.showNotification('Falha no login com Google. Tente novamente.', 'error');
                 }
-            });
-        });
-    }
-
-    setupTabs('loginForm');
-    setupTabs('registerForm');
-
-
-    // --- FUNÇÃO PONTE: Atualiza a sessão no agendaSystem após um login/cadastro bem-sucedido ---
-    async function updateUserSession(firebaseUser, userType) {
-        const collectionName = userType === 'responsavel' ? 'responsaveis' : 'orientador_pedagogico';
-        const userDoc = await db.collection(collectionName).doc(firebaseUser.uid).get();
-
-        if (!userDoc.exists) {
-            throw new Error("Dados do usuário não encontrados no banco de dados após o login.");
-        }
-
-        const userData = userDoc.data();
-
-        // Preenche o objeto 'currentUser' do agendaSystem com dados do Firebase
-        window.agendaSystem.currentUser = {
-            id: firebaseUser.uid,
-            name: userData.nome_responsavel || userData.nome_orientador,
-            email: firebaseUser.email,
-            userType: userType,
-        };
-        window.agendaSystem.isLoggedIn = true;
-        window.agendaSystem.userType = userType;
-
-        // Usa os métodos do próprio agendaSystem para atualizar a interface
-        window.agendaSystem.saveUserData();
-        window.agendaSystem.updateHeaderForLoggedUser();
-        window.agendaSystem.showDashboard();
-        window.agendaSystem.hideModal('loginModal');
-        window.agendaSystem.hideModal('registerModal');
-    }
-
-
-    // --- LÓGICA DE CADASTRO ---
-    if (registerForm) {
-        registerForm.addEventListener('submit', async (e) => {
+            }
+        },
+        
+        async handleRegister(e) {
             e.preventDefault();
             const userType = document.getElementById('registerUserTypeHidden').value;
-
             try {
                 if (userType === 'responsavel') {
                     const nome = document.getElementById('nome_responsavel').value;
@@ -117,19 +108,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     const senha = document.getElementById('senhaCadastroResponsavel').value;
 
                     const userCredential = await auth.createUserWithEmailAndPassword(email, senha);
-                    const user = userCredential.user;
-
-                    await db.collection('responsaveis').doc(user.uid).set({
-                        nome_responsavel: nome,
-                        email_responsavel: email,
-                        telefone_responsavel: telefone,
-                        grau_parentesco: parentesco
+                    await db.collection('responsaveis').doc(userCredential.user.uid).set({
+                        nome_responsavel: nome, email_responsavel: email, telefone_responsavel: telefone, grau_parentesco: parentesco
                     });
-
-                    await updateUserSession(user, 'responsavel');
+                    await this.updateUserSession(userCredential.user, 'responsavel'); // CORRIGIDO
                     window.agendaSystem.showNotification('Cadastro de Responsável realizado com sucesso!', 'success');
 
-                } else if (userType === 'orientador') {
+                } else if (userType === 'coordenador') {
                     const nome = document.getElementById('nome_orientador').value;
                     const email = document.getElementById('email_orientador').value;
                     const telefone = document.getElementById('telefone_orientador').value;
@@ -149,14 +134,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     await db.runTransaction(async (transaction) => {
                         transaction.update(chaveDocRef, { usada: true });
                         transaction.set(orientadorDocRef, {
-                            nome_orientador: nome,
-                            email_orientador: email,
-                            telefone_orientador: telefone,
-                            cpf_orientador: cpf
+                            nome_orientador: nome, email_orientador: email, telefone_orientador: telefone, cpf_orientador: cpf
                         });
                     });
 
-                    await updateUserSession(user, 'orientador');
+                    await this.updateUserSession(user, 'coordenador'); // CORRIGIDO
                     window.agendaSystem.showNotification('Cadastro de Orientador realizado com sucesso!', 'success');
                 }
             } catch (error) {
@@ -164,39 +146,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 const message = error.code === 'auth/email-already-in-use' ? 'Este e-mail já está cadastrado.' : error.message;
                 window.agendaSystem.showNotification(message, 'error');
             }
-        });
-    }
+        },
 
-    // --- LÓGICA DE LOGIN ---
-    if (loginForm) {
-        loginForm.addEventListener('submit', async (e) => {
+        async handleLogin(e) {
             e.preventDefault();
             const userType = document.getElementById('loginUserType').value;
-
             try {
-                let email, password;
-
-                if (userType === 'responsavel') {
-                    email = document.getElementById('loginEmail').value;
-                    password = document.getElementById('senhaLoginResponsavel').value;
-                } else { // orientador
-                    email = document.getElementById('loginEmailOrientador').value;
-                    password = document.getElementById('senhaLoginOrientador').value;
-                }
-
+                const email = (userType === 'responsavel') ? document.getElementById('loginEmail').value : document.getElementById('loginEmailOrientador').value;
+                const password = (userType === 'responsavel') ? document.getElementById('senhaLoginResponsavel').value : document.getElementById('senhaLoginOrientador').value;
+                
                 const userCredential = await auth.signInWithEmailAndPassword(email, password);
                 
-                await updateUserSession(userCredential.user, userType);
+                await this.updateUserSession(userCredential.user, userType); // CORRIGIDO
                 window.agendaSystem.showNotification('Login realizado com sucesso!', 'success');
-
             } catch (error) {
                 console.error("Erro no login:", error);
-                let message = 'Ocorreu um erro ao tentar fazer login.';
-                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-                    message = 'E-mail ou senha inválidos.';
-                }
+                const message = (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential')
+                    ? 'E-mail ou senha inválidos.'
+                    : 'Ocorreu um erro ao tentar fazer login.';
                 window.agendaSystem.showNotification(message, 'error');
             }
-        });
-    }
+        },
+
+        init() {
+            if (registerForm) registerForm.addEventListener('submit', (e) => this.handleRegister(e));
+            if (loginForm) loginForm.addEventListener('submit', (e) => this.handleLogin(e));
+            if (loginGoogleBtn) loginGoogleBtn.addEventListener('click', () => this.handleGoogleSignIn());
+            if (registerGoogleBtn) registerGoogleBtn.addEventListener('click', () => this.handleGoogleSignIn());
+            if (forgotPasswordLink) forgotPasswordLink.addEventListener('click', (e) => this.handleForgotPassword(e));
+        }
+    };
+
+    authService.init();
+    window.authService = authService;
 });

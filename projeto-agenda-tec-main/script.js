@@ -1,8 +1,4 @@
-// Sistema de Agendamento Online - Nova Agenda TEC
-// JavaScript principal com todas as funcionalidades
-
-class AgendaSystem {
-    constructor() {
+class AgendaSystem {    constructor() {
         this.currentUser = null;
         this.isLoggedIn = false;
         this.userType = null;
@@ -12,9 +8,9 @@ class AgendaSystem {
         this.selectedOrientador = null;
         
         this.init();
-    }
+        }
 
-    init() {
+    init(){
         this.setupEventListeners();
         this.loadUserData();
         this.setupAccessibility();
@@ -23,9 +19,17 @@ class AgendaSystem {
         this.replaceCoordinatorTerms();
     }
 
-    
+    addSearchFunctionality() {
+        console.log('Futura implementação: Lógica de busca no painel.');
+        // TODO: Adicionar aqui a lógica para filtrar agendamentos ou solicitações.
+        // Por enquanto, a função existe e não vai mais causar erro.
+    }
 
-    
+    startAutoRefresh() {
+        console.log('Futura implementação: Lógica de auto-refresh.');
+        // TODO: Adicionar aqui a lógica para atualizar o painel periodicamente.
+        // Por enquanto, a função existe e não vai mais causar erro.
+    }
 
     // Event Listeners
     setupEventListeners() {

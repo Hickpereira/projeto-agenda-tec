@@ -1,4 +1,4 @@
-<!DOCTYPE html> aaaaa
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -147,60 +147,72 @@
 
     </main>
 
-    <!-- ABA Login -->
-    <div id="loginModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Entrar</h2>
-                <span class="close" id="closeLogin">&times;</span>
-            </div>
-            <form id="loginForm" class="auth-form">
-                <div class="requests-tabs">
-                    <button type="button" class="tab-btn active" id="loginTabResponsavel" data-target="loginPaneResponsavel">Responsável</button>
-                    <button type="button" class="tab-btn" id="loginTabCoordenador" data-target="loginPaneCoordenador">Orientador Educacional</button>
-                </div>
-                <input type="hidden" name="loginUserType" id="loginUserType" value="responsavel">
-<!-- ABA LOGIN - RESPONSAVEL -->
-                <div class="tab-content">
-                    <div class="tab-pane active" id="loginPaneResponsavel">
-                        <div class="login-info">
-                            <h4>Responsável</h4>
-                            <p>Use seu email e senha cadastrados</p>
-                        </div>
-                        <div class="form-group">
-                            <label for="email_orientador">Email</label>
-                            <input type="email" id="email_orientador" name="email" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="senhaCadastroOrientador">Senha</label>
-                            <input type="password" id="senhaCadastroOrientador" name="password" required>
-                        </div>
-                    </div>
-<!-- ABA LOGIN - ORIENTADOR -->
-                    <div class="tab-pane" id="loginPaneCoordenador">
-                        <div class="login-info">
-                            <h4>Orientador Educacional</h4>
-                            <p>Use seu email e senha</p>
-                            <p><strong>Demo:</strong> 12345678911/ 123456 </p>
-                        </div>
-                        <div class="form-group">
-                            <label for="loginEmailOrientador">E-mail</label>
-                            <input type="email" id="loginEmailOrientador" name="email" inputmode="email" placeholder="Digite seu E-mail cadastrado" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="senhaLoginOrientador">Senha</label>
-                            <input type="password" id="senhaLoginOrientador" name="password" required>
-                        </div>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn btn-primary btn-full">Entrar</button>
-                <p class="auth-switch">
-                    Não tem uma conta? <a href="#" id="switchToRegister">Cadastre-se</a>
-                </p>
-            </form>
+<!-- ABA LOGIN -->
+<div id="loginModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span class="close" id="closeLogin">&times;</span>
         </div>
+        <form id="loginForm" class="auth-form">
+            <div class="requests-tabs">
+                <button type="button" class="tab-btn active" id="loginTabResponsavel" data-target="loginPaneResponsavel">Responsável</button>
+                <button type="button" class="tab-btn" id="loginTabCoordenador" data-target="loginPaneCoordenador">Orientador Educacional</button>
+            </div>
+            <input type="hidden" name="loginUserType" id="loginUserType" value="responsavel">
+
+           
+
+            
+        <!-- ABA LOGIN -- Responsavel -->    
+            <div class="tab-content">
+                <div class="tab-pane active" id="loginPaneResponsavel">
+                    <div class="login-info">
+                        <h4>Responsável</h4>
+                        <p>Use seu email e senha cadastrados</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginEmail">Email</label>
+                        <input type="email" id="loginEmail" name="email">
+                    </div>
+                    <div class="form-group">
+                        <label for="senhaLoginResponsavel">Senha</label>
+                        <input type="password" id="senhaLoginResponsavel" name="password">
+                    </div>
+                    
+                        <div class="divider"><span>OU</span></div>
+                         <button type="button" class="btn btn-google" id="registerGoogleBtn">
+                        <i class="fab fa-google"></i> Login com Google
+                        </button>
+
+
+                
+
+        <!-- ABA LOGIN -- Orientador -->   
+                </div>
+                <div class="tab-pane" id="loginPaneCoordenador">
+                    <div class="login-info">
+                        <h4>Orientador Educacional</h4>
+                        <p>Use seu email e senha</p>
+                        <p><strong>Demo:</strong> 12345678911/ 123456 </p>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginEmailOrientador">E-mail</label>
+                        <input type="email" id="loginEmailOrientador" name="email" inputmode="email" placeholder="Digite seu E-mail cadastrado">
+                    </div>
+                    <div class="form-group">
+                        <label for="senhaLoginOrientador">Senha</label>
+                        <input type="password" id="senhaLoginOrientador" name="password">
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full">Entrar</button>
+            <p class="auth-switch">
+                Não tem uma conta? <a href="#" id="switchToRegister">Cadastre-se</a>
+            </p>
+        </form>
     </div>
+</div>
 
     <!-- ABA Cadastro -->
     <div id="registerModal" class="modal">
@@ -215,7 +227,8 @@
                     <button type="button" class="tab-btn" id="registerTabCoordenador" data-target="registerPaneCoordenador">Orientador Educacional</button>
                 </div>
                 <input type="hidden" name="registerUserType" id="registerUserTypeHidden" value="responsavel">
- <!-- ABA Cadastro - RESPONSAVEL -->
+
+             <!-- ABA Cadastro - RESPONSAVEL -->
                 <div class="tab-content">
                     <div class="tab-pane active" id="registerPaneResponsavel">
                         <div class="form-group">
@@ -244,6 +257,9 @@
                             <input type="password" id="senhaCadastroResponsavel" name="password" required>
                         </div>
                     </div>
+                
+                    
+               
 <!-- ABA Cadastro - ORIENTADOR -->
                     <div class="tab-pane" id="registerPaneCoordenador">
                         <div class="form-group">
