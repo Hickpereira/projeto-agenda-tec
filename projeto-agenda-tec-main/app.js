@@ -1,5 +1,3 @@
-// app.js - Versão Final Refatorada e Corrigida
-
 document.addEventListener('DOMContentLoaded', () => {
 
     if (!window.agendaSystem) {
