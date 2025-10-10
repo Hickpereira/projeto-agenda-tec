@@ -1,8 +1,4 @@
-// Sistema de Agendamento Online - Nova Agenda TEC
-// JavaScript principal com todas as funcionalidades
-
-class AgendaSystem {
-    constructor() {
+class AgendaSystem {    constructor() {
         this.currentUser = null;
         this.isLoggedIn = false;
         this.userType = null;
@@ -12,15 +8,27 @@ class AgendaSystem {
         this.selectedOrientador = null;
         
         this.init();
-    }
+        }
 
-    init() {
+    init(){
         this.setupEventListeners();
         this.loadUserData();
         this.setupAccessibility();
         this.checkAuthStatus();
         // Padroniza termos visíveis na interface
         this.replaceCoordinatorTerms();
+    }
+
+    addSearchFunctionality() {
+        console.log('Futura implementação: Lógica de busca no painel.');
+        // TODO: Adicionar aqui a lógica para filtrar agendamentos ou solicitações.
+        // Por enquanto, a função existe e não vai mais causar erro.
+    }
+
+    startAutoRefresh() {
+        console.log('Futura implementação: Lógica de auto-refresh.');
+        // TODO: Adicionar aqui a lógica para atualizar o painel periodicamente.
+        // Por enquanto, a função existe e não vai mais causar erro.
     }
 
     // Event Listeners
@@ -41,9 +49,9 @@ class AgendaSystem {
         document.getElementById('registerTabResponsavel')?.addEventListener('click', () => this.switchAuthTab('register', 'responsavel'));
         document.getElementById('registerTabCoordenador')?.addEventListener('click', () => this.switchAuthTab('register', 'coordenador'));
         
-        // Formulários
-        document.getElementById('loginForm')?.addEventListener('submit', this.handleLogin.bind(this));
-        document.getElementById('registerForm')?.addEventListener('submit', this.handleRegister.bind(this));
+        // Formulários - Jogados para 'firebase-config.js'
+        //document.getElementById('loginForm')?.addEventListener('submit', this.handleLogin.bind(this));
+        //document.getElementById('registerForm')?.addEventListener('submit', this.handleRegister.bind(this));
         
         // Alternância entre modais
         document.getElementById('switchToRegister')?.addEventListener('click', (e) => {
@@ -88,15 +96,15 @@ class AgendaSystem {
         });
         
         // Navegação suave
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', (e) => {
-                e.preventDefault();
-                const target = document.querySelector(anchor.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({ behavior: 'smooth' });
-                }
-            });
-        });
+        document.querySelectorAll('a[href^="#"]:not([href="#"])').forEach(anchor => {
+        anchor.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.querySelector(anchor.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth' });
+        }
+    });
+});
 
         // Removido recarregamento ao trocar abas; uso de switchAuthTab já cuida da alternância
     }
@@ -246,7 +254,7 @@ class AgendaSystem {
     }
 
     // Sistema de Autenticação
-    async handleLogin(e) {
+    /*async handleLogin(e) {
         e.preventDefault();
         const formData = new FormData(e.target);
         const raw = Object.fromEntries(formData);
@@ -455,6 +463,7 @@ class AgendaSystem {
         
         return user;
     }
+        */
 
     switchAuthTab(kind, type) {
         if (kind === 'login') {
@@ -758,38 +767,44 @@ class AgendaSystem {
         }
     }
 
-    handleScheduleRequest(e) {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const scheduleData = Object.fromEntries(formData);
-        
-        if (!this.selectedOrientador) {
-            this.showNotification('Por favor, selecione um orientador', 'error');
-            return;
-        }
-        
-        const request = {
-            id: Date.now().toString(),
-            userId: this.currentUser.id,
-            userName: this.currentUser.name,
-            userEmail: this.currentUser.email,
-            orientador: this.selectedOrientador,
-            date: scheduleData.date,
-            time: scheduleData.time,
-            subject: scheduleData.subject,
-            message: scheduleData.message,
-            status: 'pending',
-            createdAt: new Date().toISOString()
-        };
-        
-        this.requests.push(request);
-        this.saveRequests();
-        this.hideModal('scheduleModal');
-        this.showNotification(`Solicitação enviada para ${this.selectedOrientador.name} com sucesso!`, 'success');
-        
-        // Remover modal do DOM
-        document.getElementById('scheduleModal').remove();
+   handleScheduleRequest(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const scheduleData = Object.fromEntries(formData);
+    
+    if (!this.selectedOrientador) {
+        this.showNotification('Por favor, selecione um orientador.', 'error');
+        return;
     }
+
+    // 1. Monta o objeto com os dados do formulário
+    const request = {
+        orientador: this.selectedOrientador,
+        date: scheduleData.date,
+        time: scheduleData.time,
+        subject: scheduleData.subject,
+        message: scheduleData.message || ""
+    };
+
+    // 2. Chama o novo serviço no app.js para salvar no Firebase
+    if (window.scheduleService && typeof window.scheduleService.createRequest === 'function') {
+        window.scheduleService.createRequest(request)
+            .then(() => {
+                // Se a promessa for resolvida com sucesso, a notificação já foi mostrada pelo app.js.
+                // Apenas fechamos o modal.
+                this.hideModal('scheduleModal');
+                const scheduleModal = document.getElementById('scheduleModal');
+                if (scheduleModal) scheduleModal.remove(); // Remove o modal para não duplicar
+            })
+            .catch((error) => {
+                // O app.js já mostra a notificação de erro na tela.
+                console.error("Erro ao criar a solicitação:", error);
+            });
+    } else {
+        console.error("Erro crítico: scheduleService não encontrado.");
+        this.showNotification("Erro de sistema. Não foi possível enviar a solicitação.", "error");
+    }
+}
 
     generateAvailableTimeSlots() {
         const customTimeSlots = this.getTimeSlots();
