@@ -126,6 +126,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     const email = document.getElementById('email_orientador').value;
                     const telefone = document.getElementById('telefone_orientador').value;
                     const cpf = document.getElementById('cpf_orientador').value;
+                    if (!validateCPF(cpf)) {
+                     window.agendaSystem.showNotification('CPF inválido. Por favor, verifique o número digitado.', 'error');
+                    return; 
+                    }
                     const chaveAcesso = document.getElementById('ChaveAcessoOrientador').value;
                     const senha = document.getElementById('senhaCadastroOrientador').value;
                     const chaveQuery = await db.collection('chave_acesso_orientador').where('chave', '==', chaveAcesso).where('usada', '==', false).get();

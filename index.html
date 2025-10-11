@@ -264,38 +264,40 @@
                     
                
 <!-- ABA Cadastro - ORIENTADOR -->
-                    <div class="tab-pane" id="registerPaneCoordenador">
-                        <div class="form-group">
-                            <label for="nome_orientador">Nome</label>
-                            <input type="text" id="nome_orientador" name="name" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="email_orientador">E-mail</label>
-                            <input type="email" id="email_orientador" name="email" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="telefone_orientador">Telefone</label>
-                            <input type="tel" id="telefone_orientador" name="telefone" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="cpf_orientador">CPF</label>
-                            <input type="text" id="cpf_orientador" name="cpf" inputmode="numeric" maxlength="14" placeholder="Digite apenas números" required>
-                        </div>
-                         <div class="form-group">
-                            <label for="ChaveAcessoOrientador">Chave de Acesso</label>
-                            <input type="text" id="ChaveAcessoOrientador" name="chave_acesso" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="senhaCadastroOrientador">Senha</label>
-                            <input type="password" id="senhaCadastroOrientador" name="password" required>
-                        </div>
-                    </div>
-                </div>
+    <div class="form-group">
+        <label for="nome_orientador">Nome Completo</label>
+        <input type="text" id="nome_orientador" name="name" required>
+    </div>
+    <div class="form-group">
+        <label for="email_orientador">E-mail</label>
+        <input type="email" id="email_orientador" name="email" required>
+    </div>
+    <div class="form-group">
+        <label for="telefone_orientador">Telefone</label>
+        <input type="tel" id="telefone_orientador" name="telefone" required>
+    </div>
+    <div class="form-group">
+        <label for="cpf_orientador">CPF</label>
+        <input type="text" id="cpf_orientador" name="cpf" required>
+    </div>
+    <div class="form-group">
+        <label for="ChaveAcessoOrientador">Chave de Acesso</label>
+        <input type="text" id="ChaveAcessoOrientador" name="chave_acesso" required>
+    </div>
+    <div class="form-group">
+        <label for="senhaCadastroOrientador">Senha</label>
+        <input type="password" id="senhaCadastroOrientador" name="password" required minlength="6">
+    </div>
 
-                <button type="submit" class="btn btn-primary btn-full">Cadastrar</button>
-                <p class="auth-switch">
-                    Já tem uma conta? <a href="#" id="switchToLogin">Faça login</a>
-                </p>
+    <div id="recaptcha-container"></div>
+    <div class="form-group hidden" id="smsCodeGroup">
+        <label for="smsCode">Código SMS</label>
+        <input type="text" id="smsCode" name="sms_code" placeholder="Digite o código de 6 dígitos">
+    </div>
+            
+    <button type="submit" class="btn btn-primary btn-full">Cadastrar</button>
+        <p class="auth-switch">Já tem uma conta? <a href="#" id="switchToLogin">Faça login</a>
+        </p>
             </form>
         </div>
     </div>
