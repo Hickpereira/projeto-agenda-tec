@@ -465,28 +465,40 @@ class AgendaSystem {    constructor() {
     }
         */
 
-    switchAuthTab(kind, type) {
-        if (kind === 'login') {
-            const respBtn = document.getElementById('loginTabResponsavel');
-            const coordBtn = document.getElementById('loginTabCoordenador');
-            respBtn.classList.toggle('active', type === 'responsavel');
-            coordBtn.classList.toggle('active', type === 'coordenador');
-            document.getElementById('loginPaneResponsavel').classList.toggle('active', type === 'responsavel');
-            document.getElementById('loginPaneCoordenador').classList.toggle('active', type === 'coordenador');
-            const hidden = document.getElementById('loginUserType');
-            if (hidden) hidden.value = type;
-        } else if (kind === 'register') {
-            const respBtn = document.getElementById('registerTabResponsavel');
-            const coordBtn = document.getElementById('registerTabCoordenador');
-            respBtn.classList.toggle('active', type === 'responsavel');
-            coordBtn.classList.toggle('active', type === 'coordenador');
-            document.getElementById('registerPaneResponsavel').classList.toggle('active', type === 'responsavel');
-            document.getElementById('registerPaneCoordenador').classList.toggle('active', type === 'coordenador');
-            const hidden = document.getElementById('registerUserTypeHidden');
-            if (hidden) hidden.value = type;
-        }
+switchAuthTab(kind, type) { 
+    const formId = `${kind}Form`;
+    const form = document.getElementById(formId);
+    if (!form) return;
+
+    //Troca a classe 'active' nos botões e painéis para mostrar a aba certa
+    form.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    form.querySelector(`#${kind}Tab${type === 'responsavel' ? 'Responsavel' : 'Coordenador'}`)?.classList.add('active');
+    form.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+    form.querySelector(`#${kind}Pane${type === 'responsavel' ? 'Responsavel' : 'Coordenador'}`)?.classList.add('active');
+    
+    // Atualiza o valor do campo oculto que o app.js usa para saber o tipo de usuário
+    const userTypeInput = form.querySelector('input[name$="UserType"]');
+    if (userTypeInput) {
+        userTypeInput.value = (type === 'responsavel') ? 'responsavel' : 'coordenador';
     }
 
+    //Gerencia os campos obrigatórios no formulário de CADASTRO
+    if (formId === 'registerForm') {
+        // Passa por todos os painéis (Responsável e Orientador)
+        form.querySelectorAll('.tab-pane').forEach(pane => {
+            const isPaneActive = pane.classList.contains('active'); // Verifica se o painel está visível
+            
+            // Encontra todos os inputs e selects dentro do painel
+            pane.querySelectorAll('input, select').forEach(input => {
+                // Ignora o campo de telefone do responsável, que é sempre opcional
+                if (input.id !== 'telefone_responsavel') {
+                    // Se o painel está ativo, o campo é obrigatório. Se está escondido, não é.
+                    input.required = isPaneActive;
+                }
+            });
+        });
+    }
+}
     onlyDigits(value) {
         return String(value || '').replace(/\D+/g, '');
     }

@@ -1,5 +1,3 @@
-// app.js - Versão Final (com Autenticação e Agendamento)
-
 document.addEventListener('DOMContentLoaded', () => {
 
     // Validação inicial para garantir que a interface (script.js) foi carregada primeiro.
@@ -15,12 +13,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const registerGoogleBtn = document.getElementById('registerGoogleBtn');
     const forgotPasswordLink = document.getElementById('forgotPasswordLink');
 
-    // --- 2. SERVIÇOS ---
-
-    /**
-     * Objeto que agrupa todas as funções relacionadas à autenticação
-     * e gerenciamento de usuários no Firebase.
-     */
     const authService = {
         /**
          * Atualiza a sessão na interface (script.js) após um login ou cadastro bem-sucedido.
