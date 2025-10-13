@@ -100,10 +100,89 @@ class AgendaSystem {
       );
       telResponsavelInput.setAttribute("maxlength", "15");
     }
+<<<<<<< HEAD
     // Alternância entre modais
     document
       .getElementById("switchToRegister")
       ?.addEventListener("click", (e) => {
+=======
+
+    // Event Listeners
+    setupEventListeners() {
+        // Navegação
+        document.getElementById('nav-toggle')?.addEventListener('click', this.toggleMobileMenu.bind(this));
+        
+        // Modais
+        document.getElementById('loginBtn')?.addEventListener('click', () => this.showModal('loginModal'));
+        document.getElementById('registerBtn')?.addEventListener('click', () => this.showModal('registerModal'));
+        document.getElementById('closeLogin')?.addEventListener('click', () => this.hideModal('loginModal'));
+        document.getElementById('closeRegister')?.addEventListener('click', () => this.hideModal('registerModal'));
+        
+        // Tabs: Login
+        document.getElementById('loginTabResponsavel')?.addEventListener('click', () => this.switchAuthTab('login', 'responsavel'));
+        document.getElementById('loginTabCoordenador')?.addEventListener('click', () => this.switchAuthTab('login', 'coordenador'));
+        // Tabs: Register
+        document.getElementById('registerTabResponsavel')?.addEventListener('click', () => this.switchAuthTab('register', 'responsavel'));
+        document.getElementById('registerTabCoordenador')?.addEventListener('click', () => this.switchAuthTab('register', 'coordenador'));
+        
+        // Formulários - Jogados para 'firebase-config.js'
+        //document.getElementById('loginForm')?.addEventListener('submit', this.handleLogin.bind(this));
+        //document.getElementById('registerForm')?.addEventListener('submit', this.handleRegister.bind(this));
+        
+        // Alternância entre modais
+        document.getElementById('switchToRegister')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.hideModal('loginModal');
+            this.showModal('registerModal');
+        });
+        document.getElementById('switchToLogin')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.hideModal('registerModal');
+            this.showModal('loginModal');
+        });
+        
+        // Dashboard
+        document.getElementById('startScheduling')?.addEventListener('click', this.startScheduling.bind(this));
+        document.getElementById('scheduleMeetingBtn')?.addEventListener('click', this.showScheduleModal.bind(this));
+        document.getElementById('viewSchedulesBtn')?.addEventListener('click', this.showSchedulesList.bind(this));
+        document.getElementById('viewRequestsBtn')?.addEventListener('click', this.showRequestsList.bind(this));
+        document.getElementById('manageScheduleBtn')?.addEventListener('click', this.showScheduleManager.bind(this));
+        document.getElementById('viewReportsBtn')?.addEventListener('click', this.showReports.bind(this));
+        
+        // Adicionar botão de visualização de agenda para coordenadores será feito no showDashboard
+        
+        // Acessibilidade - painel único
+        this.initAccessibilityPanel();
+        
+        // Botão de acessibilidade alternativo no header
+        document.getElementById('a11yHeaderBtn')?.addEventListener('click', () => {
+            const panel = document.getElementById('a11yPanel');
+            if (panel) {
+                panel.classList.toggle('hidden');
+            }
+        });
+        
+        // Navegação por teclado para acessibilidade
+        document.addEventListener('keydown', this.handleKeyboardNavigation.bind(this));
+        
+        // Fechar modais ao clicar fora
+        window.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                this.hideModal(e.target.id);
+            }
+        });
+        
+        // Header logout button
+        document.addEventListener('click', (e) => {
+            if (e.target && e.target.id === 'logoutBtn') {
+                this.handleLogout();
+            }
+        });
+        
+        // Navegação suave
+        document.querySelectorAll('a[href^="#"]:not([href="#"])').forEach(anchor => {
+        anchor.addEventListener('click', (e) => {
+>>>>>>> f0d8d29 (arrumando formulario)
         e.preventDefault();
         this.hideModal("loginModal");
         this.showModal("registerModal");
@@ -136,8 +215,16 @@ class AgendaSystem {
 
     // Adicionar botão de visualização de agenda para coordenadores será feito no showDashboard
 
+<<<<<<< HEAD
     // Acessibilidade - painel único
     this.initAccessibilityPanel();
+=======
+        if (!openBtn || !panel) {
+            console.error('Botão de acessibilidade não encontrado:', { openBtn, panel });
+            return;
+        }
+        console.log('Botão de acessibilidade encontrado e funcionando');
+>>>>>>> f0d8d29 (arrumando formulario)
 
     // Navegação por teclado para acessibilidade
     document.addEventListener(
@@ -608,12 +695,25 @@ class AgendaSystem {
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="scheduleSubject">Assunto</label>
-                            <input type="text" id="scheduleSubject" name="subject" placeholder="Ex: Dúvidas sobre rendimento escolar" required>
+                            <label for="studentName">Nome do Aluno</label>
+                            <input type="text" id="studentName" name="studentName" placeholder="Digite o nome completo do aluno" required>
                         </div>
                         <div class="form-group">
-                           
-                           
+                            <label for="studentGrade">Série</label>
+                            <select id="studentGrade" name="studentGrade" required>
+                                <option value="">Selecione a série...</option>
+                                <option value="1medio">1º Ensino Médio</option>
+                                <option value="2medio">2º Ensino Médio</option>
+                                <option value="3medio">3º Ensino Médio</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="studentClass">Turma</label>
+                            <input type="text" id="studentClass" name="studentClass" placeholder="Ex: AMS, ADM, ETC... " required>
+                        </div>
+                        <div class="form-group">
+                            <label for="scheduleSubject">Assunto</label>
+                            <input type="text" id="scheduleSubject" name="subject" placeholder="Ex: Dúvidas sobre rendimento escolar" required>
                         </div>
                         <button type="submit" class="btn btn-primary btn-full">Solicitar Agendamento</button>
                     </form>
@@ -621,6 +721,7 @@ class AgendaSystem {
             </div>
         `;
 
+<<<<<<< HEAD
     document.body.insertAdjacentHTML("beforeend", modalHTML);
 
     // Event listeners para o modal
@@ -689,6 +790,38 @@ class AgendaSystem {
       const statusIndicator = document.createElement("div");
       statusIndicator.className = "orientador-status";
       statusIndicator.innerHTML = `
+=======
+    generateOrientadorOptions() {
+        return '<option value="coordenador">Orientador Educacional </option>';
+    }
+
+    showOrientadorInfo(orientadorId) {
+        const orientadorInfo = document.getElementById('orientadorInfo');
+        
+        if (orientadorId === 'coordenador') {
+            this.selectedOrientador = {
+                id: 'coordenador',
+                name: 'Orientador Educacional',
+                specialty: '',
+                description: 'Responsável pela orientação educacional e acompanhamento dos alunos',
+                email: 'orientador@escola.com',
+                phone: '(11) 99999-0000',
+                avatar: '👨‍🏫'
+            };
+            
+            // Atualizar informações do coordenador
+            document.querySelector('.orientador-avatar').textContent = '👨‍🏫';
+            document.querySelector('.orientador-name').textContent = 'Orientador Educacional';
+            document.querySelector('.orientador-specialty').textContent = '';
+            document.querySelector('.orientador-description').textContent = 'Responsável pela orientação educacional e acompanhamento dos alunos';
+            document.querySelector('.orientador-email').textContent = 'orientador@escola.com';
+            document.querySelector('.orientador-phone').textContent = '(11) 99999-0000';
+            
+            // Adicionar indicador de status
+            const statusIndicator = document.createElement('div');
+            statusIndicator.className = 'orientador-status';
+            statusIndicator.innerHTML = `
+>>>>>>> f0d8d29 (arrumando formulario)
                 <span class="status-online">🟢 Disponível</span>
                 <span class="status-available">Disponível para agendamentos</span>
             `;
@@ -747,11 +880,22 @@ class AgendaSystem {
 
     // 1. Monta o objeto com os dados do formulário
     const request = {
+<<<<<<< HEAD
       orientador: this.selectedOrientador,
       date: scheduleData.date,
       time: scheduleData.time,
       subject: scheduleData.subject,
       message: scheduleData.message || "",
+=======
+        orientador: this.selectedOrientador,
+        date: scheduleData.date,
+        time: scheduleData.time,
+        subject: scheduleData.subject,
+        studentName: scheduleData.studentName,
+        studentGrade: scheduleData.studentGrade,
+        studentClass: scheduleData.studentClass,
+        message: scheduleData.message || ""
+>>>>>>> f0d8d29 (arrumando formulario)
     };
 
     // 2. Chama o novo serviço no app.js para salvar no Firebase
@@ -1222,8 +1366,69 @@ class AgendaSystem {
     return statusTexts[status] || status;
   }
 
+<<<<<<< HEAD
   showScheduleManager() {
     const modalHTML = `
+=======
+    rejectRequest(requestId) {
+        const request = this.requests.find(req => req.id === requestId);
+        if (request) {
+            request.status = 'rejected';
+            request.responseDate = new Date().toISOString().split('T')[0];
+            this.saveRequests();
+            this.updateCoordinatorDashboard();
+            this.showNotification('Solicitação rejeitada!', 'info');
+            this.refreshRequestsModal();
+        }
+    }
+
+    refreshRequestsModal() {
+        // Remove modal atual
+        const currentModal = document.getElementById('requestsModal');
+        if (currentModal) {
+            currentModal.remove();
+        }
+        
+        // Recriar modal com dados atualizados
+        this.showRequestsList();
+    }
+
+    formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('pt-BR');
+    }
+
+    getStatusText(status) {
+        const statusTexts = {
+            'pending': 'Pendente',
+            'approved': 'Aprovado',
+            'rejected': 'Recusado',
+            'cancelled': 'Cancelado'
+        };
+        return statusTexts[status] || status;
+    }
+
+    formatGrade(grade) {
+        const gradeTexts = {
+            '1ano': '1º Ano',
+            '2ano': '2º Ano',
+            '3ano': '3º Ano',
+            '4ano': '4º Ano',
+            '5ano': '5º Ano',
+            '6ano': '6º Ano',
+            '7ano': '7º Ano',
+            '8ano': '8º Ano',
+            '9ano': '9º Ano',
+            '1medio': '1º Ensino Médio',
+            '2medio': '2º Ensino Médio',
+            '3medio': '3º Ensino Médio'
+        };
+        return gradeTexts[grade] || grade;
+    }
+
+    showScheduleManager() {
+        const modalHTML = `
+>>>>>>> f0d8d29 (arrumando formulario)
             <div id="scheduleManagerModal" class="modal">
                 <div class="modal-content modal-large">
                     <div class="modal-header">
@@ -2313,12 +2518,20 @@ class AgendaSystem {
                           schedule.orientador
                             ? `
                             <p><strong>Orientador:</strong> ${schedule.orientador.name} - ${schedule.orientador.specialty}</p>
+<<<<<<< HEAD
                         `
                             : ""
                         }
                         <p><strong>Data:</strong> ${this.formatDate(
                           schedule.date
                         )}</p>
+=======
+                        ` : ''}
+                        ${schedule.studentName ? `<p><strong>Aluno:</strong> ${schedule.studentName}</p>` : ''}
+                        ${schedule.studentGrade ? `<p><strong>Série:</strong> ${this.formatGrade(schedule.studentGrade)}</p>` : ''}
+                        ${schedule.studentClass ? `<p><strong>Turma:</strong> ${schedule.studentClass}</p>` : ''}
+                        <p><strong>Data:</strong> ${this.formatDate(schedule.date)}</p>
+>>>>>>> f0d8d29 (arrumando formulario)
                         <p><strong>Horário:</strong> ${schedule.time}</p>
                         ${
                           this.userType === "coordenador"
