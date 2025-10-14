@@ -214,6 +214,28 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const docRef = await db.collection('solicitacoes').add(finalRequestData);
                 console.log("Solicitação salva com sucesso! ID:", docRef.id);
+                
+                // Também salvar no localStorage para exibição imediata
+                const localRequest = {
+                    id: docRef.id,
+                    userId: finalRequestData.responsavelId,
+                    orientadorId: finalRequestData.orientadorId,
+                    date: finalRequestData.data,
+                    time: finalRequestData.horario,
+                    subject: finalRequestData.assunto,
+                    message: finalRequestData.mensagem,
+                    status: finalRequestData.status,
+                    createdAt: new Date(),
+                    orientador: window.agendaSystem.getOrientadorById(finalRequestData.orientadorId)
+                };
+                
+                // Adicionar à lista local
+                window.agendaSystem.requests.push(localRequest);
+                window.agendaSystem.saveRequests();
+                
+                // Recarregar solicitações do Firebase para sincronizar
+                await window.agendaSystem.loadRequestsFromFirebase();
+                
                 window.agendaSystem.showNotification('Solicitação de agendamento enviada com sucesso!', 'success');
             } catch (error) {
                 console.error("Erro ao salvar a solicitação no Firestore:", error);

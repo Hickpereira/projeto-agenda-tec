@@ -25,6 +25,9 @@
                     <span class="bar"></span>
                     <span class="bar"></span>
                 </div>
+                
+                <!-- Botão de Acessibilidade no Header (temporário) -->
+               
               
                 <div class="nav-menu" id="nav-menu">
                     <!-- Menu para usuários não logados -->
@@ -159,14 +162,8 @@
                 <button type="button" class="tab-btn" id="loginTabCoordenador" data-target="loginPaneCoordenador">Orientador Educacional</button>
             </div>
             <input type="hidden" name="loginUserType" id="loginUserType" value="responsavel">
-            <p class="auth-switch" style="text-align: right; margin-bottom: 15px;">
-                <a href="#" id="forgotPasswordLink">Esqueci minha senha</a>
-            </p>
 
-           
-
-            
-        <!-- ABA LOGIN -- Responsavel -->    
+            <!-- ABA LOGIN -- Responsavel -->    
             <div class="tab-content">
                 <div class="tab-pane active" id="loginPaneResponsavel">
                     <div class="login-info">
@@ -180,15 +177,16 @@
                     <div class="form-group">
                         <label for="senhaLoginResponsavel">Senha</label>
                         <input type="password" id="senhaLoginResponsavel" name="password">
+                        <p class="forgot-password-link">
+                            <a href="#" id="forgotPasswordLink">Esqueci minha senha</a>
+                        </p>
                     </div>
                     
                         <div class="divider"><span>OU</span></div>
-                         <button type="button" class="btn btn-google" id="registerGoogleBtn">
-                        <i class="fab fa-google"></i> Login com Google
+                        <button type="button" class="btn btn-google btn-full" id="registerGoogleBtn">
+                            <i class="fab fa-google"></i>
+                            <span>Continuar com Google</span>
                         </button>
-
-
-                
 
         <!-- ABA LOGIN -- Orientador -->   
                 </div>

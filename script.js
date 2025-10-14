@@ -78,6 +78,14 @@ class AgendaSystem {    constructor() {
         // Acessibilidade - painel único
         this.initAccessibilityPanel();
         
+        // Botão de acessibilidade alternativo no header
+        document.getElementById('a11yHeaderBtn')?.addEventListener('click', () => {
+            const panel = document.getElementById('a11yPanel');
+            if (panel) {
+                panel.classList.toggle('hidden');
+            }
+        });
+        
         // Navegação por teclado para acessibilidade
         document.addEventListener('keydown', this.handleKeyboardNavigation.bind(this));
         
@@ -128,7 +136,11 @@ class AgendaSystem {    constructor() {
         const focusVisibleBtn = document.getElementById('a11yFocusVisible');
         const resetBtn = document.getElementById('a11yReset');
 
-        if (!openBtn || !panel) return;
+        if (!openBtn || !panel) {
+            console.error('Botão de acessibilidade não encontrado:', { openBtn, panel });
+            return;
+        }
+        console.log('Botão de acessibilidade encontrado e funcionando');
 
         const applyPrefs = (prefs) => {
             if (prefs.darkMode) document.body.classList.add('dark-mode'); else document.body.classList.remove('dark-mode');
@@ -503,6 +515,38 @@ class AgendaSystem {    constructor() {
         }
     }
 
+    getOrientadorById(orientadorId) {
+        const orientadores = [
+            {
+                id: 'orientador1',
+                name: 'Dr. Carlos Silva',
+                specialty: 'Orientação Educacional',
+                email: 'carlos.silva@escola.com',
+                phone: '(11) 99999-1111'
+            },
+            {
+                id: 'orientador2',
+                name: 'Dra. Maria Santos',
+                specialty: 'Psicologia Escolar',
+                email: 'maria.santos@escola.com',
+                phone: '(11) 99999-2222'
+            },
+            {
+                id: 'orientador3',
+                name: 'Prof. João Oliveira',
+                specialty: 'Coordenação Pedagógica',
+                email: 'joao.oliveira@escola.com',
+                phone: '(11) 99999-3333'
+            }
+        ];
+        
+        return orientadores.find(o => o.id === orientadorId) || {
+            id: orientadorId,
+            name: 'Orientador',
+            specialty: 'Orientação Educacional'
+        };
+    }
+
     startScheduling() {
         if (!this.isLoggedIn) {
             this.showModal('loginModal');
@@ -660,12 +704,26 @@ class AgendaSystem {    constructor() {
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="scheduleSubject">Assunto</label>
-                            <input type="text" id="scheduleSubject" name="subject" placeholder="Ex: Dúvidas sobre rendimento escolar" required>
+                            <label for="studentName">Nome do Aluno</label>
+                            <input type="text" id="studentName" name="studentName" placeholder="Digite o nome completo do aluno" required>
                         </div>
                         <div class="form-group">
-                           
-                           
+                            <label for="studentGrade">Série</label>
+                            <select id="studentGrade" name="studentGrade" required>
+                                <option value="">Selecione a série...</option>
+                                
+                                <option value="1medio">1º Ensino Médio</option>
+                                <option value="2medio">2º Ensino Médio</option>
+                                <option value="3medio">3º Ensino Médio</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="studentClass">Turma</label>
+                            <input type="text" id="studentClass" name="studentClass" placeholder="Ex: AMS, ADM, JOGOS Etc..." required>
+                        </div>
+                        <div class="form-group">
+                            <label for="scheduleSubject">Assunto</label>
+                            <input type="text" id="scheduleSubject" name="subject" placeholder="Ex: Dúvidas sobre rendimento escolar" required>
                         </div>
                         <button type="submit" class="btn btn-primary btn-full">Solicitar Agendamento</button>
                     </form>
@@ -783,6 +841,9 @@ class AgendaSystem {    constructor() {
         date: scheduleData.date,
         time: scheduleData.time,
         subject: scheduleData.subject,
+        studentName: scheduleData.studentName,
+        studentGrade: scheduleData.studentGrade,
+        studentClass: scheduleData.studentClass,
         message: scheduleData.message || ""
     };
 
@@ -880,7 +941,10 @@ class AgendaSystem {    constructor() {
         }
     }
 
-    showSchedulesList() {
+    async showSchedulesList() {
+        // Recarregar solicitações do Firebase antes de exibir
+        await this.loadRequestsFromFirebase();
+        
         // Para responsáveis: mostrar seus próprios agendamentos
         // Para coordenadores: mostrar todos os agendamentos aprovados
         let schedulesToShow;
@@ -969,7 +1033,10 @@ class AgendaSystem {    constructor() {
         this.showModal('schedulesModal');
     }
 
-    showRequestsList() {
+    async showRequestsList() {
+        // Recarregar solicitações do Firebase antes de exibir
+        await this.loadRequestsFromFirebase();
+        
         const pendingRequests = this.requests.filter(req => req.status === 'pending');
         const acceptedRequests = this.requests.filter(req => req.status === 'approved');
         const rejectedRequests = this.requests.filter(req => req.status === 'rejected');
@@ -1131,7 +1198,10 @@ class AgendaSystem {    constructor() {
         }
     }
 
-    refreshRequestsModal() {
+    async refreshRequestsModal() {
+        // Recarregar solicitações do Firebase
+        await this.loadRequestsFromFirebase();
+        
         // Remove modal atual
         const currentModal = document.getElementById('requestsModal');
         if (currentModal) {
@@ -1139,7 +1209,7 @@ class AgendaSystem {    constructor() {
         }
         
         // Recriar modal com dados atualizados
-        this.showRequestsList();
+        await this.showRequestsList();
     }
 
     formatDate(dateString) {
@@ -1155,6 +1225,24 @@ class AgendaSystem {    constructor() {
             'cancelled': 'Cancelado'
         };
         return statusTexts[status] || status;
+    }
+
+    formatGrade(grade) {
+        const gradeTexts = {
+            '1ano': '1º Ano',
+            '2ano': '2º Ano',
+            '3ano': '3º Ano',
+            '4ano': '4º Ano',
+            '5ano': '5º Ano',
+            '6ano': '6º Ano',
+            '7ano': '7º Ano',
+            '8ano': '8º Ano',
+            '9ano': '9º Ano',
+            '1medio': '1º Ensino Médio',
+            '2medio': '2º Ensino Médio',
+            '3medio': '3º Ensino Médio'
+        };
+        return gradeTexts[grade] || grade;
     }
 
     showScheduleManager() {
@@ -1635,26 +1723,67 @@ class AgendaSystem {    constructor() {
     // Sistema de Notificações
     showNotification(message, type = 'info') {
         const notification = document.createElement('div');
-        notification.className = `notification notification-${type}`;
+        notification.className = `notification ${type}`;
+        
+        // Ícones para cada tipo de notificação
+        const icons = {
+            success: 'fas fa-check-circle',
+            error: 'fas fa-exclamation-circle',
+            warning: 'fas fa-exclamation-triangle',
+            info: 'fas fa-info-circle'
+        };
+        
         notification.innerHTML = `
-            <span>${message}</span>
-            <button class="notification-close">&times;</button>
+            <div class="notification-content">
+                <i class="notification-icon ${icons[type] || icons.info}"></i>
+                <span class="notification-text">${message}</span>
+            </div>
+            <button class="notification-close" aria-label="Fechar notificação">&times;</button>
         `;
         
         document.getElementById('notificationContainer').appendChild(notification);
         
         // Auto-remover após 5 segundos
-        setTimeout(() => {
+        const autoRemove = setTimeout(() => {
             if (notification.parentNode) {
-                notification.parentNode.removeChild(notification);
+                notification.style.animation = 'notificationSlideOut 0.3s ease forwards';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
             }
         }, 5000);
         
         // Botão de fechar
         notification.querySelector('.notification-close').addEventListener('click', () => {
+            clearTimeout(autoRemove);
             if (notification.parentNode) {
-                notification.parentNode.removeChild(notification);
+                notification.style.animation = 'notificationSlideOut 0.3s ease forwards';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
             }
+        });
+        
+        // Pausar auto-remover ao hover
+        notification.addEventListener('mouseenter', () => {
+            clearTimeout(autoRemove);
+        });
+        
+        notification.addEventListener('mouseleave', () => {
+            const newAutoRemove = setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.style.animation = 'notificationSlideOut 0.3s ease forwards';
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.parentNode.removeChild(notification);
+                        }
+                    }, 300);
+                }
+            }, 3000);
         });
     }
 
@@ -1907,6 +2036,8 @@ class AgendaSystem {    constructor() {
             this.currentUser = JSON.parse(savedUser);
             this.isLoggedIn = true;
             this.userType = this.currentUser.userType;
+            // Forçar sincronização com Firebase após carregar dados do usuário
+            this.loadRequestsFromFirebase();
         }
     }
 
@@ -1918,6 +2049,71 @@ class AgendaSystem {    constructor() {
         const savedRequests = localStorage.getItem('agenda_requests');
         if (savedRequests) {
             this.requests = JSON.parse(savedRequests);
+        }
+        // Também carregar do Firebase se disponível
+        this.loadRequestsFromFirebase();
+    }
+
+    async loadRequestsFromFirebase() {
+        try {
+            if (window.db && this.currentUser) {
+                // Carregar solicitações como responsável
+                const responsavelQuery = await db.collection('solicitacoes')
+                    .where('responsavelId', '==', this.currentUser.id)
+                    .orderBy('criadoEm', 'desc')
+                    .get();
+
+                // Carregar solicitações como orientador
+                const orientadorQuery = await db.collection('solicitacoes')
+                    .where('orientadorId', '==', this.currentUser.id)
+                    .orderBy('criadoEm', 'desc')
+                    .get();
+
+                const firebaseRequests = [];
+                
+                responsavelQuery.forEach(doc => {
+                    const data = doc.data();
+                    firebaseRequests.push({
+                        id: doc.id,
+                        userId: data.responsavelId,
+                        orientadorId: data.orientadorId,
+                        date: data.data,
+                        time: data.horario,
+                        subject: data.assunto,
+                        message: data.mensagem,
+                        status: data.status,
+                        createdAt: data.criadoEm?.toDate?.() || new Date(),
+                        orientador: this.getOrientadorById(data.orientadorId)
+                    });
+                });
+
+                orientadorQuery.forEach(doc => {
+                    const data = doc.data();
+                    firebaseRequests.push({
+                        id: doc.id,
+                        userId: data.responsavelId,
+                        orientadorId: data.orientadorId,
+                        date: data.data,
+                        time: data.horario,
+                        subject: data.assunto,
+                        message: data.mensagem,
+                        status: data.status,
+                        createdAt: data.criadoEm?.toDate?.() || new Date(),
+                        orientador: this.getOrientadorById(data.orientadorId),
+                        responsavelNome: data.responsavelNome,
+                        responsavelEmail: data.responsavelEmail
+                    });
+                });
+
+                // Mesclar com requests existentes, evitando duplicatas
+                const existingIds = new Set(this.requests.map(r => r.id));
+                const newRequests = firebaseRequests.filter(r => !existingIds.has(r.id));
+                this.requests = [...this.requests, ...newRequests];
+                
+                this.saveRequests();
+            }
+        } catch (error) {
+            console.error('Erro ao carregar solicitações do Firebase:', error);
         }
     }
 
@@ -2049,6 +2245,9 @@ class AgendaSystem {    constructor() {
                         ${schedule.orientador ? `
                             <p><strong>Orientador:</strong> ${schedule.orientador.name} - ${schedule.orientador.specialty}</p>
                         ` : ''}
+                        ${schedule.studentName ? `<p><strong>Aluno:</strong> ${schedule.studentName}</p>` : ''}
+                        ${schedule.studentGrade ? `<p><strong>Série:</strong> ${this.formatGrade(schedule.studentGrade)}</p>` : ''}
+                        ${schedule.studentClass ? `<p><strong>Turma:</strong> ${schedule.studentClass}</p>` : ''}
                         <p><strong>Data:</strong> ${this.formatDate(schedule.date)}</p>
                         <p><strong>Horário:</strong> ${schedule.time}</p>
                         ${this.userType === 'coordenador' ? `
