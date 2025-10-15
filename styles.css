@@ -621,7 +621,7 @@ body.dark-mode .request-item {
 [data-theme="dark"] .feature-card,
 [data-theme="dark"] .request-item,
 [data-theme="dark"] .schedule-item {
-    background: linear-gradient(135deg, rgba(26, 26, 46, 0.8) 0%, rgba(22, 33, 62, 0.8) 100%);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(22, 33, 62, 0.8) 100%);
     border: 1px solid rgba(255, 107, 107, 0.2);
     backdrop-filter: blur(10px);
 }
@@ -3968,9 +3968,11 @@ body.dark-mode .login-info {
     background: linear-gradient(135deg, rgba(220, 53, 69, 0.05) 0%, var(--bg-primary) 100%);
 }
 
+
+/* aqui henrique gordo */
 .schedule-item.warning {
     border-left: 4px solid var(--warning-color);
-    background: linear-gradient(135deg, rgba(255, 193, 7, 0.05) 0%, var(--bg-primary) 100%);
+    background: linear-gradient(135deg, rgba(255, 191, 0, 0.05) 0%, #10b981 100%);
 }
 
 .schedule-item.upcoming {
