@@ -483,6 +483,51 @@
     
     
     <script src="app.js"></script>
+    <script>
+document.addEventListener('DOMContentLoaded', () => {
+  const registerTabs = document.querySelectorAll('#registerForm .tab-btn');
+  const registerPanes = document.querySelectorAll('#registerForm .tab-pane');
+
+  registerTabs.forEach(btn => {
+    btn.addEventListener('click', () => {
+      // troca a aba ativa
+      registerTabs.forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+
+      const targetId = btn.getAttribute('data-target');
+      registerPanes.forEach(pane => {
+        const isActive = pane.id === targetId;
+        pane.classList.toggle('active', isActive);
+
+        // Ativa required apenas nos campos da aba visível
+        pane.querySelectorAll('input, select').forEach(el => {
+          if (isActive) {
+            el.removeAttribute('disabled');
+            el.setAttribute('required', 'true');
+          } else {
+            el.removeAttribute('required');
+            el.setAttribute('disabled', 'true');
+          }
+        });
+      });
+    });
+  });
+
+  // Executa uma vez no carregamento para garantir que só a aba ativa tem required
+  const activePane = document.querySelector('#registerForm .tab-pane.active');
+  registerPanes.forEach(pane => {
+    pane.querySelectorAll('input, select').forEach(el => {
+      if (pane === activePane) {
+        el.removeAttribute('disabled');
+        el.setAttribute('required', 'true');
+      } else {
+        el.removeAttribute('required');
+        el.setAttribute('disabled', 'true');
+      }
+    });
+  });
+});
+</script>
 
    <!-- Conexão Firebase - FIM -->
 
