@@ -2201,17 +2201,12 @@ class AgendaSystem {    constructor() {
                     .orderBy('criadoEm', 'desc')
                     .get();
 
-<<<<<<< HEAD
                 // Carregar solicitações como orientador pelo UID
-=======
-                // Carregar solicitações como orientador
->>>>>>> 263b65695a8b407399dac2ee412504ba2bf68fa5
                 const orientadorQuery = await db.collection('solicitacoes')
                     .where('orientadorId', '==', this.currentUser.id)
                     .orderBy('criadoEm', 'desc')
                     .get();
 
-<<<<<<< HEAD
                 // Quando o usuário logado é um orientador, também carregar as solicitações
                 // destinadas ao orientador genérico "coordenador"
                 let genericOrientadorQuery = { forEach: () => {} };
@@ -2222,8 +2217,6 @@ class AgendaSystem {    constructor() {
                         .get();
                 }
 
-=======
->>>>>>> 263b65695a8b407399dac2ee412504ba2bf68fa5
                 const firebaseRequests = [];
                 
                 responsavelQuery.forEach(doc => {
@@ -2242,10 +2235,7 @@ class AgendaSystem {    constructor() {
                     });
                 });
 
-<<<<<<< HEAD
                 // Solicitações endereçadas diretamente ao orientador logado
-=======
->>>>>>> 263b65695a8b407399dac2ee412504ba2bf68fa5
                 orientadorQuery.forEach(doc => {
                     const data = doc.data();
                     firebaseRequests.push({
@@ -2264,7 +2254,6 @@ class AgendaSystem {    constructor() {
                     });
                 });
 
-<<<<<<< HEAD
                 // Solicitações destinadas ao orientador genérico
                 genericOrientadorQuery.forEach(doc => {
                     const data = doc.data();
@@ -2284,8 +2273,6 @@ class AgendaSystem {    constructor() {
                     });
                 });
 
-=======
->>>>>>> 263b65695a8b407399dac2ee412504ba2bf68fa5
                 // Mesclar com requests existentes, evitando duplicatas
                 const existingIds = new Set(this.requests.map(r => r.id));
                 const newRequests = firebaseRequests.filter(r => !existingIds.has(r.id));

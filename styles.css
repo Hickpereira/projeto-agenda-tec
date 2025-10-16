@@ -513,7 +513,6 @@ body.dark-mode .empty-state {
     background: rgba(148,163,184,0.05);
 }
 
-<<<<<<< HEAD
 /* Modal de Agendamentos do Dia - Modo Escuro */
 body.dark-mode .day-agendamentos-container {
     background: transparent;
@@ -826,8 +825,6 @@ body.dark-mode .report-card .timeline {
     margin-bottom: var(--spacing-xs) !important;
 }
 
-=======
->>>>>>> 263b65695a8b407399dac2ee412504ba2bf68fa5
 body.dark-mode .form-group {
     border-bottom: 1px solid rgba(148,163,184,0.1);
     padding-bottom: 10px;
@@ -835,37 +832,13 @@ body.dark-mode .form-group {
 
 body.dark-mode .schedule-item,
 body.dark-mode .request-item {
-<<<<<<< HEAD
     border-left: 3px solid rgba(39, 101, 188, 0.3);
-=======
-    border-left: 3px solid rgba(148,163,184,0.3);
->>>>>>> 263b65695a8b407399dac2ee412504ba2bf68fa5
 }
 /* Reset e Base */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-}
-
-/* Remover scroll horizontal desnecessário */
-html, body {
-    overflow-x: hidden;
-    width: 100%;
-    max-width: 100%;
-}
-
-/* Evitar overflow horizontal em elementos principais */
-.main, .hero, .features, .dashboard, .modal, .nav-menu, .header {
-    overflow-x: hidden;
-    width: 100%;
-    max-width: 100%;
-}
-
-/* Ajustar elementos que podem causar overflow */
-.grid, .grid-container, .flex-container {
-    overflow-x: hidden;
-    width: 100%;
 }
 
 :root {
@@ -4339,11 +4312,7 @@ body.dark-mode .login-info {
 .schedule-item.warning {
     
     border-left: 4px solid var(--warning-color);
-<<<<<<< HEAD
     background: linear-gradient(135deg, rgba(220, 53, 69, 0.05) 0%, var(--bg-primary) 100%);
-=======
-    background: linear-gradient(135deg, rgba(255, 191, 0, 0.05) 0%, #10b981 100%);
->>>>>>> 263b65695a8b407399dac2ee412504ba2bf68fa5
 }
 
 .schedule-item.upcoming {
