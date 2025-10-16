@@ -309,7 +309,11 @@ document.addEventListener("DOMContentLoaded", () => {
         horario: requestData.time,
         assunto: requestData.subject,
         mensagem: requestData.message,
+<<<<<<< HEAD
         status: "pending",
+=======
+        status: "pendente",
+>>>>>>> 263b65695a8b407399dac2ee412504ba2bf68fa5
         criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
       };
       try {
