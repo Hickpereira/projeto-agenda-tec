@@ -125,6 +125,16 @@ body.dark-mode {
     /* Paleta escura sem degradê */
     background: #0b0f16;
     color: #e6e7eb;
+    /* Override das variáveis globais usadas pelo site
+       para evitar fundos brancos herdados em componentes
+       que usam var(--bg-primary/secondary) */
+    --bg-primary: #0f172a;      /* fundo de cartões/modais */
+    --bg-secondary: #111827;    /* áreas secundárias */
+    --text-primary: #e5e7eb;    /* texto principal */
+    --text-secondary: #94a3b8;  /* texto secundário */
+    --accent-color: #0b1220;    /* contornos/sombreados sutis */
+    --primary-color: #FF161F;   /* mantém a identidade do site */
+    --primary-dark: #842519;
 }
 
 /* Legibilidade de textos no dark mode (cores claras globais) */
@@ -157,7 +167,7 @@ body.dark-mode .auth-form label { color: #e5e7eb; }
 
 /* Header/Nav */
 body.dark-mode .header {
-    background: rgba(10,16,26,0.75);
+    background: linear-gradient(135deg, rgba(11, 15, 22, 0.95) 0%, rgba(17, 24, 39, 0.95) 100%) !important;
     backdrop-filter: saturate(1.2) blur(8px);
     border-bottom: 1px solid rgba(148,163,184,0.2);
     box-shadow: 0 4px 15px rgba(0,0,0,0.3);
@@ -217,6 +227,42 @@ body.dark-mode .btn-outline:hover {
     border-color: rgba(148,163,184,0.6);
     transform: translateY(-1px);
 }
+
+body.dark-mode .btn-google {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.8) 0%, rgba(11, 15, 22, 0.8) 100%) !important;
+    color: #e2e8f0;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .btn-google:hover {
+    background: linear-gradient(135deg, rgba(26, 32, 44, 0.9) 0%, rgba(17, 24, 39, 0.9) 100%) !important;
+    border-color: #4285f4;
+    box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+    color: #f7fafc;
+}
+
+body.dark-mode .btn-google i {
+    color: #4285f4;
+}
+
+body.dark-mode .btn-google:hover i {
+    color: #60a5fa;
+}
+
+body.dark-mode .divider span {
+    background: rgba(17, 24, 39, 0.8);
+    border-color: rgba(148, 163, 184, 0.3);
+    color: #cbd5e1;
+}
+
+body.dark-mode .forgot-password-link a {
+    color: #94a3b8;
+}
+
+body.dark-mode .forgot-password-link a:hover {
+    color: #ff3d47;
+}
 body.dark-mode .a11y-action {
     background: rgba(148,163,184,0.1);
     border-color: rgba(148,163,184,0.3);
@@ -270,39 +316,88 @@ body.dark-mode .tab-btn.active {
     transform: translateY(-1px);
 }
 
-/* Notificações */
+/* Notificações - Dark Mode */
 body.dark-mode .notification {
-    background: rgba(15,23,42,0.95);
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.95) 0%, rgba(11, 15, 22, 0.95) 100%) !important;
     color: #e5e7eb;
-    border: 1px solid rgba(148,163,184,0.2);
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(15px);
 }
-body.dark-mode .notification-success { 
-    border-left: 4px solid #10b981; 
+
+body.dark-mode .notification .notification-text {
+    color: #f1f5f9;
+}
+
+body.dark-mode .notification .notification-close {
+    color: #94a3b8;
+}
+
+body.dark-mode .notification .notification-close:hover {
+    background: rgba(255, 22, 31, 0.2);
+    color: #ff3d47;
+}
+
+body.dark-mode .notification.success {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(17, 24, 39, 0.95) 100%) !important;
+    border-left-color: #10b981;
     border-color: rgba(16, 185, 129, 0.3);
 }
-body.dark-mode .notification-error { 
-    border-left: 4px solid #FF161F; 
-    border-color: rgba(255, 22, 31, 0.3);
-    box-shadow: 0 4px 15px rgba(255, 22, 31, 0.1);
+
+body.dark-mode .notification.success .notification-icon {
+    color: #10b981;
 }
-body.dark-mode .notification-info { 
-    border-left: 4px solid #3b82f6; 
+
+body.dark-mode .notification.error {
+    background: linear-gradient(135deg, rgba(255, 22, 31, 0.1) 0%, rgba(17, 24, 39, 0.95) 100%) !important;
+    border-left-color: #FF161F;
+    border-color: rgba(255, 22, 31, 0.3);
+    box-shadow: 0 8px 25px rgba(255, 22, 31, 0.2);
+}
+
+body.dark-mode .notification.error .notification-icon {
+    color: #ff3d47;
+}
+
+body.dark-mode .notification.warning {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(17, 24, 39, 0.95) 100%) !important;
+    border-left-color: #f59e0b;
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+body.dark-mode .notification.warning .notification-icon {
+    color: #fbbf24;
+}
+
+body.dark-mode .notification.info {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(17, 24, 39, 0.95) 100%) !important;
+    border-left-color: #3b82f6;
     border-color: rgba(59, 130, 246, 0.3);
 }
 
-body.dark-mode .notification-close {
-    background: rgba(255, 22, 31, 0.2);
-    border-color: rgba(255, 22, 31, 0.4);
-    color: #FF161F;
+body.dark-mode .notification.info .notification-icon {
+    color: #60a5fa;
 }
 
-body.dark-mode .notification-close:hover {
-    background: rgba(255, 22, 31, 0.3);
-    border-color: rgba(255, 22, 31, 0.6);
-    transform: translateY(-50%) scale(1.1);
-    box-shadow: 0 2px 8px rgba(255, 22, 31, 0.4);
+body.dark-mode .notification::before {
+    background: linear-gradient(90deg, #FF161F, #ff3d47, #FF161F);
+}
+
+body.dark-mode .notification.success::before {
+    background: linear-gradient(90deg, #10b981, #34d058, #10b981);
+}
+
+body.dark-mode .notification.error::before {
+    background: linear-gradient(90deg, #FF161F, #ff3d47, #FF161F);
+}
+
+body.dark-mode .notification.warning::before {
+    background: linear-gradient(90deg, #f59e0b, #fbbf24, #f59e0b);
+}
+
+body.dark-mode .notification.info::before {
+    background: linear-gradient(90deg, #3b82f6, #60a5fa, #3b82f6);
 }
 
 /* Footer */
@@ -351,6 +446,59 @@ body.dark-mode .empty-state {
     background-color: unset !important;
 }
 
+/* Estilos específicos para modal de agendamento no modo dark */
+body.dark-mode #scheduleModal .modal-content {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.95) 0%, rgba(11, 15, 22, 0.95) 100%) !important;
+    border: 1px solid rgba(153, 184, 148, 0.2) !important;
+    color: #e5e7eb !important;
+}
+
+body.dark-mode #scheduleModal .modal-header {
+    background: transparent !important;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2) !important;
+}
+
+body.dark-mode #scheduleModal .modal-header h2 {
+    color: #f1f5f9 !important;
+}
+
+body.dark-mode #scheduleModal .close {
+    color: #94a3b8 !important;
+}
+
+body.dark-mode #scheduleModal .close:hover {
+    color: #ff3d47 !important;
+}
+
+body.dark-mode #scheduleModal .auth-form {
+    background: transparent !important;
+}
+
+body.dark-mode #scheduleModal .form-group {
+    background: transparent !important;
+}
+
+body.dark-mode #scheduleModal .form-group label {
+    color: #e5e7eb !important;
+}
+
+body.dark-mode #scheduleModal .form-group input,
+body.dark-mode #scheduleModal .form-group select {
+    background: rgba(17, 24, 39, 0.8) !important;
+    color: #e5e7eb !important;
+    border: 1px solid rgba(148, 163, 184, 0.3) !important;
+}
+
+body.dark-mode #scheduleModal .form-group input:focus,
+body.dark-mode #scheduleModal .form-group select:focus {
+    border-color: #FF161F !important;
+    box-shadow: 0 0 0 2px rgba(255, 22, 31, 0.2) !important;
+}
+
+body.dark-mode #scheduleModal .form-group input::placeholder {
+    color: #94a3b8 !important;
+}
+
 /* Links gerais quando underline ativos */
 body.dark-mode.underline-links a { color: #93c5fd; }
 
@@ -365,6 +513,318 @@ body.dark-mode .empty-state {
     background: rgba(148,163,184,0.05);
 }
 
+/* Modal de Agendamentos do Dia - Modo Escuro */
+body.dark-mode .day-agendamentos-container {
+    background: transparent;
+}
+
+body.dark-mode .day-agendamento-item {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.95) 0%, rgba(11, 15, 22, 0.95) 100%);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    color: #e5e7eb;
+}
+
+body.dark-mode .day-agendamento-item:hover {
+    background: linear-gradient(135deg, rgba(26, 32, 44, 0.95) 0%, rgba(17, 24, 39, 0.95) 100%);
+    border-color: rgba(148, 163, 184, 0.3);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode .day-agendamento-item.success {
+    border-left-color: #10b981;
+}
+
+body.dark-mode .day-agendamento-item.warning {
+    border-left-color: #f59e0b;
+}
+
+body.dark-mode .day-agendamento-item.danger {
+    border-left-color: #ff3d47;
+}
+
+body.dark-mode .agendamento-header {
+    border-bottom-color: rgba(148, 163, 184, 0.2);
+}
+
+body.dark-mode .agendamento-time {
+    color: #ff3d47;
+}
+
+body.dark-mode .agendamento-status.status-approved {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+body.dark-mode .agendamento-status.status-pending {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+body.dark-mode .agendamento-status.status-rejected {
+    background: rgba(255, 22, 31, 0.1);
+    color: #ff3d47;
+    border-color: rgba(255, 22, 31, 0.3);
+}
+
+body.dark-mode .agendamento-subject {
+    color: #f1f5f9;
+}
+
+body.dark-mode .agendamento-message {
+    color: #cbd5e1;
+    background: rgba(148, 163, 184, 0.1);
+}
+
+body.dark-mode .agendamento-details p {
+    color: #94a3b8;
+}
+
+body.dark-mode .agendamento-details strong {
+    color: #e5e7eb;
+}
+
+/* Scrollbar personalizada - Modo Claro */
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 6px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #FF161F 0%, #842519 100%);
+    border-radius: 6px;
+    border: 2px solid #f8f9fa;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #ff3d47 0%, #a52d1f 100%);
+    box-shadow: 0 4px 8px rgba(255, 22, 31, 0.3);
+}
+
+::-webkit-scrollbar-thumb:active {
+    background: linear-gradient(180deg, #e0151c 0%, #6b1d13 100%);
+}
+
+::-webkit-scrollbar-corner {
+    background: #f8f9fa;
+}
+
+/* Scrollbar personalizada - Modo Escuro */
+body.dark-mode ::-webkit-scrollbar-track {
+    background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #FF161F 0%, #842519 100%);
+    border: 2px solid #0f172a;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #ff3d47 0%, #a52d1f 100%);
+    box-shadow: 0 4px 8px rgba(255, 22, 31, 0.4);
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb:active {
+    background: linear-gradient(180deg, #e0151c 0%, #6b1d13 100%);
+}
+
+body.dark-mode ::-webkit-scrollbar-corner {
+    background: #0f172a;
+}
+
+/* Scrollbar específica para Timeline */
+.timeline::-webkit-scrollbar {
+    width: 8px;
+}
+
+.timeline::-webkit-scrollbar-track {
+    background: rgba(148, 163, 184, 0.1);
+    border-radius: 4px;
+}
+
+.timeline::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #FF161F 0%, #842519 100%);
+    border-radius: 4px;
+    border: 1px solid transparent;
+}
+
+.timeline::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #ff3d47 0%, #a52d1f 100%);
+}
+
+/* Timeline scrollbar no modo escuro */
+body.dark-mode .timeline::-webkit-scrollbar-track {
+    background: rgba(148, 163, 184, 0.1);
+}
+
+body.dark-mode .timeline::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #FF161F 0%, #842519 100%);
+    border: 1px solid #0f172a;
+}
+
+body.dark-mode .timeline::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #ff3d47 0%, #a52d1f 100%);
+}
+
+/* Scrollbar para modais */
+.modal-content::-webkit-scrollbar,
+.day-agendamentos-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-content::-webkit-scrollbar-track,
+.day-agendamentos-container::-webkit-scrollbar-track {
+    background: rgba(148, 163, 184, 0.1);
+    border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-thumb,
+.day-agendamentos-container::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #FF161F 0%, #842519 100%);
+    border-radius: 4px;
+    border: 1px solid transparent;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover,
+.day-agendamentos-container::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #ff3d47 0%, #a52d1f 100%);
+}
+
+/* Scrollbar para modais no modo escuro */
+body.dark-mode .modal-content::-webkit-scrollbar-track,
+body.dark-mode .day-agendamentos-container::-webkit-scrollbar-track {
+    background: rgba(148, 163, 184, 0.1);
+}
+
+body.dark-mode .modal-content::-webkit-scrollbar-thumb,
+body.dark-mode .day-agendamentos-container::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #FF161F 0%, #842519 100%);
+    border: 1px solid #0f172a;
+}
+
+body.dark-mode .modal-content::-webkit-scrollbar-thumb:hover,
+body.dark-mode .day-agendamentos-container::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #ff3d47 0%, #a52d1f 100%);
+}
+
+/* Scrollbar para containers de formulários */
+.time-slots-container::-webkit-scrollbar,
+.blocked-dates-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.time-slots-container::-webkit-scrollbar-track,
+.blocked-dates-container::-webkit-scrollbar-track {
+    background: rgba(148, 163, 184, 0.1);
+    border-radius: 3px;
+}
+
+.time-slots-container::-webkit-scrollbar-thumb,
+.blocked-dates-container::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #FF161F 0%, #842519 100%);
+    border-radius: 3px;
+}
+
+.time-slots-container::-webkit-scrollbar-thumb:hover,
+.blocked-dates-container::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #ff3d47 0%, #a52d1f 100%);
+}
+
+/* Scrollbar para agenda semanal */
+.day-schedules::-webkit-scrollbar {
+    width: 6px;
+}
+
+.day-schedules::-webkit-scrollbar-track {
+    background: rgba(148, 163, 184, 0.1);
+    border-radius: 3px;
+}
+
+.day-schedules::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #FF161F 0%, #842519 100%);
+    border-radius: 3px;
+}
+
+.day-schedules::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #ff3d47 0%, #a52d1f 100%);
+}
+
+/* Scrollbar para agenda semanal no modo escuro */
+body.dark-mode .day-schedules::-webkit-scrollbar-track {
+    background: rgba(148, 163, 184, 0.1);
+}
+
+body.dark-mode .day-schedules::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #FF161F 0%, #842519 100%);
+    border: 1px solid #0f172a;
+}
+
+body.dark-mode .day-schedules::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #ff3d47 0%, #a52d1f 100%);
+}
+
+/* Forçar scroll na timeline no modo escuro */
+body.dark-mode .report-card .timeline {
+    max-height: 250px !important;
+    overflow-y: auto !important;
+}
+
+/* Ajustar tamanho dos formulários de login e cadastro */
+#loginModal .modal-content,
+#registerModal .modal-content {
+    max-width: 500px !important;
+    width: 90% !important;
+}
+
+/* Ajustar tamanho do formulário de agendamento */
+#scheduleModal .modal-content {
+    max-width: 600px !important;
+    width: 90% !important;
+}
+
+/* Reduzir padding dos formulários de autenticação */
+#loginModal .auth-form,
+#registerModal .auth-form {
+    padding: var(--spacing-lg) !important;
+}
+
+/* Reduzir espaçamento entre campos dos formulários */
+#loginModal .form-group,
+#registerModal .form-group,
+#scheduleModal .form-group {
+    margin-bottom: var(--spacing-md) !important;
+}
+
+/* Reduzir tamanho dos inputs mas manter largura */
+#loginModal .form-group input,
+#loginModal .form-group select,
+#registerModal .form-group input,
+#registerModal .form-group select,
+#scheduleModal .form-group input,
+#scheduleModal .form-group select {
+    padding: var(--spacing-md) var(--spacing-lg) !important;
+    font-size: var(--font-size-base) !important;
+    width: 100% !important;
+    min-height: 44px !important;
+}
+
+/* Reduzir tamanho dos labels */
+#loginModal .form-group label,
+#registerModal .form-group label,
+#scheduleModal .form-group label {
+    font-size: var(--font-size-sm) !important;
+    margin-bottom: var(--spacing-xs) !important;
+}
+
 body.dark-mode .form-group {
     border-bottom: 1px solid rgba(148,163,184,0.1);
     padding-bottom: 10px;
@@ -372,13 +832,33 @@ body.dark-mode .form-group {
 
 body.dark-mode .schedule-item,
 body.dark-mode .request-item {
-    border-left: 3px solid rgba(148,163,184,0.3);
+    border-left: 3px solid rgba(39, 101, 188, 0.3);
 }
 /* Reset e Base */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+}
+
+/* Remover scroll horizontal desnecessário */
+html, body {
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Evitar overflow horizontal em elementos principais */
+.main, .hero, .features, .dashboard, .modal, .nav-menu, .header {
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Ajustar elementos que podem causar overflow */
+.grid, .grid-container, .flex-container {
+    overflow-x: hidden;
+    width: 100%;
 }
 
 :root {
@@ -460,7 +940,7 @@ body.dark-mode .request-item {
 [data-theme="dark"] .hero-illustration {
     background: none;
     box-shadow: var(--shadow-md);
-    
+    border: 1px solid var(--accent-color);
 }
 
 [data-theme="dark"] .hero-illustration::before {
@@ -483,7 +963,7 @@ body.dark-mode .request-item {
 [data-theme="dark"] .feature-card,
 [data-theme="dark"] .request-item,
 [data-theme="dark"] .schedule-item {
-    background: linear-gradient(135deg, rgba(26, 26, 46, 0.8) 0%, rgba(22, 33, 62, 0.8) 100%);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(22, 33, 62, 0.8) 100%);
     border: 1px solid rgba(255, 107, 107, 0.2);
     backdrop-filter: blur(10px);
 }
@@ -509,7 +989,7 @@ body.dark-mode .request-item {
 }
 
 [data-theme="dark"] .user-profile {
-    background: linear-gradient(135deg, rgba(26, 26, 46, 0.8) 0%, rgba(26, 26, 46, 0.8) 100%);
+    background: linear-gradient(135deg, rgba(26, 26, 46, 0.8) 0%, rgba(22, 33, 62, 0.8) 100%);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 107, 107, 0.2);
 }
@@ -740,6 +1220,8 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 var(--spacing-md);
+    width: 100%;
+    overflow-x: hidden;
 }
 
 /* Header */
@@ -914,6 +1396,12 @@ body {
     transition: var(--transition);
 }
 
+body.dark-mode .orientador-info {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.8) 0%, rgba(11, 15, 22, 0.8) 100%);
+    border: 2px solid rgba(255, 22, 31, 0.3);
+    backdrop-filter: blur(10px);
+}
+
 .orientador-info.hidden {
     display: none;
 }
@@ -1044,6 +1532,17 @@ body {
 .user-profile:hover {
     background: rgba(255, 255, 255, 0.9);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+body.dark-mode .user-profile {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.8) 0%, rgba(11, 15, 22, 0.8) 100%);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    backdrop-filter: blur(15px);
+}
+
+body.dark-mode .user-profile:hover {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.9) 0%, rgba(11, 15, 22, 0.9) 100%);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .user-info {
@@ -1207,6 +1706,105 @@ body {
 
 .btn-full {
     width: 100%;
+}
+
+/* Botão Google */
+.btn-google {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    color: #3c4043;
+    border: 1px solid #dadce0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    font-weight: 500;
+    letter-spacing: 0.25px;
+    margin: 20px 0;
+}
+
+.btn-google::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(66, 133, 244, 0.1), transparent);
+    transition: left 0.5s;
+}
+
+.btn-google:hover::before {
+    left: 100%;
+}
+
+.btn-google:hover {
+    background: linear-gradient(135deg, #ffffff 0%, #f1f3f4 100%);
+    border-color: #4285f4;
+    box-shadow: 0 4px 12px rgba(66, 133, 244, 0.2);
+    transform: translateY(-2px) scale(1.02);
+}
+
+.btn-google:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-google i {
+    color: #4285f4;
+    font-size: var(--font-size-lg);
+    margin-right: var(--spacing-sm);
+}
+
+.btn-google:hover i {
+    color: #1a73e8;
+    transform: scale(1.1);
+}
+
+/* Divider para separar opções */
+.divider {
+    display: flex;
+    align-items: center;
+    margin: var(--spacing-lg) 0;
+    position: relative;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--accent-color);
+}
+
+.divider span {
+    padding: 0 var(--spacing-md);
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    background: var(--bg-primary);
+    border-radius: 20px;
+    border: 1px solid var(--accent-color);
+}
+
+/* Seção de login Google */
+.google-login-section {
+    text-align: center;
+    margin: var(--spacing-lg) 0;
+}
+
+.btn-google.btn-full {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: var(--font-size-base);
+    min-height: 48px;
+}
+
+.btn-google span {
+    font-weight: 500;
+    letter-spacing: 0.25px;
 }
 
 /* Hero Section */
@@ -1514,8 +2112,8 @@ body {
     margin: 0 auto;
     padding: 0;
     border-radius: var(--border-radius-lg);
-    width: 90%;
-    max-width: 500px;
+    width: 95% !important;
+    max-width: 1500px !important;
     box-shadow: var(--shadow-lg);
     animation: modalSlideIn 0.3s ease;
     position: relative;
@@ -1523,6 +2121,7 @@ body {
     transform: translateY(-50%);
     max-height: 90vh;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
 @keyframes modalSlideIn {
@@ -1597,6 +2196,34 @@ body {
     box-shadow: 0 0 0 3px rgba(255, 22, 31, 0.1);
 }
 
+.forgot-password-link {
+    text-align: right;
+    margin-top: var(--spacing-sm);
+    margin-bottom: 0;
+}
+
+.forgot-password-link a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.forgot-password-link a:hover {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
+
+.forgot-password-link a::before {
+    content: "🔐";
+    font-size: var(--font-size-xs);
+    opacity: 0.7;
+}
+
 .auth-switch {
     text-align: center;
     margin-top: var(--spacing-lg);
@@ -1620,6 +2247,13 @@ body {
     border-radius: var(--border-radius);
     padding: var(--spacing-md);
     margin-bottom: var(--spacing-lg);
+    transition: all 0.3s ease;
+}
+
+body.dark-mode .login-info {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.8) 0%, rgba(11, 15, 22, 0.8) 100%);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    backdrop-filter: blur(10px);
 }
 
 .login-info h4 {
@@ -1882,77 +2516,160 @@ body {
     top: 100px;
     right: var(--spacing-xl);
     z-index: 2000;
+    max-width: 400px;
 }
 
 .notification {
-    background: var(--bg-primary);
+    background: linear-gradient(135deg, var(--bg-primary) 0%, rgba(255, 255, 255, 0.95) 100%);
+    border: 1px solid rgba(255, 22, 31, 0.2);
     border-left: 4px solid var(--primary-color);
-    padding: var(--spacing-md) var(--spacing-lg);
-    padding-right: 60px;
-    margin-bottom: var(--spacing-sm);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-lg);
-    animation: notificationSlideIn 0.3s ease;
-    max-width: 400px;
+    padding: var(--spacing-lg) var(--spacing-xl);
+    margin-bottom: var(--spacing-md);
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    animation: notificationSlideIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    backdrop-filter: blur(10px);
     position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.notification::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-color), var(--primary-dark), var(--primary-color));
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.notification:hover::before {
+    transform: scaleX(1);
+}
+
+.notification:hover {
+    transform: translateX(-5px) scale(1.02);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
+}
+
+.notification .notification-content {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+}
+
+.notification .notification-icon {
+    font-size: var(--font-size-xl);
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.notification .notification-text {
+    flex: 1;
+    color: var(--text-primary);
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+.notification .notification-close {
+    position: absolute;
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: var(--font-size-lg);
+    cursor: pointer;
+    padding: var(--spacing-xs);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    opacity: 0.7;
+}
+
+.notification .notification-close:hover {
+    background: rgba(255, 22, 31, 0.1);
+    color: var(--primary-color);
+    opacity: 1;
+    transform: scale(1.1);
 }
 
 .notification.success {
     border-left-color: var(--success-color);
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.05) 0%, var(--bg-primary) 100%);
+}
+
+.notification.success .notification-icon {
+    color: var(--success-color);
+}
+
+.notification.success::before {
+    background: linear-gradient(90deg, var(--success-color), #34d058, var(--success-color));
 }
 
 .notification.error {
     border-left-color: var(--danger-color);
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.05) 0%, var(--bg-primary) 100%);
+}
+
+.notification.error .notification-icon {
+    color: var(--danger-color);
+}
+
+.notification.error::before {
+    background: linear-gradient(90deg, var(--danger-color), #ff6b6b, var(--danger-color));
 }
 
 .notification.warning {
     border-left-color: var(--warning-color);
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.05) 0%, var(--bg-primary) 100%);
 }
 
-.notification-close {
-    background: rgba(255, 22, 31, 0.2);
-    border: 1px solid rgba(255, 22, 31, 0.3);
-    border-radius: 50%;
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    color: #FF161F;
-    padding: 0;
-    margin-left: auto;
-    opacity: 0.8;
-    transition: all 0.3s ease;
-    flex-shrink: 0;
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
+.notification.warning .notification-icon {
+    color: var(--warning-color);
 }
 
-.notification-close:hover {
-    opacity: 1;
-    background: rgba(255, 22, 31, 0.3);
-    border-color: rgba(255, 22, 31, 0.5);
-    transform: translateY(-50%) scale(1.1);
-    box-shadow: 0 2px 8px rgba(255, 22, 31, 0.3);
+.notification.warning::before {
+    background: linear-gradient(90deg, var(--warning-color), #ffd43b, var(--warning-color));
 }
 
-.notification-close:active {
-    transform: translateY(-50%) scale(0.95);
+.notification.info {
+    border-left-color: var(--info-color);
+    background: linear-gradient(135deg, rgba(23, 162, 184, 0.05) 0%, var(--bg-primary) 100%);
+}
+
+.notification.info .notification-icon {
+    color: var(--info-color);
+}
+
+.notification.info::before {
+    background: linear-gradient(90deg, var(--info-color), #20c997, var(--info-color));
 }
 
 @keyframes notificationSlideIn {
     from {
         opacity: 0;
-        transform: translateX(100%);
+        transform: translateX(100%) scale(0.8);
+    }
+    50% {
+        transform: translateX(-10px) scale(1.05);
     }
     to {
         opacity: 1;
-        transform: translateX(0);
+        transform: translateX(0) scale(1);
+    }
+}
+
+@keyframes notificationSlideOut {
+    from {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100%) scale(0.8);
     }
 }
 
@@ -1963,7 +2680,7 @@ body {
         left: -100%;
         top: 80px;
         flex-direction: column;
-        background: linear-gradient(135deg, var(--bg-primary) 0%, rgba(255, 255, 255, 0.98) 100%);
+        background: linear-gradient(135deg, rgba(17, 24, 39, 0.95) 0%, rgba(11, 15, 22, 0.95) 100%);
         backdrop-filter: blur(20px);
         width: 100%;
         text-align: center;
@@ -2114,6 +2831,56 @@ body {
         height: 45px;
         font-size: var(--font-size-base);
     }
+    
+    /* Notificações responsivas */
+    .notification-container {
+        right: var(--spacing-sm);
+        left: var(--spacing-sm);
+        max-width: none;
+    }
+    
+    .notification {
+        padding: var(--spacing-md);
+        margin-bottom: var(--spacing-sm);
+    }
+    
+    .notification .notification-content {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+        text-align: center;
+    }
+    
+    .notification .notification-icon {
+        font-size: var(--font-size-lg);
+    }
+    
+    .notification .notification-text {
+        font-size: var(--font-size-sm);
+    }
+    
+    /* Botão Google responsivo */
+    .btn-google.btn-full {
+        padding: var(--spacing-sm) var(--spacing-md);
+        font-size: var(--font-size-sm);
+        min-height: 44px;
+    }
+    
+    .btn-google i {
+        font-size: var(--font-size-base);
+    }
+    
+    .divider {
+        margin: var(--spacing-md) 0;
+    }
+    
+    .forgot-password-link {
+        text-align: center;
+        margin-top: var(--spacing-xs);
+    }
+    
+    .forgot-password-link a {
+        font-size: var(--font-size-xs);
+    }
 }
 
 @media (max-width: 480px) {
@@ -2146,6 +2913,7 @@ body {
         margin: 0 auto;
         top: 20px;
         transform: none;
+        max-width: 1200px;
     }
     
     .modal {
@@ -2389,6 +3157,8 @@ body {
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: var(--spacing-xl);
     margin-bottom: var(--spacing-xl);
+    width: 100%;
+    overflow-x: hidden;
 }
 
 .report-card {
@@ -2460,6 +3230,8 @@ body {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-sm);
+    max-height: 300px;
+    overflow-y: auto;
 }
 
 .timeline-item {
@@ -3116,6 +3888,7 @@ body {
 
 .tab-content {
     min-height: 400px;
+    margin: 10px;
     padding-right: var(--spacing-sm);
 }
 
@@ -3390,6 +4163,12 @@ body {
     padding-bottom: var(--spacing-sm);
 }
 
+/* Forçar scroll na timeline dentro dos report-cards */
+.report-card .timeline {
+    max-height: 250px !important;
+    overflow-y: auto !important;
+}
+
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
@@ -3433,6 +4212,8 @@ body {
 .timeline {
     position: relative;
     padding-left: var(--spacing-lg);
+    max-height: 300px;
+    overflow-y: auto;
 }
 
 .timeline::before {
@@ -3546,9 +4327,12 @@ body {
     background: linear-gradient(135deg, rgba(220, 53, 69, 0.05) 0%, var(--bg-primary) 100%);
 }
 
+
+/* aqui henrique gordo */
 .schedule-item.warning {
+    
     border-left: 4px solid var(--warning-color);
-    background: linear-gradient(135deg, rgba(255, 193, 7, 0.05) 0%, var(--bg-primary) 100%);
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.05) 0%, var(--bg-primary) 100%);
 }
 
 .schedule-item.upcoming {
@@ -3749,6 +4533,8 @@ body {
     grid-template-columns: repeat(7, 1fr);
     gap: var(--spacing-md);
     margin-top: var(--spacing-lg);
+    width: 100%;
+    overflow-x: hidden;
 }
 
 .week-day {
@@ -3786,6 +4572,8 @@ body {
 
 .day-schedules {
     min-height: 120px;
+    max-height: 300px;
+    overflow-y: auto;
 }
 
 .no-schedules {
@@ -3851,6 +4639,8 @@ body {
     grid-template-columns: repeat(7, 1fr);
     gap: var(--spacing-xs);
     margin-top: var(--spacing-lg);
+    width: 100%;
+    overflow-x: hidden;
 }
 
 .month-day {
@@ -3923,6 +4713,133 @@ body {
     font-weight: 600;
     text-align: center;
     margin-top: 2px;
+}
+
+/* Modal de Agendamentos do Dia */
+.day-agendamentos-container {
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: var(--spacing-md);
+}
+
+.day-agendamento-item {
+    background: var(--bg-primary);
+    border: 1px solid var(--accent-color);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+    transition: var(--transition);
+    border-left: 4px solid var(--primary-color);
+}
+
+.day-agendamento-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.day-agendamento-item.success {
+    border-left-color: var(--success-color);
+}
+
+.day-agendamento-item.warning {
+    border-left-color: var(--warning-color);
+}
+
+.day-agendamento-item.danger {
+    border-left-color: var(--danger-color);
+}
+
+.agendamento-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--accent-color);
+}
+
+.agendamento-time {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.agendamento-time i {
+    font-size: var(--font-size-sm);
+}
+
+.agendamento-status {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.agendamento-status.status-approved {
+    background: rgba(40, 167, 69, 0.1);
+    color: var(--success-color);
+    border: 1px solid rgba(40, 167, 69, 0.3);
+}
+
+.agendamento-status.status-pending {
+    background: rgba(255, 193, 7, 0.1);
+    color: var(--warning-color);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.agendamento-status.status-rejected {
+    background: rgba(220, 53, 69, 0.1);
+    color: var(--danger-color);
+    border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+.agendamento-content {
+    margin-bottom: var(--spacing-md);
+}
+
+.agendamento-subject {
+    color: var(--text-primary);
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    margin-bottom: var(--spacing-sm);
+}
+
+.agendamento-message {
+    color: var(--text-secondary);
+    font-style: italic;
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-sm);
+    background: var(--accent-color);
+    border-radius: var(--border-radius);
+}
+
+.agendamento-details {
+    display: grid;
+    gap: var(--spacing-xs);
+}
+
+.agendamento-details p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+.agendamento-details strong {
+    color: var(--text-primary);
+}
+
+.agendamento-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+.modal-large {
+    max-width: 800px;
+    width: 90vw;
 }
 
 /* Responsive Design for New Features */
