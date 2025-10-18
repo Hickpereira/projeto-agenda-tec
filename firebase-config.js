@@ -6,9 +6,8 @@ const firebaseConfig = {
   storageBucket: "agendatec-5d7b7.firebasestorage.app",
   messagingSenderId: "280981924653",
   appId: "1:280981924653:web:924822e523b4fe3c1381a4",
-  measurementId: "G-B0Q28XSFEE"
+  measurementId: "G-B0Q28XSFEE",
 };
-
 
 // Inicializa o Firebase usando o modo de compatibilidade
 firebase.initializeApp(firebaseConfig);
@@ -16,3 +15,5 @@ firebase.initializeApp(firebaseConfig);
 // Disponibiliza as instâncias do Auth e Firestore para outros scripts (como o app.js)
 const auth = firebase.auth();
 const db = firebase.firestore();
+// Garante que a instância do banco de dados esteja disponível globalmente
+window.db = db;

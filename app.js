@@ -178,6 +178,9 @@ document.addEventListener("DOMContentLoaded", () => {
         } else if (userType === "coordenador") {
           const nome = document.getElementById("nome_orientador").value;
           const email = document.getElementById("email_orientador").value;
+          const escola = document.getElementById(
+            "escola_orientador_register"
+          ).value;
           const telefone = document.getElementById("telefone_orientador").value;
           const cpf = document.getElementById("cpf_orientador").value;
           const chaveAcesso = document.getElementById(
@@ -211,6 +214,7 @@ document.addEventListener("DOMContentLoaded", () => {
               email_orientador: email,
               telefone_orientador: telefone,
               cpf_orientador: cpf,
+              escola_orientador: escola,
             });
           });
           await this.updateUserSession(user, "coordenador");
