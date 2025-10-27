@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // Validação inicial para garantir que a interface (script.js) foi carregada primeiro.
   if (!window.agendaSystem) {
     console.error(
       "CRÍTICO: O objeto global 'agendaSystem' não foi encontrado. Verifique se 'script.js' está sendo carregado ANTES de 'app.js'."
@@ -7,14 +6,11 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // --- 1. SELEÇÃO DOS ELEMENTOS GLOBAIS ---
   const loginForm = document.getElementById("loginForm");
   const registerForm = document.getElementById("registerForm");
   const loginGoogleBtn = document.getElementById("loginGoogleBtn");
   const registerGoogleBtn = document.getElementById("registerGoogleBtn");
   const forgotPasswordLink = document.getElementById("forgotPasswordLink");
-
-  // --- 2. SERVIÇOS ---
 
   /**
    * Objeto que agrupa todas as funções relacionadas à autenticação
