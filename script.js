@@ -397,6 +397,218 @@ class AgendaSystem {
     });
   }
 
+  // Sistema de Autenticação
+  /*async handleLogin(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const raw = Object.fromEntries(formData);
+        const selectedType = raw.loginUserType || 'responsavel';
+        // Coletar apenas campos da aba ativa para evitar conflitos de nomes repetidos
+        const loginData = selectedType === 'coordenador'
+            ? {
+                loginUserType: 'coordenador',
+                cpf: (document.getElementById('loginCpf')?.value || '').trim(),
+                password: (document.getElementById('loginPasswordCoord')?.value || '')
+              }
+            : {
+                loginUserType: 'responsavel',
+                email: (document.getElementById('loginEmail')?.value || '').trim(),
+                password: (document.getElementById('loginPassword')?.value || '')
+              };
+        
+        try {
+            if (this.validateLogin(loginData)) {
+                // Se for o coordenador fixo, criar o usuário automaticamente
+                if (loginData.email === 'coordenador@escola.com' && loginData.password === '123456') {
+                    this.currentUser = {
+                        id: 'coord-001',
+                        name: 'Orientador Educacional',
+                        email: 'coordenador@escola.com',
+                        phone: '(11) 99999-0000',
+                        password: '123456',
+                        userType: 'coordenador',
+                        createdAt: new Date().toISOString()
+                    };
+                } else {
+                    if (selectedType === 'coordenador' && loginData.cpf) {
+                        this.currentUser = this.getStoredUsers().find(u => u.userType === 'coordenador' && u.cpf === this.onlyDigits(loginData.cpf));
+                    } else {
+                        this.currentUser = this.getStoredUsers().find(u => u.email === loginData.email);
+                    }
+                }
+                
+                this.isLoggedIn = true;
+                this.userType = this.currentUser.userType;
+                this.saveUserData();
+                this.updateHeaderForLoggedUser();
+                this.showNotification('Login realizado com sucesso!', 'success');
+                this.hideModal('loginModal');
+                this.showDashboard();
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            this.showNotification('Erro ao fazer login. Tente novamente.', 'error');
+        }
+    }
+
+    async handleRegister(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const raw = Object.fromEntries(formData);
+        const regType = raw.registerUserType || 'responsavel';
+        // Coletar apenas campos da aba ativa para evitar conflitos de nomes repetidos
+        const registerData = regType === 'coordenador'
+            ? {
+                registerUserType: 'coordenador',
+                name: (document.getElementById('registerNameCoord')?.value || '').trim(),
+                email: (document.getElementById('registerEmailCoord')?.value || '').trim(),
+                cpf: (document.getElementById('registerCpf')?.value || '').trim(),
+                password: (document.getElementById('registerPasswordCoord')?.value || '')
+              }
+            : {
+                registerUserType: 'responsavel',
+                name: (document.getElementById('registerName')?.value || '').trim(),
+                email: (document.getElementById('registerEmail')?.value || '').trim(),
+                phone: (document.getElementById('registerPhone')?.value || '').trim(),
+                parentesco: (document.getElementById('registerParentesco')?.value || ''),
+                password: (document.getElementById('registerPassword')?.value || '')
+              };
+        
+        try {
+            if (!this.validateRegisterData(registerData)) {
+                return;
+            }
+            
+            const user = await this.createUser(registerData);
+            this.currentUser = user;
+            this.isLoggedIn = true;
+            this.userType = user.userType;
+            this.saveUserData();
+            this.updateHeaderForLoggedUser();
+            
+            this.showNotification('Cadastro realizado com sucesso!', 'success');
+            this.hideModal('registerModal');
+            this.showDashboard();
+        } catch (error) {
+            console.error('Register error:', error);
+            this.showNotification('Erro ao cadastrar. Tente novamente.', 'error');
+        }
+    }
+
+    validateLogin(loginData) {
+        // Coordenador fixo por e-mail
+        if (loginData.email === 'coordenador@escola.com' && loginData.password === '123456') {
+            return true;
+        }
+        // Coordenador demo por CPF
+        if (this.onlyDigits(loginData.cpf) === '12345678911' && loginData.password === '123456') {
+            // Garante que exista um usuário demo em memória sem depender do storage
+            this.currentUser = {
+                id: 'coord-demo',
+                name: 'Orientador Educacional',
+                email: 'orientador@escola.com',
+                cpf: '12345678911',
+                userType: 'coordenador',
+                password: '123456',
+                createdAt: new Date().toISOString()
+            };
+            return true;
+        }
+        
+        const selectedType = loginData.loginUserType || 'responsavel';
+        const users = this.getStoredUsers();
+        let user = null;
+        if (selectedType === 'coordenador' && loginData.cpf) {
+            user = users.find(u => u.userType === 'coordenador' && u.cpf === this.onlyDigits(loginData.cpf) && u.password === loginData.password);
+            if (!user) {
+                this.showNotification('CPF ou senha incorretos.', 'error');
+                return false;
+            }
+        } else {
+            user = users.find(u => u.userType !== 'coordenador' && u.email === loginData.email && u.password === loginData.password);
+            if (!user) {
+                this.showNotification('Email ou senha incorretos.', 'error');
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
+    validateRegisterData(registerData) {
+        const regType = (registerData.registerUserType || 'responsavel');
+        if (!registerData.password || registerData.password.length < 6) {
+            this.showNotification('A senha deve ter pelo menos 6 caracteres.', 'error');
+            return false;
+        }
+        const users = this.getStoredUsers();
+        if (regType === 'responsavel') {
+            if (!registerData.name) {
+                this.showNotification('Informe o nome do responsável.', 'error');
+                return false;
+            }
+            const hasEmail = registerData.email && registerData.email.trim() !== '';
+            const hasPhone = registerData.phone && registerData.phone.trim() !== '';
+            if (!hasEmail && !hasPhone) {
+                this.showNotification('Informe Telefone ou E-mail (pelo menos um).', 'error');
+                return false;
+            }
+            if (!registerData.parentesco) {
+                this.showNotification('Selecione o grau de parentesco.', 'error');
+                return false;
+            }
+            if (hasEmail && users.some(u => u.email === registerData.email)) {
+                this.showNotification('Este email já está cadastrado.', 'error');
+                return false;
+            }
+        } else if (regType === 'coordenador') {
+            if (!registerData.name || !registerData.email || !registerData.cpf) {
+                this.showNotification('Preencha Nome, E-mail e CPF.', 'error');
+                return false;
+            }
+            const cpf = this.onlyDigits(registerData.cpf);
+            if (cpf.length !== 11) {
+                this.showNotification('CPF inválido. Digite 11 números.', 'error');
+                return false;
+            }
+            if (users.some(u => u.cpf === cpf)) {
+                this.showNotification('Este CPF já está cadastrado.', 'error');
+                return false;
+            }
+            if (users.some(u => u.email === registerData.email)) {
+                this.showNotification('Este email já está cadastrado.', 'error');
+                return false;
+            }
+        }
+        return true;
+    }
+
+    async createUser(userData) {
+        const regType = (userData.registerUserType || 'responsavel');
+        const base = {
+            id: Date.now().toString(),
+            name: userData.name || '',
+            email: userData.email || '',
+            phone: userData.phone || '',
+            password: userData.password,
+            userType: regType,
+            createdAt: new Date().toISOString()
+        };
+        if (regType === 'responsavel') {
+            base.parentesco = userData.parentesco || '';
+        } else if (regType === 'coordenador') {
+            base.cpf = this.onlyDigits(userData.cpf || '');
+        }
+        const user = base;
+        
+        const users = this.getStoredUsers();
+        users.push(user);
+        localStorage.setItem('agenda_users', JSON.stringify(users));
+        
+        return user;
+    }
+        */
+
   switchAuthTab(kind, type) {
     if (kind === "login") {
       const respBtn = document.getElementById("loginTabResponsavel");
@@ -865,10 +1077,8 @@ class AgendaSystem {
         escola_orientador: scheduleData.escola_orientador,
       };
 
-      // Chama e ESPERA (await) a conclusão da função no app.js
-      await window.scheduleService.createRequest(requestPayload);
+      await window.services.schedule.createRequest(requestPayload);
 
-      // ---- SE CHEGOU ATÉ AQUI, TUDO DEU CERTO! ----
       console.log(
         "SUCESSO! A solicitação foi enviada. Fechando o modal agora."
       );
@@ -1290,27 +1500,44 @@ class AgendaSystem {
     return statusMap[status] || status;
   }
 
-  approveRequest(requestId) {
-    const request = this.requests.find((req) => req.id === requestId);
-    if (request) {
-      request.status = "approved";
-      request.responseDate = new Date().toISOString().split("T")[0];
-      this.saveRequests();
+  async approveRequest(requestId) {
+    try {
+      await window.services.schedule.updateRequestStatus(requestId, "aceita");
+
+      const request = this.requests.find((req) => req.id === requestId);
+      if (request) {
+        request.status = "aceita";
+        request.responseDate = new Date().toISOString().split("T")[0];
+        this.saveRequests();
+      }
+
       this.updateCoordinatorDashboard();
-      this.showNotification("Solicitação aprovada!", "success");
+      this.showNotification("Solicitação aprovada com sucesso!", "success");
       this.refreshRequestsModal();
+    } catch (error) {
+      console.error("Falha ao aprovar solicitação:", error);
     }
   }
 
-  rejectRequest(requestId) {
-    const request = this.requests.find((req) => req.id === requestId);
-    if (request) {
-      request.status = "rejected";
-      request.responseDate = new Date().toISOString().split("T")[0];
-      this.saveRequests();
+  async rejectRequest(requestId) {
+    try {
+      await window.services.schedule.updateRequestStatus(
+        requestId,
+        "rejeitada"
+      );
+
+      const request = this.requests.find((req) => req.id === requestId);
+      if (request) {
+        request.status = "rejeitada";
+        request.responseDate = new Date().toISOString().split("T")[0];
+        this.saveRequests();
+      }
+
       this.updateCoordinatorDashboard();
-      this.showNotification("Solicitação rejeitada!", "info");
+      this.showNotification("Solicitação rejeitada.", "info");
       this.refreshRequestsModal();
+    } catch (error) {
+      console.error("Falha ao rejeitar solicitação:", error);
     }
   }
 

@@ -1,10 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  if (!window.agendaSystem) {
-    console.error(
-      "CRÍTICO: O objeto global 'agendaSystem' não foi encontrado. Verifique se 'script.js' está sendo carregado ANTES de 'app.js'."
-    );
-    return;
-  }
+  window.services = {};
 
   const loginForm = document.getElementById("loginForm");
   const registerForm = document.getElementById("registerForm");
@@ -283,13 +278,17 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   /**
-   * Objeto que agrupa as funções relacionadas a agendamentos.
+   * Objeto que agrupa as funções relacionadas a agendamentos
    */
   const scheduleService = {
     /**
-     * Cria uma nova solicitação de agendamento no Firestore.
-     * @param {object} requestData - Os dados do formulário vindos do script.js
+     * Cria uma nova solicitação de agendamento no firebae
+     * @param {object} requestData
+     * * Atualiza o status de uma solicitação específica no Firestore
+     * @param {string} requestId - id do documento da solicitação
+     * @param {string} newStatus - status - aceita,rejeitada,concluida
      */
+
     async createRequest(requestData) {
       const currentUser = auth.currentUser;
       if (!currentUser) {
@@ -309,6 +308,7 @@ document.addEventListener("DOMContentLoaded", () => {
         horario: requestData.time,
         assunto: requestData.subject,
         mensagem: requestData.message,
+        escolaAluno: requestData.escola_orientador,
         status: "pending",
         criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
       };
@@ -354,16 +354,43 @@ document.addEventListener("DOMContentLoaded", () => {
         throw error;
       }
     },
+    /**
+     * Atualiza o status de uma solicitação específica no Firestore.
+     * @param {string} requestId - O ID do documento da solicitação.
+     * @param {string} newStatus - O novo status ('aceita', 'rejeitada', 'concluida').
+     */ async updateRequestStatus(requestId, newStatus) {
+      if (!requestId || !newStatus) {
+        throw new Error("ID da solicitação e novo status são obrigatórios.");
+      }
+
+      const requestDocRef = db.collection("solicitacoes").doc(requestId);
+
+      try {
+        await requestDocRef.update({
+          status: newStatus,
+          atualizadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+        console.log(
+          `Status da solicitação ${requestId} atualizado para ${newStatus}.`
+        );
+      } catch (error) {
+        console.error("Erro ao atualizar status no Firestore:", error);
+        window.agendaSystem.showNotification(
+          "Falha ao atualizar o status da solicitação.",
+          "error"
+        );
+        throw error;
+      }
+    },
 
     init() {
       console.log("Serviço de Agendamento iniciado.");
     },
   };
 
-  // --- 3. INICIALIZAÇÃO DOS SERVIÇOS ---
   authService.init();
-  window.authService = authService; // Torna o serviço acessível globalmente
+  window.services.auth = authService; // Torna o serviço acessível globalmente
 
   scheduleService.init();
-  window.scheduleService = scheduleService; // Torna o serviço acessível globalmente
+  window.services.schedule = scheduleService; // Torna o serviço acessível globalmente
 });
