@@ -307,7 +307,6 @@ document.addEventListener("DOMContentLoaded", () => {
         data: requestData.date,
         horario: requestData.time,
         assunto: requestData.subject,
-        mensagem: requestData.message,
         escolaAluno: requestData.escola_orientador,
         status: "pending",
         criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
@@ -316,6 +315,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const docRef = await db
           .collection("solicitacoes")
           .add(finalRequestData);
+        git;
         console.log("Solicitação salva com sucesso! ID:", docRef.id);
 
         // Também salvar no localStorage para exibição imediata
