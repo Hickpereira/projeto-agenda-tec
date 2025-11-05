@@ -2495,8 +2495,13 @@ body.dark-mode .login-info {
     position: fixed;
     top: 100px;
     right: var(--spacing-xl);
-    z-index: 2000;
+    z-index: 99999 !important;
     max-width: 400px;
+    pointer-events: none;
+}
+
+.notification-container > * {
+    pointer-events: auto;
 }
 
 .notification {
@@ -2512,6 +2517,7 @@ body.dark-mode .login-info {
     position: relative;
     overflow: hidden;
     transition: all 0.3s ease;
+    z-index: 99999 !important;
 }
 
 .notification::before {
@@ -3037,6 +3043,252 @@ body.dark-mode .login-info {
 
 .status-rejected {
     color: var(--danger-color);
+}
+
+.status-concluido {
+    color: var(--success-color);
+    background: rgba(40, 167, 69, 0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.status-faltou {
+    color: var(--warning-color);
+    background: rgba(255, 193, 7, 0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.status-pending-feedback {
+    color: var(--danger-color);
+    background: rgba(220, 53, 69, 0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Estilos para agendamentos que precisam de feedback */
+.request-item.needs-feedback {
+    border: 2px solid var(--warning-color);
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.05) 0%, var(--bg-primary) 100%);
+    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.2);
+}
+
+.feedback-required-badge {
+    background: var(--warning-color);
+    color: white;
+    padding: 8px 12px;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--font-size-sm);
+}
+
+.feedback-alert {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 193, 7, 0.05) 100%);
+    border: 2px solid var(--warning-color);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    color: var(--text-primary);
+}
+
+.feedback-alert i {
+    color: var(--warning-color);
+    font-size: var(--font-size-lg);
+}
+
+.tab-btn-warning {
+    position: relative;
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 193, 7, 0.05) 100%);
+}
+
+.badge-urgent {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: var(--danger-color);
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 12px;
+    animation: pulse 2s infinite;
+}
+
+.schedule-info-box {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-lg);
+    margin-top: var(--spacing-sm);
+}
+
+.schedule-info-box p {
+    margin: var(--spacing-sm) 0;
+    color: var(--text-primary);
+    font-size: var(--font-size-base);
+    line-height: 1.6;
+}
+
+.schedule-info-box p:first-child {
+    margin-top: 0;
+}
+
+.schedule-info-box p:last-child {
+    margin-bottom: 0;
+}
+
+.schedule-info-box strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* Radio Group - Padrão Neutro */
+.radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-sm);
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.radio-label:hover {
+    background: var(--bg-secondary);
+    border-color: var(--text-secondary);
+}
+
+.radio-label input[type="radio"] {
+    margin: 0;
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-color);
+}
+
+.radio-label input[type="radio"]:checked + .radio-custom::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    background: var(--primary-color);
+    border-radius: 50%;
+}
+
+.radio-label input[type="radio"]:checked ~ .radio-text {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.radio-text {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    flex: 1;
+    color: var(--text-primary);
+    font-size: var(--font-size-base);
+}
+
+.radio-custom {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--border-color);
+    border-radius: 50%;
+    transition: var(--transition);
+    position: relative;
+    flex-shrink: 0;
+    background: var(--bg-primary);
+}
+
+.radio-label input[type="radio"]:checked ~ .radio-custom {
+    border-color: var(--primary-color);
+}
+
+/* Textarea Padrão - Seguindo estilo dos inputs */
+.feedback-textarea {
+    width: 100%;
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    resize: vertical;
+    min-height: 120px;
+    transition: var(--transition);
+}
+
+.feedback-textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 22, 31, 0.1);
+}
+
+.feedback-textarea::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.7;
+}
+
+.field-hint {
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    display: block;
+    margin-top: var(--spacing-xs);
+    margin-bottom: var(--spacing-sm);
+    line-height: 1.5;
+}
+
+.field-hint i {
+    margin-right: var(--spacing-xs);
+    color: var(--text-secondary);
+}
+
+.required {
+    color: var(--danger-color);
+    font-weight: bold;
+}
+
+.stat-item-warning {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 193, 7, 0.05) 100%);
+    border: 2px solid var(--warning-color);
+}
+
+.stat-item-warning .stat-number {
+    color: var(--warning-color);
+    font-weight: bold;
 }
 
 /* Formulários melhorados */
@@ -3575,6 +3827,216 @@ body.dark-mode .login-info {
     border: 1px solid var(--accent-color);
 }
 
+/* Calendário Mensal */
+.calendar-container {
+    margin-top: var(--spacing-md);
+}
+
+.month-calendar {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.calendar-nav-btn {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-sm) var(--spacing-md);
+    cursor: pointer;
+    transition: var(--transition);
+    color: var(--text-primary);
+    font-size: var(--font-size-md);
+}
+
+.calendar-nav-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.calendar-month-title {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: var(--spacing-xs);
+    margin-bottom: var(--spacing-sm);
+}
+
+.calendar-weekday {
+    text-align: center;
+    font-weight: 600;
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    padding: var(--spacing-xs);
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: var(--spacing-xs);
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: var(--font-size-sm);
+    color: var(--text-primary);
+    position: relative;
+    padding: 4px;
+    min-height: 80px;
+}
+
+.calendar-day:not(.empty):not(.past) {
+    min-height: 100px;
+}
+
+.calendar-day:hover:not(.empty):not(.past) {
+    background: rgba(255, 22, 31, 0.1);
+    border-color: var(--primary-color);
+    transform: scale(1.05);
+}
+
+.calendar-day.selected {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    font-weight: 600;
+    box-shadow: 0 0 0 2px rgba(255, 22, 31, 0.3);
+}
+
+.calendar-day.past {
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.calendar-day.empty {
+    background: transparent;
+    border: none;
+    cursor: default;
+}
+
+.calendar-day.today {
+    border: 2px solid var(--primary-color);
+    font-weight: 600;
+}
+
+.calendar-day.has-schedules {
+    background: rgba(255, 22, 31, 0.05);
+    border-color: var(--primary-color);
+}
+
+.calendar-day-number {
+    font-weight: 600;
+    font-size: var(--font-size-base);
+    margin-bottom: 4px;
+}
+
+.calendar-day-schedules {
+    width: 100%;
+    padding: 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 10px;
+}
+
+.schedule-count-badge {
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 10px;
+    margin: 0 auto 2px;
+}
+
+.mini-schedule-item {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: 2px 4px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 3px;
+    font-size: 9px;
+    line-height: 1.2;
+    overflow: hidden;
+}
+
+.mini-time {
+    font-weight: 600;
+    color: var(--primary-color);
+    font-size: 9px;
+}
+
+.mini-subject {
+    color: var(--text-primary);
+    font-size: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.more-schedules {
+    text-align: center;
+    font-weight: 600;
+    color: var(--primary-color);
+    font-size: 9px;
+    padding: 2px;
+    margin-top: 2px;
+}
+
+
+.selected-dates-summary {
+    margin-top: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--accent-color);
+}
+
+.selected-date-badge {
+    display: inline-block;
+    background: var(--primary-color);
+    color: white;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--border-radius);
+    font-size: var(--font-size-sm);
+    margin: var(--spacing-xs);
+    font-weight: 500;
+}
+
 .day-checkbox {
     display: flex;
     align-items: center;
@@ -3666,6 +4128,15 @@ body.dark-mode .login-info {
     margin-top: var(--spacing-lg);
     padding-top: var(--spacing-lg);
     border-top: 1px solid var(--accent-color);
+}
+
+/* Form actions no modal de feedback - layout vertical padronizado */
+#closeScheduleModal .form-actions {
+    flex-direction: column;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-xl);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--border-color);
 }
 
 /* Configurações */
@@ -4092,8 +4563,11 @@ body.dark-mode .login-info {
     gap: var(--spacing-xs);
     cursor: pointer;
     padding: var(--spacing-sm);
-    border-radius: 6px;
+    border-radius: 0px;
     transition: var(--transition);
+}
+.checkbox-label input {
+    padding: 29PX;
 }
 
 .checkbox-label:hover {
@@ -4101,7 +4575,7 @@ body.dark-mode .login-info {
 }
 
 .checkbox-label input[type="checkbox"] {
-    margin: 0;
+  padding: 29PX;
 }
 
 /* Reports */

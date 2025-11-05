@@ -1,20 +1,11 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // Validação inicial para garantir que a interface (script.js) foi carregada primeiro.
-  if (!window.agendaSystem) {
-    console.error(
-      "CRÍTICO: O objeto global 'agendaSystem' não foi encontrado. Verifique se 'script.js' está sendo carregado ANTES de 'app.js'."
-    );
-    return;
-  }
+  window.services = {};
 
-  // --- 1. SELEÇÃO DOS ELEMENTOS GLOBAIS ---
   const loginForm = document.getElementById("loginForm");
   const registerForm = document.getElementById("registerForm");
   const loginGoogleBtn = document.getElementById("loginGoogleBtn");
   const registerGoogleBtn = document.getElementById("registerGoogleBtn");
   const forgotPasswordLink = document.getElementById("forgotPasswordLink");
-
-  // --- 2. SERVIÇOS ---
 
   /**
    * Objeto que agrupa todas as funções relacionadas à autenticação
@@ -178,6 +169,9 @@ document.addEventListener("DOMContentLoaded", () => {
         } else if (userType === "coordenador") {
           const nome = document.getElementById("nome_orientador").value;
           const email = document.getElementById("email_orientador").value;
+          const escola = document.getElementById(
+            "escola_orientador_register"
+          ).value;
           const telefone = document.getElementById("telefone_orientador").value;
           const cpf = document.getElementById("cpf_orientador").value;
           const chaveAcesso = document.getElementById(
@@ -211,6 +205,7 @@ document.addEventListener("DOMContentLoaded", () => {
               email_orientador: email,
               telefone_orientador: telefone,
               cpf_orientador: cpf,
+              escola_orientador: escola,
             });
           });
           await this.updateUserSession(user, "coordenador");
@@ -283,13 +278,17 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   /**
-   * Objeto que agrupa as funções relacionadas a agendamentos.
+   * Objeto que agrupa as funções relacionadas a agendamentos
    */
   const scheduleService = {
     /**
-     * Cria uma nova solicitação de agendamento no Firestore.
-     * @param {object} requestData - Os dados do formulário vindos do script.js
+     * Cria uma nova solicitação de agendamento no firebae
+     * @param {object} requestData
+     * * Atualiza o status de uma solicitação específica no Firestore
+     * @param {string} requestId - id do documento da solicitação
+     * @param {string} newStatus - status - aceita,rejeitada,concluida
      */
+
     async createRequest(requestData) {
       const currentUser = auth.currentUser;
       if (!currentUser) {
@@ -308,7 +307,8 @@ document.addEventListener("DOMContentLoaded", () => {
         data: requestData.date,
         horario: requestData.time,
         assunto: requestData.subject,
-        mensagem: requestData.message,
+        mensagem: requestData.message || "",
+        escolaAluno: requestData.escola_orientador,
         status: "pending",
         criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
       };
@@ -316,6 +316,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const docRef = await db
           .collection("solicitacoes")
           .add(finalRequestData);
+        
         console.log("Solicitação salva com sucesso! ID:", docRef.id);
 
         // Também salvar no localStorage para exibição imediata
@@ -326,12 +327,14 @@ document.addEventListener("DOMContentLoaded", () => {
           date: finalRequestData.data,
           time: finalRequestData.horario,
           subject: finalRequestData.assunto,
-          message: finalRequestData.mensagem,
+          message: finalRequestData.mensagem || "",
           status: finalRequestData.status,
           createdAt: new Date(),
           orientador: window.agendaSystem.getOrientadorById(
             finalRequestData.orientadorId
           ),
+          responsavelNome: finalRequestData.responsavelNome,
+          responsavelEmail: finalRequestData.responsavelEmail,
         };
 
         // Adicionar à lista local
@@ -347,8 +350,47 @@ document.addEventListener("DOMContentLoaded", () => {
         );
       } catch (error) {
         console.error("Erro ao salvar a solicitação no Firestore:", error);
+        
+        // Mensagem de erro mais específica
+        let errorMessage = "Ocorreu um erro ao enviar sua solicitação. Tente novamente.";
+        if (error.code === "permission-denied") {
+          errorMessage = "Você não tem permissão para realizar esta ação.";
+        } else if (error.code === "unavailable") {
+          errorMessage = "Serviço temporariamente indisponível. Tente novamente em alguns instantes.";
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+        
+        window.agendaSystem.showNotification(errorMessage, "error");
+        
+        // Marcar erro como tratado para evitar duplicação de notificações
+        error.handled = true;
+        throw error;
+      }
+    },
+    /**
+     * Atualiza o status de uma solicitação específica no Firestore.
+     * @param {string} requestId - O ID do documento da solicitação.
+     * @param {string} newStatus - O novo status ('aceita', 'rejeitada', 'concluida').
+     */ async updateRequestStatus(requestId, newStatus) {
+      if (!requestId || !newStatus) {
+        throw new Error("ID da solicitação e novo status são obrigatórios.");
+      }
+
+      const requestDocRef = db.collection("solicitacoes").doc(requestId);
+
+      try {
+        await requestDocRef.update({
+          status: newStatus,
+          atualizadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+        console.log(
+          `Status da solicitação ${requestId} atualizado para ${newStatus}.`
+        );
+      } catch (error) {
+        console.error("Erro ao atualizar status no Firestore:", error);
         window.agendaSystem.showNotification(
-          "Ocorreu um erro ao enviar sua solicitação. Tente novamente.",
+          "Falha ao atualizar o status da solicitação.",
           "error"
         );
         throw error;
@@ -360,10 +402,9 @@ document.addEventListener("DOMContentLoaded", () => {
     },
   };
 
-  // --- 3. INICIALIZAÇÃO DOS SERVIÇOS ---
   authService.init();
-  window.authService = authService; // Torna o serviço acessível globalmente
+  window.services.auth = authService; // Torna o serviço acessível globalmente
 
   scheduleService.init();
-  window.scheduleService = scheduleService; // Torna o serviço acessível globalmente
+  window.services.schedule = scheduleService; // Torna o serviço acessível globalmente
 });
