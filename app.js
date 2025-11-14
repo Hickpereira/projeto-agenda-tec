@@ -180,6 +180,13 @@ document.addEventListener("DOMContentLoaded", () => {
           const senha = document.getElementById(
             "senhaCadastroOrientador"
           ).value;
+          
+          // Validar CPF
+          const cpfLimpo = window.agendaSystem.onlyDigits(cpf);
+          if (cpfLimpo.length !== 11 || !window.agendaSystem.validateCPF(cpfLimpo)) {
+            throw new Error("CPF inválido. Por favor, verifique o CPF digitado.");
+          }
+          
           const chaveQuery = await db
             .collection("chave_acesso_orientador")
             .where("chave", "==", chaveAcesso)
@@ -204,7 +211,7 @@ document.addEventListener("DOMContentLoaded", () => {
               nome_orientador: nome,
               email_orientador: email,
               telefone_orientador: telefone,
-              cpf_orientador: cpf,
+              cpf_orientador: cpfLimpo,
               escola_orientador: escola,
             });
           });
@@ -298,12 +305,38 @@ document.addEventListener("DOMContentLoaded", () => {
         );
         throw new Error("Usuário não autenticado.");
       }
+
+      auth.onAuthStateChanged(async (user) => {
+        if (window.agendaSystem) {
+          if (user) {
+            const responsavelDoc = await db
+              .collection("responsaveis")
+              .doc(user.uid)
+              .get();
+            const userType = responsavelDoc.exists
+              ? "responsavel"
+              : "coordenador";
+
+            await window.services.auth.updateUserSession(user, userType);
+
+            window.agendaSystem.isLoggedIn = true;
+            window.agendaSystem.updateHeaderForLoggedUser();
+            window.agendaSystem.showDashboard();
+            window.agendaSystem.loadRequests();
+          } else {
+            if (window.agendaSystem.isLoggedIn) {
+              window.agendaSystem.handleLogout();
+            }
+          }
+        }
+      });
+
       const finalRequestData = {
         responsavelId: currentUser.uid,
+        orientadorId: requestData.orientador.id,
         responsavelNome:
           window.agendaSystem.currentUser.name || currentUser.displayName,
         responsavelEmail: currentUser.email,
-        orientadorId: requestData.orientador.id,
         data: requestData.date,
         horario: requestData.time,
         assunto: requestData.subject,
@@ -316,12 +349,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const docRef = await db
           .collection("solicitacoes")
           .add(finalRequestData);
-        
+
         console.log("Solicitação salva com sucesso! ID:", docRef.id);
 
-        // Também salvar no localStorage para exibição imediata
         const localRequest = {
           id: docRef.id,
+          responsavelId: finalRequestData.responsavelId,
           userId: finalRequestData.responsavelId,
           orientadorId: finalRequestData.orientadorId,
           date: finalRequestData.data,
@@ -350,19 +383,21 @@ document.addEventListener("DOMContentLoaded", () => {
         );
       } catch (error) {
         console.error("Erro ao salvar a solicitação no Firestore:", error);
-        
+
         // Mensagem de erro mais específica
-        let errorMessage = "Ocorreu um erro ao enviar sua solicitação. Tente novamente.";
+        let errorMessage =
+          "Ocorreu um erro ao enviar sua solicitação. Tente novamente.";
         if (error.code === "permission-denied") {
           errorMessage = "Você não tem permissão para realizar esta ação.";
         } else if (error.code === "unavailable") {
-          errorMessage = "Serviço temporariamente indisponível. Tente novamente em alguns instantes.";
+          errorMessage =
+            "Serviço temporariamente indisponível. Tente novamente em alguns instantes.";
         } else if (error.message) {
           errorMessage = error.message;
         }
-        
+
         window.agendaSystem.showNotification(errorMessage, "error");
-        
+
         // Marcar erro como tratado para evitar duplicação de notificações
         error.handled = true;
         throw error;
@@ -403,8 +438,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   authService.init();
-  window.services.auth = authService; // Torna o serviço acessível globalmente
-
+  window.services.auth = authService;
   scheduleService.init();
-  window.services.schedule = scheduleService; // Torna o serviço acessível globalmente
+  window.services.schedule = scheduleService;
 });

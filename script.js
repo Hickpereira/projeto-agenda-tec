@@ -174,6 +174,38 @@ class AgendaSystem {
       }
     });
 
+    // Botão de perfil
+    document.getElementById("profileBtn")?.addEventListener("click", () => {
+      this.showProfileModal();
+    });
+
+    // Modal de perfil
+    document.getElementById("closeProfile")?.addEventListener("click", () => {
+      this.hideModal("profileModal");
+    });
+    document.getElementById("cancelProfileBtn")?.addEventListener("click", () => {
+      this.hideModal("profileModal");
+    });
+    document.getElementById("profileForm")?.addEventListener("submit", (e) => {
+      this.handleProfileUpdate(e);
+    });
+
+    // Upload de foto
+    document.getElementById("profilePhotoInput")?.addEventListener("change", (e) => {
+      this.handleProfilePhotoUpload(e);
+    });
+
+    // Botões de verificação
+    document.getElementById("verifyEmailBtn")?.addEventListener("click", () => {
+      this.verifyEmail();
+    });
+    document.getElementById("verifyPhoneBtn")?.addEventListener("click", () => {
+      this.verifyPhone();
+    });
+
+    // Aplicar máscaras
+    this.initMasks();
+
     // Navegação suave
     document
       .querySelectorAll('a[href^="#"]:not([href="#"])')
@@ -853,6 +885,7 @@ class AgendaSystem {
     if (this.currentUser) {
       const userGreeting = document.getElementById("userGreeting");
       const userTypeDisplay = document.getElementById("userTypeDisplay");
+      const profileBtn = document.getElementById("profileBtn");
 
       if (userGreeting) {
         userGreeting.textContent = `Olá, ${
@@ -865,6 +898,15 @@ class AgendaSystem {
           this.userType
         );
         userTypeDisplay.className = `user-type ${this.userType}`;
+      }
+
+      // Mostrar botão de perfil apenas para orientadores
+      if (profileBtn) {
+        if (this.userType === "coordenador") {
+          profileBtn.style.display = "inline-flex";
+        } else {
+          profileBtn.style.display = "none";
+        }
       }
     }
   }
@@ -1008,7 +1050,7 @@ class AgendaSystem {
   }
 
   showOrientadorInfo(selectedOption) {
-    console.log("DEBUG: Função 'showOrientadorInfo' foi chamada."); // <-- PONTO 4
+    console.log("DEBUG: Função 'showOrientadorInfo' foi chamada.");
     const orientadorInfo = document.getElementById("orientadorInfo");
     const orientadorId = selectedOption ? selectedOption.value : null;
 
@@ -1017,7 +1059,7 @@ class AgendaSystem {
       this.selectedOrientador = null;
       console.log(
         "DEBUG: Condição de falha atingida. this.selectedOrientador definido como NULL."
-      ); // <-- PONTO 5
+      );
       return;
     }
 
@@ -1030,9 +1072,16 @@ class AgendaSystem {
     console.log(
       "DEBUG: SUCESSO! this.selectedOrientador foi definido como:",
       this.selectedOrientador
-    ); // <-- PONTO 6
+    );
 
-    document.querySelector(".orientador-avatar").textContent = "👨‍🏫";
+    // Exibir foto de perfil se disponível
+    const avatarElement = document.querySelector(".orientador-avatar");
+    if (orientadorData.foto_perfil) {
+      avatarElement.innerHTML = `<img src="${orientadorData.foto_perfil}" alt="Foto do Orientador" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+    } else {
+      avatarElement.textContent = "👨‍🏫";
+    }
+    
     document.querySelector(".orientador-name").textContent =
       orientadorData.nome_orientador || "Nome não informado";
     document.querySelector(".orientador-specialty").textContent =
@@ -1076,7 +1125,10 @@ class AgendaSystem {
       }
 
       if (!scheduleData.subject || scheduleData.subject.trim() === "") {
-        this.showNotification("Por favor, informe o assunto do agendamento.", "error");
+        this.showNotification(
+          "Por favor, informe o assunto do agendamento.",
+          "error"
+        );
         throw new Error("Assunto não informado.");
       }
 
@@ -1086,11 +1138,17 @@ class AgendaSystem {
       }
 
       if (!scheduleData.studentGrade) {
-        this.showNotification("Por favor, selecione a série do aluno.", "error");
+        this.showNotification(
+          "Por favor, selecione a série do aluno.",
+          "error"
+        );
         throw new Error("Série não selecionada.");
       }
 
-      if (!scheduleData.studentClass || scheduleData.studentClass.trim() === "") {
+      if (
+        !scheduleData.studentClass ||
+        scheduleData.studentClass.trim() === ""
+      ) {
         this.showNotification("Por favor, informe a turma do aluno.", "error");
         throw new Error("Turma não informada.");
       }
@@ -1100,7 +1158,6 @@ class AgendaSystem {
         throw new Error("Escola não selecionada.");
       }
 
-      // Monta o objeto com todos os dados necessários
       const requestPayload = {
         orientador: this.selectedOrientador,
         date: scheduleData.date,
@@ -1113,6 +1170,8 @@ class AgendaSystem {
         escola_orientador: scheduleData.escola_orientador,
       };
 
+      console.log("Payload de Solicitação:", requestPayload);
+      console.log("ID do Orientador no Payload:", requestPayload.orientador.id);
       await window.services.schedule.createRequest(requestPayload);
 
       console.log(
@@ -1172,25 +1231,25 @@ class AgendaSystem {
       return '<option value="">Selecione uma data primeiro</option>';
     }
 
-    // REGRA 1: Verificação de Bloqueio de Data (Prioridade Alta)
+    // data bloqueada pelo oe
     if (this.isDateBlocked(selectedDate)) {
       return '<option value="" disabled>Data Indisponível</option>';
     }
 
-    // REGRA 2: Verificação de Horários Cadastrados
+    //Verificação de Horários Cadastrados
     const customTimeSlots = this.getTimeSlots();
     if (customTimeSlots.length > 0 && selectedDate) {
-      // Filtrar slots pela data específica selecionada
+      // Filtraslots pela data específica selecionada
       const dateSlots = customTimeSlots.filter(
         (slot) => slot.date === selectedDate
       );
 
-      // REGRA 2a: Se não houver horários cadastrados para esta data específica
+      // sem horarios para data escolhia
       if (dateSlots.length === 0) {
         return '<option value="" disabled>Nenhum horário disponível para esta data</option>';
       }
 
-      // REGRA 3: Exibição de Horários (se chegou aqui, há horários cadastrados)
+      // horarios disponiveis
       const availableSlots = [];
       dateSlots.forEach((slot) => {
         const start = this.timeToMinutes(slot.startTime);
@@ -1210,12 +1269,10 @@ class AgendaSystem {
           .map((time) => `<option value="${time}">${time}</option>`)
           .join("");
       } else {
-        // Todos os horários cadastrados já foram agendados
         return '<option value="" disabled>Nenhum horário disponível para esta data</option>';
       }
     }
 
-    // REGRA 2b: Se não houver nenhum horário cadastrado (nem para esta data nem em geral)
     return '<option value="" disabled>Nenhum horário disponível para esta data</option>';
   }
 
@@ -1245,45 +1302,51 @@ class AgendaSystem {
     const timeSelect = document.getElementById("scheduleTime");
     if (timeSelect) {
       const selectedDate = document.getElementById("scheduleDate")?.value;
-      
+
       // Verificar se a data foi selecionada
       if (!selectedDate) {
-        timeSelect.innerHTML = '<option value="">Selecione uma data primeiro</option>';
+        timeSelect.innerHTML =
+          '<option value="">Selecione uma data primeiro</option>';
         timeSelect.disabled = true;
         return;
       }
 
       // Verificar se a data está bloqueada
       if (this.isDateBlocked(selectedDate)) {
-        timeSelect.innerHTML = '<option value="" disabled>Data Indisponível</option>';
+        timeSelect.innerHTML =
+          '<option value="" disabled>Data Indisponível</option>';
         timeSelect.disabled = true;
-        
+
         // Mostrar notificação informativa
         const blockedDates = this.getBlockedDates();
         const blockedDate = blockedDates.find((bd) => bd.date === selectedDate);
-        const reason = blockedDate?.reason ? ` (${blockedDate.reason})` : '';
+        const reason = blockedDate?.reason ? ` (${blockedDate.reason})` : "";
         this.showNotification(`Esta data está bloqueada${reason}`, "info");
         return;
       }
 
       // Verificar se há horários cadastrados
       if (!this.hasTimeSlotsForDate(selectedDate)) {
-        timeSelect.innerHTML = '<option value="" disabled>Nenhum horário disponível para esta data</option>';
+        timeSelect.innerHTML =
+          '<option value="" disabled>Nenhum horário disponível para esta data</option>';
         timeSelect.disabled = true;
-        this.showNotification("Nenhum horário cadastrado para esta data. Entre em contato com o orientador.", "info");
+        this.showNotification(
+          "Nenhum horário cadastrado para esta data. Entre em contato com o orientador.",
+          "info"
+        );
         return;
       }
 
       // Há horários disponíveis - gerar lista
       const slotsHTML = this.generateAvailableTimeSlots();
-      
+
       // Verificar se a lista de slots está vazia (todos agendados)
-      if (slotsHTML.includes('disabled')) {
+      if (slotsHTML.includes("disabled")) {
         timeSelect.disabled = true;
       } else {
         timeSelect.disabled = false;
       }
-      
+
       timeSelect.innerHTML = `
                 <option value="">Selecione um horário...</option>
                 ${slotsHTML}
@@ -1307,7 +1370,7 @@ class AgendaSystem {
       modalTitle = "Agendamentos Confirmados";
     } else {
       schedulesToShow = this.requests.filter(
-        (req) => req.userId === this.currentUser.id
+        (req) => req.responsavelId === this.currentUser.id
       );
       modalTitle = "Meus Agendamentos";
     }
@@ -1419,8 +1482,12 @@ class AgendaSystem {
   needsFeedback(request) {
     // Apenas agendamentos aprovados que já passaram e não foram encerrados
     if (request.status !== "approved") return false;
-    if (request.attendanceStatus === "concluido" || request.attendanceStatus === "faltou") return false;
-    
+    if (
+      request.attendanceStatus === "concluido" ||
+      request.attendanceStatus === "faltou"
+    )
+      return false;
+
     // Verificar se a data/hora já passou
     return this.isSchedulePast(request);
   }
@@ -1432,27 +1499,30 @@ class AgendaSystem {
     const pendingRequests = this.requests.filter(
       (req) => req.status === "pending"
     );
-    
+
     // Agendamentos aprovados que ainda não passaram OU que já foram encerrados
     const acceptedRequests = this.requests.filter(
-      (req) => req.status === "approved" && 
-               req.attendanceStatus !== "concluido" && 
-               req.attendanceStatus !== "faltou" &&
-               !this.needsFeedback(req)
+      (req) =>
+        req.status === "approved" &&
+        req.attendanceStatus !== "concluido" &&
+        req.attendanceStatus !== "faltou" &&
+        !this.needsFeedback(req)
     );
-    
+
     // Agendamentos passados que precisam de feedback (AGUARDANDO FEEDBACK)
-    const awaitingFeedback = this.requests.filter(
-      (req) => this.needsFeedback(req)
+    const awaitingFeedback = this.requests.filter((req) =>
+      this.needsFeedback(req)
     );
-    
+
     const rejectedRequests = this.requests.filter(
       (req) => req.status === "rejected"
     );
-    
+
     // Agendamentos já encerrados (com feedback)
     const completedRequests = this.requests.filter(
-      (req) => req.attendanceStatus === "concluido" || req.attendanceStatus === "faltou"
+      (req) =>
+        req.attendanceStatus === "concluido" ||
+        req.attendanceStatus === "faltou"
     );
 
     const modalHTML = `
@@ -1500,7 +1570,11 @@ class AgendaSystem {
                                     ? '<div class="empty-state"><i class="fas fa-check-circle"></i><p>Nenhuma solicitação aceita</p></div>'
                                     : acceptedRequests
                                         .map((request) =>
-                                          this.createRequestItem(request, false, true)
+                                          this.createRequestItem(
+                                            request,
+                                            false,
+                                            true
+                                          )
                                         )
                                         .join("")
                                 }
@@ -1545,48 +1619,69 @@ class AgendaSystem {
     this.showModal("requestsModal");
   }
 
-  createRequestItem(request, isReadOnly = false, isAccepted = false, needsFeedback = false) {
+  createRequestItem(
+    request,
+    isReadOnly = false,
+    isAccepted = false,
+    needsFeedback = false
+  ) {
     const statusClass =
       request.status === "approved"
         ? "success"
         : request.status === "rejected"
         ? "danger"
         : "warning";
-    
+
     const attendanceStatus = request.attendanceStatus || "pendente";
     const attendanceStatusText = this.getAttendanceStatusText(attendanceStatus);
-    
+
     // Se precisa de feedback, destacar visualmente
     const feedbackClass = needsFeedback ? "needs-feedback" : "";
 
     return `
             <div class="request-item ${statusClass} ${feedbackClass}">
-                ${needsFeedback ? `
+                ${
+                  needsFeedback
+                    ? `
                 <div class="feedback-required-badge">
                     <i class="fas fa-exclamation-circle"></i>
                     <span>Requer Encerramento</span>
                 </div>
-                ` : ""}
+                `
+                    : ""
+                }
                 <div class="request-info">
                     <div class="request-header">
                         <h4>${request.subject}</h4>
                         <span class="request-status status-${request.status}">
                             ${this.getStatusText(request.status)}
                         </span>
-                        ${attendanceStatus !== "pendente" ? `
+                        ${
+                          attendanceStatus !== "pendente"
+                            ? `
                         <span class="request-status status-${attendanceStatus}" style="margin-left: 10px;">
                             ${attendanceStatusText}
                         </span>
-                        ` : ""}
-                        ${needsFeedback ? `
+                        `
+                            : ""
+                        }
+                        ${
+                          needsFeedback
+                            ? `
                         <span class="request-status status-pending-feedback" style="margin-left: 10px;">
                             <i class="fas fa-clock"></i> Aguardando Feedback
                         </span>
-                        ` : ""}
+                        `
+                            : ""
+                        }
                     </div>
                     <div class="request-details">
-                        <p><strong>Solicitante:</strong> ${request.userName || request.responsavelNome || 'N/A'}</p>
-                        <p><strong>Email:</strong> ${request.userEmail || request.responsavelEmail || 'N/A'}</p>
+                        <p><strong>Solicitante:</strong> ${
+                          request.userName || request.responsavelNome || "N/A"
+                        }</p>
+                        <p><strong>Email:</strong> ${
+                          request.userEmail || request.responsavelEmail || "N/A"
+                        }</p>
                         ${
                           request.orientador
                             ? `
@@ -1611,8 +1706,12 @@ class AgendaSystem {
                             : ""
                         }
                         ${
-                          request.postAttendanceFeedback || request.attendanceFeedback
-                            ? `<p><strong>Feedback Pós-Atendimento:</strong> ${request.postAttendanceFeedback || request.attendanceFeedback}</p>`
+                          request.postAttendanceFeedback ||
+                          request.attendanceFeedback
+                            ? `<p><strong>Feedback Pós-Atendimento:</strong> ${
+                                request.postAttendanceFeedback ||
+                                request.attendanceFeedback
+                              }</p>`
                             : ""
                         }
                     </div>
@@ -1702,17 +1801,20 @@ class AgendaSystem {
 
       // ATUALIZAR DASHBOARD ANTES DA NOTIFICAÇÃO
       this.updateCoordinatorDashboard();
-      
+
       // MOSTRAR NOTIFICAÇÃO IMEDIATAMENTE (com z-index alto) - CRÍTICO
       this.showNotification("Agendamento confirmado com sucesso!", "success");
-      
+
       // Aguardar um pequeno delay para garantir que a notificação seja vista antes de atualizar a lista
       setTimeout(() => {
         this.refreshRequestsModal();
       }, 500);
     } catch (error) {
       console.error("Falha ao aprovar solicitação:", error);
-      this.showNotification("Erro ao confirmar agendamento. Tente novamente.", "error");
+      this.showNotification(
+        "Erro ao confirmar agendamento. Tente novamente.",
+        "error"
+      );
     }
   }
 
@@ -1830,15 +1932,19 @@ class AgendaSystem {
     document.body.insertAdjacentHTML("beforeend", modalHTML);
 
     // Event listeners
-    document.getElementById("closeAttendanceFeedback").addEventListener("click", () => {
-      this.closeAttendanceFeedbackModal();
-    });
+    document
+      .getElementById("closeAttendanceFeedback")
+      .addEventListener("click", () => {
+        this.closeAttendanceFeedbackModal();
+      });
 
-    document.getElementById("attendanceFeedbackForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const feedback = document.getElementById("attendanceFeedback").value;
-      await this.markAttendanceStatusWithFeedback(requestId, feedback);
-    });
+    document
+      .getElementById("attendanceFeedbackForm")
+      .addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const feedback = document.getElementById("attendanceFeedback").value;
+        await this.markAttendanceStatusWithFeedback(requestId, feedback);
+      });
 
     this.showModal("attendanceFeedbackModal");
   }
@@ -1874,7 +1980,10 @@ class AgendaSystem {
       this.saveRequests();
 
       this.closeAttendanceFeedbackModal();
-      this.showNotification("Falta ao atendimento registrada com sucesso!", "success");
+      this.showNotification(
+        "Falta ao atendimento registrada com sucesso!",
+        "success"
+      );
       this.refreshRequestsModal();
     } catch (error) {
       console.error("Erro ao registrar falta:", error);
@@ -1903,7 +2012,9 @@ class AgendaSystem {
             <div class="form-group">
               <label>Informações do Agendamento</label>
               <div class="schedule-info-box">
-                <p><strong>Solicitante:</strong> ${request.userName || request.responsavelNome || 'N/A'}</p>
+                <p><strong>Solicitante:</strong> ${
+                  request.userName || request.responsavelNome || "N/A"
+                }</p>
                 <p><strong>Data:</strong> ${this.formatDate(request.date)}</p>
                 <p><strong>Horário:</strong> ${request.time}</p>
                 <p><strong>Assunto:</strong> ${request.subject}</p>
@@ -1960,33 +2071,47 @@ class AgendaSystem {
     document.body.insertAdjacentHTML("beforeend", modalHTML);
 
     // Event listeners
-    document.getElementById("closeCloseSchedule").addEventListener("click", () => {
-      this.closeCloseScheduleModal();
-    });
+    document
+      .getElementById("closeCloseSchedule")
+      .addEventListener("click", () => {
+        this.closeCloseScheduleModal();
+      });
 
     // Validar formulário antes de enviar
-    document.getElementById("closeScheduleForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      
-      const formData = new FormData(e.target);
-      const attendanceStatus = formData.get("attendanceStatus");
-      const feedback = formData.get("feedback")?.trim();
+    document
+      .getElementById("closeScheduleForm")
+      .addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-      // Validação adicional
-      if (!attendanceStatus) {
-        this.showNotification("Por favor, selecione o status do atendimento.", "error");
-        return;
-      }
+        const formData = new FormData(e.target);
+        const attendanceStatus = formData.get("attendanceStatus");
+        const feedback = formData.get("feedback")?.trim();
 
-      if (!feedback || feedback.length < 10) {
-        this.showNotification("Por favor, preencha o feedback com pelo menos 10 caracteres.", "error");
-        document.getElementById("postAttendanceFeedback").focus();
-        return;
-      }
+        // Validação adicional
+        if (!attendanceStatus) {
+          this.showNotification(
+            "Por favor, selecione o status do atendimento.",
+            "error"
+          );
+          return;
+        }
 
-      // Encerrar agendamento
-      await this.closeScheduleWithFeedback(requestId, attendanceStatus, feedback);
-    });
+        if (!feedback || feedback.length < 10) {
+          this.showNotification(
+            "Por favor, preencha o feedback com pelo menos 10 caracteres.",
+            "error"
+          );
+          document.getElementById("postAttendanceFeedback").focus();
+          return;
+        }
+
+        // Encerrar agendamento
+        await this.closeScheduleWithFeedback(
+          requestId,
+          attendanceStatus,
+          feedback
+        );
+      });
 
     this.showModal("closeScheduleModal");
   }
@@ -2006,35 +2131,34 @@ class AgendaSystem {
         return;
       }
 
-      // Atualizar no Firebase
       if (window.db) {
         const requestRef = db.collection("solicitacoes").doc(requestId);
         await requestRef.update({
           attendanceStatus: attendanceStatus,
           attendanceFeedback: feedback,
-          postAttendanceFeedback: feedback, // Campo específico para feedback pós-atendimento
+          postAttendanceFeedback: feedback,
           attendanceUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
           closedAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
       }
 
-      // Atualizar localmente
       request.attendanceStatus = attendanceStatus;
       request.attendanceFeedback = feedback;
       request.postAttendanceFeedback = feedback;
       this.saveRequests();
 
       this.closeCloseScheduleModal();
-      
-      const statusText = attendanceStatus === "concluido" 
-        ? "Atendimento Realizado" 
-        : "Aluno Não Compareceu";
-      
+
+      const statusText =
+        attendanceStatus === "concluido"
+          ? "Atendimento Realizado"
+          : "Aluno Não Compareceu";
+
       this.showNotification(
         `Agendamento encerrado com sucesso! Status: ${statusText}`,
         "success"
       );
-      
+
       this.refreshRequestsModal();
     } catch (error) {
       console.error("Erro ao encerrar agendamento:", error);
@@ -2043,7 +2167,13 @@ class AgendaSystem {
   }
 
   formatDate(dateString) {
-    const date = new Date(dateString);
+    const date = new Date(dateString + "T00:00:00");
+
+    if (isNaN(date)) {
+      console.error("Data inválida para formatação:", dateString);
+      return dateString;
+    }
+
     return date.toLocaleDateString("pt-BR");
   }
 
@@ -2303,10 +2433,16 @@ class AgendaSystem {
                                         }</span>
                                         <span class="stat-label">Rejeitadas</span>
                                     </div>
-                                    <div class="stat-item ${this.requests.filter(r => this.needsFeedback(r)).length > 0 ? 'stat-item-warning' : ''}">
+                                    <div class="stat-item ${
+                                      this.requests.filter((r) =>
+                                        this.needsFeedback(r)
+                                      ).length > 0
+                                        ? "stat-item-warning"
+                                        : ""
+                                    }">
                                         <span class="stat-number">${
-                                          this.requests.filter(
-                                            (r) => this.needsFeedback(r)
+                                          this.requests.filter((r) =>
+                                            this.needsFeedback(r)
                                           ).length
                                         }</span>
                                         <span class="stat-label">Aguardando Feedback</span>
@@ -2314,7 +2450,10 @@ class AgendaSystem {
                                     <div class="stat-item">
                                         <span class="stat-number">${
                                           this.requests.filter(
-                                            (r) => r.attendanceStatus === "concluido" || r.attendanceStatus === "faltou"
+                                            (r) =>
+                                              r.attendanceStatus ===
+                                                "concluido" ||
+                                              r.attendanceStatus === "faltou"
                                           ).length
                                         }</span>
                                         <span class="stat-label">Encerrados</span>
@@ -2370,7 +2509,6 @@ class AgendaSystem {
       this.printReport();
     });
 
-    // Generate chart
     setTimeout(() => {
       this.createStatusChart();
     }, 100);
@@ -2485,11 +2623,17 @@ class AgendaSystem {
         const tabName = buttonEl?.dataset.tab;
         if (tabName) {
           this.switchScheduleTab(tabName, "scheduleViewModal");
-          // Se mudou para a aba mensal, adicionar event listeners
+
           if (tabName === "monthly") {
             setTimeout(() => {
-              const currentMonth = this.currentScheduleMonth !== undefined ? this.currentScheduleMonth : new Date().getMonth();
-              const currentYear = this.currentScheduleYear !== undefined ? this.currentScheduleYear : new Date().getFullYear();
+              const currentMonth =
+                this.currentScheduleMonth !== undefined
+                  ? this.currentScheduleMonth
+                  : new Date().getMonth();
+              const currentYear =
+                this.currentScheduleYear !== undefined
+                  ? this.currentScheduleYear
+                  : new Date().getFullYear();
               this.addScheduleCalendarClickListeners(currentMonth, currentYear);
             }, 100);
           }
@@ -2497,7 +2641,6 @@ class AgendaSystem {
       });
     });
 
-    // Adicionar event listeners iniciais na aba mensal
     setTimeout(() => {
       const currentMonth = new Date().getMonth();
       const currentYear = new Date().getFullYear();
@@ -2515,7 +2658,7 @@ class AgendaSystem {
       today.getDate()
     );
     const jsWeekDay = today.getDay();
-    const distanceToMonday = (jsWeekDay + 6) % 7; // 0 se segunda, 1 se terça, ... 6 se domingo
+    const distanceToMonday = (jsWeekDay + 6) % 7;
     startOfWeek.setDate(startOfWeek.getDate() - distanceToMonday);
 
     const weekDays = [
@@ -2626,113 +2769,161 @@ class AgendaSystem {
     });
 
     // Usar o mesmo componente de calendário visual
-    return this.generateMonthlyCalendarWithSchedules(currentMonth, currentYear, schedulesByDate);
+    return this.generateMonthlyCalendarWithSchedules(
+      currentMonth,
+      currentYear,
+      schedulesByDate
+    );
   }
 
   generateMonthlyCalendarWithSchedules(month, year, schedulesByDate = {}) {
     const now = new Date();
     const currentMonth = month !== null ? month : now.getMonth();
     const currentYear = year !== null ? year : now.getFullYear();
-    
+
     // Primeiro dia do mês
     const firstDay = new Date(currentYear, currentMonth, 1);
     const lastDay = new Date(currentYear, currentMonth + 1, 0);
     const daysInMonth = lastDay.getDate();
     const startingDayOfWeek = firstDay.getDay();
-    
+
     const monthNames = [
-      "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-      "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+      "Janeiro",
+      "Fevereiro",
+      "Março",
+      "Abril",
+      "Maio",
+      "Junho",
+      "Julho",
+      "Agosto",
+      "Setembro",
+      "Outubro",
+      "Novembro",
+      "Dezembro",
     ];
-    
+
     const weekDays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-    
+
     const today = new Date();
-    const isCurrentMonth = currentMonth === today.getMonth() && currentYear === today.getFullYear();
-    
+    const isCurrentMonth =
+      currentMonth === today.getMonth() && currentYear === today.getFullYear();
+
     let calendarHTML = `
       <div class="month-calendar">
         <div class="calendar-header">
           <button type="button" class="calendar-nav-btn" id="prevMonthScheduleBtn" onclick="agendaSystem.changeScheduleMonth(-1)">
             <i class="fas fa-chevron-left"></i>
           </button>
-          <h3 class="calendar-month-title">${monthNames[currentMonth]} ${currentYear}</h3>
+          <h3 class="calendar-month-title">${
+            monthNames[currentMonth]
+          } ${currentYear}</h3>
           <button type="button" class="calendar-nav-btn" id="nextMonthScheduleBtn" onclick="agendaSystem.changeScheduleMonth(1)">
             <i class="fas fa-chevron-right"></i>
           </button>
         </div>
         <div class="calendar-weekdays">
-          ${weekDays.map(day => `<div class="calendar-weekday">${day}</div>`).join("")}
+          ${weekDays
+            .map((day) => `<div class="calendar-weekday">${day}</div>`)
+            .join("")}
         </div>
         <div class="calendar-days" id="scheduleCalendarDays" data-month="${currentMonth}" data-year="${currentYear}">
     `;
-    
+
     // Espaços vazios para os dias antes do primeiro dia do mês
     for (let i = 0; i < startingDayOfWeek; i++) {
       calendarHTML += '<div class="calendar-day empty"></div>';
     }
-    
+
     // Dias do mês
     for (let day = 1; day <= daysInMonth; day++) {
-      const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(
+        2,
+        "0"
+      )}-${String(day).padStart(2, "0")}`;
       const dateObj = new Date(currentYear, currentMonth, day);
-      const isPast = dateObj < today && dateObj.toDateString() !== today.toDateString();
+      const isPast =
+        dateObj < today && dateObj.toDateString() !== today.toDateString();
       const isToday = isCurrentMonth && day === today.getDate();
       const daySchedules = schedulesByDate[dateStr] || [];
       const hasSchedules = daySchedules.length > 0;
-      
+
       calendarHTML += `
-        <div class="calendar-day ${isPast ? 'past' : ''} ${isToday ? 'today' : ''} ${hasSchedules ? 'has-schedules' : ''}" 
+        <div class="calendar-day ${isPast ? "past" : ""} ${
+        isToday ? "today" : ""
+      } ${hasSchedules ? "has-schedules" : ""}" 
              data-date="${dateStr}" 
              data-day="${day}"
              data-month="${currentMonth}"
              data-year="${currentYear}"
-             ${isPast ? '' : 'style="cursor: pointer;"'}>
+             ${isPast ? "" : 'style="cursor: pointer;"'}>
           <div class="calendar-day-number">${day}</div>
-          ${hasSchedules ? `
+          ${
+            hasSchedules
+              ? `
             <div class="calendar-day-schedules">
               <div class="schedule-count-badge">${daySchedules.length}</div>
-              ${daySchedules.slice(0, 2).map(schedule => `
+              ${daySchedules
+                .slice(0, 2)
+                .map(
+                  (schedule) => `
                 <div class="mini-schedule-item">
                   <span class="mini-time">${schedule.time}</span>
-                  <span class="mini-subject" title="${schedule.subject}">${schedule.subject.length > 15 ? schedule.subject.substring(0, 15) + '...' : schedule.subject}</span>
+                  <span class="mini-subject" title="${schedule.subject}">${
+                    schedule.subject.length > 15
+                      ? schedule.subject.substring(0, 15) + "..."
+                      : schedule.subject
+                  }</span>
                 </div>
-              `).join('')}
-              ${daySchedules.length > 2 ? `<div class="more-schedules">+${daySchedules.length - 2}</div>` : ''}
+              `
+                )
+                .join("")}
+              ${
+                daySchedules.length > 2
+                  ? `<div class="more-schedules">+${
+                      daySchedules.length - 2
+                    }</div>`
+                  : ""
+              }
             </div>
-          ` : ''}
+          `
+              : ""
+          }
         </div>
       `;
     }
-    
+
     calendarHTML += `
         </div>
       </div>
     `;
-    
+
     // Armazenar schedules para uso nos event listeners
     if (!this.scheduleCalendarData) {
       this.scheduleCalendarData = {};
     }
-    this.scheduleCalendarData[`${currentMonth}-${currentYear}`] = schedulesByDate;
+    this.scheduleCalendarData[`${currentMonth}-${currentYear}`] =
+      schedulesByDate;
     this.currentScheduleMonth = currentMonth;
     this.currentScheduleYear = currentYear;
-    
+
     return calendarHTML;
   }
 
   changeScheduleMonth(direction) {
-    if (this.currentScheduleMonth === undefined || this.currentScheduleYear === undefined) {
+    if (
+      this.currentScheduleMonth === undefined ||
+      this.currentScheduleYear === undefined
+    ) {
       const today = new Date();
       this.currentScheduleMonth = today.getMonth();
       this.currentScheduleYear = today.getFullYear();
     }
-    
+
     let currentMonth = this.currentScheduleMonth;
     let currentYear = this.currentScheduleYear;
-    
+
     currentMonth += direction;
-    
+
     if (currentMonth < 0) {
       currentMonth = 11;
       currentYear--;
@@ -2740,15 +2931,15 @@ class AgendaSystem {
       currentMonth = 0;
       currentYear++;
     }
-    
+
     this.currentScheduleMonth = currentMonth;
     this.currentScheduleYear = currentYear;
-    
+
     // Recarregar agendamentos do mês atual
     const approvedSchedules = this.requests.filter(
       (req) => req.status === "approved"
     );
-    
+
     // Agrupar agendamentos por data
     const schedulesByDate = {};
     approvedSchedules.forEach((schedule) => {
@@ -2764,16 +2955,20 @@ class AgendaSystem {
         schedulesByDate[dateKey].push(schedule);
       }
     });
-    
+
     // Gerar novo calendário
-    const calendarHTML = this.generateMonthlyCalendarWithSchedules(currentMonth, currentYear, schedulesByDate);
-    
+    const calendarHTML = this.generateMonthlyCalendarWithSchedules(
+      currentMonth,
+      currentYear,
+      schedulesByDate
+    );
+
     // Atualizar calendário no modal
-    const calendarContainer = document.getElementById('monthlySchedule');
+    const calendarContainer = document.getElementById("monthlySchedule");
     if (calendarContainer) {
       calendarContainer.innerHTML = calendarHTML;
     }
-    
+
     // Adicionar event listeners nos dias
     setTimeout(() => {
       this.addScheduleCalendarClickListeners(currentMonth, currentYear);
@@ -2781,22 +2976,26 @@ class AgendaSystem {
   }
 
   addScheduleCalendarClickListeners(currentMonth, currentYear) {
-    document.querySelectorAll("#scheduleCalendarDays .calendar-day:not(.empty):not(.past)").forEach((dayElement) => {
-      dayElement.addEventListener("click", (e) => {
-        const dateStr = dayElement.getAttribute('data-date');
-        const day = parseInt(dayElement.getAttribute("data-day"));
-        const month = parseInt(dayElement.getAttribute("data-month"));
-        const year = parseInt(dayElement.getAttribute("data-year"));
-        
-        // Buscar agendamentos para este dia
-        const key = `${month}-${year}`;
-        const schedulesByDate = this.scheduleCalendarData[key] || {};
-        const daySchedules = schedulesByDate[dateStr] || [];
-        
-        // Mostrar modal com agendamentos do dia
-        this.showDayAgendamentosModal(day, month, year, daySchedules);
+    document
+      .querySelectorAll(
+        "#scheduleCalendarDays .calendar-day:not(.empty):not(.past)"
+      )
+      .forEach((dayElement) => {
+        dayElement.addEventListener("click", (e) => {
+          const dateStr = dayElement.getAttribute("data-date");
+          const day = parseInt(dayElement.getAttribute("data-day"));
+          const month = parseInt(dayElement.getAttribute("data-month"));
+          const year = parseInt(dayElement.getAttribute("data-year"));
+
+          // Buscar agendamentos para este dia
+          const key = `${month}-${year}`;
+          const schedulesByDate = this.scheduleCalendarData[key] || {};
+          const daySchedules = schedulesByDate[dateStr] || [];
+
+          // Mostrar modal com agendamentos do dia
+          this.showDayAgendamentosModal(day, month, year, daySchedules);
+        });
       });
-    });
   }
 
   startAutoRefresh() {
@@ -3019,14 +3218,14 @@ class AgendaSystem {
       // Adicionar ao final do body para garantir que está acima de tudo
       document.body.appendChild(container);
     }
-    
+
     // Garantir z-index máximo via estilo inline como fallback
     container.style.zIndex = "99999";
     container.style.position = "fixed";
-    
+
     const notification = document.createElement("div");
     notification.className = `notification ${type}`;
-    
+
     // Garantir z-index nas notificações individuais também
     notification.style.zIndex = "99999";
     notification.style.position = "relative";
@@ -3377,8 +3576,6 @@ class AgendaSystem {
       this.currentUser = JSON.parse(savedUser);
       this.isLoggedIn = true;
       this.userType = this.currentUser.userType;
-      // Forçar sincronização com Firebase após carregar dados do usuário
-      this.loadRequestsFromFirebase();
     }
   }
 
@@ -3397,31 +3594,36 @@ class AgendaSystem {
 
   async loadRequestsFromFirebase() {
     try {
-      if (window.db && this.currentUser) {
-        // Carregar solicitações como responsável
+      const firebaseAuthUser = firebase.auth().currentUser;
+
+      if (!window.db || !firebaseAuthUser) {
+        console.error(
+          "Usuário do Firebase Auth não encontrado ou DB indisponível. Consulta abortada."
+        );
+        return;
+      }
+
+      const currentUserId = this.currentUser?.id;
+      const authUid = firebaseAuthUser.uid;
+
+      if (currentUserId && authUid !== currentUserId) {
+        console.error(
+          "AVISO: UID da aplicação (this.currentUser.id) difere do UID de Auth! Usando UID de Auth para a consulta."
+        );
+
+        console.log("DEBUG AUTH UID (Usado na query):", authUid);
+
         const responsavelQuery = await db
           .collection("solicitacoes")
           .where("responsavelId", "==", this.currentUser.id)
           .orderBy("criadoEm", "desc")
           .get();
 
-        // Carregar solicitações como orientador pelo UID
         const orientadorQuery = await db
           .collection("solicitacoes")
           .where("orientadorId", "==", this.currentUser.id)
           .orderBy("criadoEm", "desc")
           .get();
-
-        // Quando o usuário logado é um orientador, também carregar as solicitações
-        // destinadas ao orientador genérico "coordenador"
-        let genericOrientadorQuery = { forEach: () => {} };
-        if (this.userType === "coordenador") {
-          genericOrientadorQuery = await db
-            .collection("solicitacoes")
-            .where("orientadorId", "==", "coordenador")
-            .orderBy("criadoEm", "desc")
-            .get();
-        }
 
         const firebaseRequests = [];
 
@@ -3438,7 +3640,8 @@ class AgendaSystem {
             status: data.status,
             attendanceStatus: data.attendanceStatus || "pendente",
             attendanceFeedback: data.attendanceFeedback || "",
-            postAttendanceFeedback: data.postAttendanceFeedback || data.attendanceFeedback || "",
+            postAttendanceFeedback:
+              data.postAttendanceFeedback || data.attendanceFeedback || "",
             createdAt: data.criadoEm?.toDate?.() || new Date(),
             orientador: this.getOrientadorById(data.orientadorId),
           });
@@ -3458,7 +3661,8 @@ class AgendaSystem {
             status: data.status,
             attendanceStatus: data.attendanceStatus || "pendente",
             attendanceFeedback: data.attendanceFeedback || "",
-            postAttendanceFeedback: data.postAttendanceFeedback || data.attendanceFeedback || "",
+            postAttendanceFeedback:
+              data.postAttendanceFeedback || data.attendanceFeedback || "",
             createdAt: data.criadoEm?.toDate?.() || new Date(),
             orientador: this.getOrientadorById(data.orientadorId),
             responsavelNome: data.responsavelNome,
@@ -3466,29 +3670,6 @@ class AgendaSystem {
           });
         });
 
-        // Solicitações destinadas ao orientador genérico
-        genericOrientadorQuery.forEach((doc) => {
-          const data = doc.data();
-          firebaseRequests.push({
-            id: doc.id,
-            userId: data.responsavelId,
-            orientadorId: data.orientadorId,
-            date: data.data,
-            time: data.horario,
-            subject: data.assunto,
-            message: data.mensagem,
-            status: data.status,
-            attendanceStatus: data.attendanceStatus || "pendente",
-            attendanceFeedback: data.attendanceFeedback || "",
-            postAttendanceFeedback: data.postAttendanceFeedback || data.attendanceFeedback || "",
-            createdAt: data.criadoEm?.toDate?.() || new Date(),
-            orientador: this.getOrientadorById(data.orientadorId),
-            responsavelNome: data.responsavelNome,
-            responsavelEmail: data.responsavelEmail,
-          });
-        });
-
-        // Mesclar com requests existentes, evitando duplicatas
         const existingIds = new Set(this.requests.map((r) => r.id));
         const newRequests = firebaseRequests.filter(
           (r) => !existingIds.has(r.id)
@@ -3512,7 +3693,6 @@ class AgendaSystem {
       document.querySelector("main").style.display = "block";
       document.getElementById("dashboard").classList.add("hidden");
     }
-    this.loadRequests();
   }
 
   // Funções auxiliares para gerenciamento de agenda
@@ -3524,8 +3704,8 @@ class AgendaSystem {
 
     // Ordenar por data
     const sortedSlots = [...timeSlots].sort((a, b) => {
-      const dateA = a.date || (a.dayOfWeek ? '9999-99-99' : '0000-00-00');
-      const dateB = b.date || (b.dayOfWeek ? '9999-99-99' : '0000-00-00');
+      const dateA = a.date || (a.dayOfWeek ? "9999-99-99" : "0000-00-00");
+      const dateB = b.date || (b.dayOfWeek ? "9999-99-99" : "0000-00-00");
       return dateA.localeCompare(dateB);
     });
 
@@ -3534,7 +3714,13 @@ class AgendaSystem {
         (slot) => `
             <div class="time-slot-item">
                 <div class="slot-info">
-                    <span class="slot-day">${slot.date ? this.formatDate(slot.date) : (slot.dayOfWeek !== undefined ? this.getDayName(slot.dayOfWeek) : 'N/A')}</span>
+                    <span class="slot-day">${
+                      slot.date
+                        ? this.formatDate(slot.date)
+                        : slot.dayOfWeek !== undefined
+                        ? this.getDayName(slot.dayOfWeek)
+                        : "N/A"
+                    }</span>
                     <span class="slot-time">${slot.startTime} - ${
           slot.endTime
         }</span>
@@ -3774,9 +3960,8 @@ class AgendaSystem {
   }
 
   showAddTimeSlotForm() {
-    // Gerar calendário mensal
     const calendarHTML = this.generateMonthlyCalendar();
-    
+
     const formHTML = `
             <div class="time-slot-form">
                 <h4>Adicionar Horário</h4>
@@ -3832,63 +4017,82 @@ class AgendaSystem {
     const now = new Date();
     const currentMonth = month !== null ? month : now.getMonth();
     const currentYear = year !== null ? year : now.getFullYear();
-    
-    // Primeiro dia do mês
+
     const firstDay = new Date(currentYear, currentMonth, 1);
     const lastDay = new Date(currentYear, currentMonth + 1, 0);
     const daysInMonth = lastDay.getDate();
     const startingDayOfWeek = firstDay.getDay();
-    
+
     const monthNames = [
-      "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-      "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+      "Janeiro",
+      "Fevereiro",
+      "Março",
+      "Abril",
+      "Maio",
+      "Junho",
+      "Julho",
+      "Agosto",
+      "Setembro",
+      "Outubro",
+      "Novembro",
+      "Dezembro",
     ];
-    
+
     const weekDays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-    
+
     let calendarHTML = `
       <div class="month-calendar">
         <div class="calendar-header">
           <button type="button" class="calendar-nav-btn" id="prevMonthBtn" onclick="agendaSystem.changeCalendarMonth(-1)">
             <i class="fas fa-chevron-left"></i>
           </button>
-          <h3 class="calendar-month-title">${monthNames[currentMonth]} ${currentYear}</h3>
+          <h3 class="calendar-month-title">${
+            monthNames[currentMonth]
+          } ${currentYear}</h3>
           <button type="button" class="calendar-nav-btn" id="nextMonthBtn" onclick="agendaSystem.changeCalendarMonth(1)">
             <i class="fas fa-chevron-right"></i>
           </button>
         </div>
         <div class="calendar-weekdays">
-          ${weekDays.map(day => `<div class="calendar-weekday">${day}</div>`).join("")}
+          ${weekDays
+            .map((day) => `<div class="calendar-weekday">${day}</div>`)
+            .join("")}
         </div>
         <div class="calendar-days" id="calendarDays" data-month="${currentMonth}" data-year="${currentYear}">
     `;
-    
+
     // Espaços vazios para os dias antes do primeiro dia do mês
     for (let i = 0; i < startingDayOfWeek; i++) {
       calendarHTML += '<div class="calendar-day empty"></div>';
     }
-    
+
     // Dias do mês
     const today = new Date();
     for (let day = 1; day <= daysInMonth; day++) {
-      const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(
+        2,
+        "0"
+      )}-${String(day).padStart(2, "0")}`;
       const dateObj = new Date(currentYear, currentMonth, day);
-      const isPast = dateObj < today && dateObj.toDateString() !== today.toDateString();
-      
+      const isPast =
+        dateObj < today && dateObj.toDateString() !== today.toDateString();
+
       calendarHTML += `
-        <div class="calendar-day ${isPast ? 'past' : ''}" 
+        <div class="calendar-day ${isPast ? "past" : ""}" 
              data-date="${dateStr}" 
-             ${isPast ? '' : 'onclick="agendaSystem.toggleDateSelection(this)"'}>
+             ${
+               isPast ? "" : 'onclick="agendaSystem.toggleDateSelection(this)"'
+             }>
           ${day}
         </div>
       `;
     }
-    
+
     calendarHTML += `
         </div>
       </div>
     `;
-    
+
     return calendarHTML;
   }
 
@@ -3901,50 +4105,54 @@ class AgendaSystem {
   }
 
   toggleDateSelection(element) {
-    const date = element.getAttribute('data-date');
-    
+    const date = element.getAttribute("data-date");
+
     if (!this.selectedDates) {
       this.selectedDates = new Set();
     }
-    
+
     if (this.selectedDates.has(date)) {
       this.selectedDates.delete(date);
-      element.classList.remove('selected');
+      element.classList.remove("selected");
     } else {
       this.selectedDates.add(date);
-      element.classList.add('selected');
+      element.classList.add("selected");
     }
-    
+
     this.updateSelectedDatesSummary();
   }
 
   updateSelectedDatesSummary() {
-    const summaryDiv = document.getElementById('selectedDatesSummary');
-    const listDiv = document.getElementById('selectedDatesList');
-    
+    const summaryDiv = document.getElementById("selectedDatesSummary");
+    const listDiv = document.getElementById("selectedDatesList");
+
     if (!summaryDiv || !listDiv) return;
-    
+
     if (this.selectedDates && this.selectedDates.size > 0) {
-      summaryDiv.style.display = 'block';
+      summaryDiv.style.display = "block";
       const datesArray = Array.from(this.selectedDates).sort();
-      listDiv.innerHTML = datesArray.map(date => {
-        const dateObj = new Date(date + 'T00:00:00');
-        return `<span class="selected-date-badge">${this.formatDate(date)}</span>`;
-      }).join('');
+      listDiv.innerHTML = datesArray
+        .map((date) => {
+          const dateObj = new Date(date + "T00:00:00");
+          return `<span class="selected-date-badge">${this.formatDate(
+            date
+          )}</span>`;
+        })
+        .join("");
     } else {
-      summaryDiv.style.display = 'none';
+      summaryDiv.style.display = "none";
     }
   }
 
   changeCalendarMonth(direction) {
-    const calendarDays = document.getElementById('calendarDays');
+    const calendarDays = document.getElementById("calendarDays");
     if (!calendarDays) return;
-    
-    let currentMonth = parseInt(calendarDays.getAttribute('data-month'));
-    let currentYear = parseInt(calendarDays.getAttribute('data-year'));
-    
+
+    let currentMonth = parseInt(calendarDays.getAttribute("data-month"));
+    let currentYear = parseInt(calendarDays.getAttribute("data-year"));
+
     currentMonth += direction;
-    
+
     if (currentMonth < 0) {
       currentMonth = 11;
       currentYear--;
@@ -3952,26 +4160,31 @@ class AgendaSystem {
       currentMonth = 0;
       currentYear++;
     }
-    
+
     // Gerar novo calendário com mês/ano atualizados usando a função existente
-    const calendarHTML = this.generateMonthlyCalendar(currentMonth, currentYear);
-    
+    const calendarHTML = this.generateMonthlyCalendar(
+      currentMonth,
+      currentYear
+    );
+
     // Atualizar calendário
-    const formGroup = document.querySelector('.calendar-container');
+    const formGroup = document.querySelector(".calendar-container");
     if (formGroup) {
       formGroup.innerHTML = calendarHTML;
     }
-    
+
     // Restaurar seleções
     if (this.selectedDates && this.selectedDates.size > 0) {
-      this.selectedDates.forEach(date => {
-        const dayElement = document.querySelector(`.calendar-day[data-date="${date}"]`);
-        if (dayElement && !dayElement.classList.contains('past')) {
-          dayElement.classList.add('selected');
+      this.selectedDates.forEach((date) => {
+        const dayElement = document.querySelector(
+          `.calendar-day[data-date="${date}"]`
+        );
+        if (dayElement && !dayElement.classList.contains("past")) {
+          dayElement.classList.add("selected");
         }
       });
     }
-    
+
     this.initCalendarSelection();
     this.updateSelectedDatesSummary();
   }
@@ -4017,7 +4230,10 @@ class AgendaSystem {
 
     // Validações
     if (!this.selectedDates || this.selectedDates.size === 0) {
-      this.showNotification("Selecione pelo menos uma data no calendário.", "error");
+      this.showNotification(
+        "Selecione pelo menos uma data no calendário.",
+        "error"
+      );
       return;
     }
 
@@ -4046,14 +4262,21 @@ class AgendaSystem {
 
       if (conflictingSlot) {
         this.showNotification(
-          `Já existe um horário configurado para ${this.formatDate(date)} neste período.`,
+          `Já existe um horário configurado para ${this.formatDate(
+            date
+          )} neste período.`,
           "error"
         );
         return;
       }
 
       const timeSlot = {
-        id: Date.now().toString() + "-" + date + "-" + Math.random().toString(36).substr(2, 9),
+        id:
+          Date.now().toString() +
+          "-" +
+          date +
+          "-" +
+          Math.random().toString(36).substr(2, 9),
         date: date,
         startTime: startTime,
         endTime: endTime,
@@ -4066,7 +4289,7 @@ class AgendaSystem {
 
     // Adicionar todos os novos slots
     timeSlots.push(...newSlots);
-    
+
     // Salvar no localStorage e no Firebase
     localStorage.setItem("timeSlots", JSON.stringify(timeSlots));
     this.saveTimeSlotsToFirebase(newSlots);
@@ -4078,7 +4301,7 @@ class AgendaSystem {
       `Horário adicionado com sucesso para ${newSlots.length} data(s): ${datesText}`,
       "success"
     );
-    
+
     // Limpar seleções
     this.selectedDates = new Set();
     this.refreshTimeSlots();
@@ -4089,8 +4312,8 @@ class AgendaSystem {
       if (window.db && this.currentUser && this.userType === "coordenador") {
         const orientadorId = this.currentUser.id;
         const batch = db.batch();
-        
-        timeSlots.forEach(slot => {
+
+        timeSlots.forEach((slot) => {
           const slotRef = db.collection("horarios_disponiveis").doc();
           batch.set(slotRef, {
             orientadorId: orientadorId,
@@ -4101,7 +4324,7 @@ class AgendaSystem {
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
           });
         });
-        
+
         await batch.commit();
       }
     } catch (error) {
@@ -4472,7 +4695,8 @@ class AgendaSystem {
   generateFullReport() {
     // Filtrar apenas agendamentos encerrados para o relatório detalhado
     const completedRequests = this.requests.filter(
-      (r) => r.attendanceStatus === "concluido" || r.attendanceStatus === "faltou"
+      (r) =>
+        r.attendanceStatus === "concluido" || r.attendanceStatus === "faltou"
     );
 
     const reportData = {
@@ -4488,31 +4712,42 @@ class AgendaSystem {
       requests: this.requests.map((r) => ({
         ...r,
         // Incluir feedback pós-atendimento no relatório
-        feedbackPosAtendimento: r.postAttendanceFeedback || r.attendanceFeedback || "Não fornecido",
-        statusAtendimento: r.attendanceStatus === "concluido" 
-          ? "Atendimento Realizado" 
-          : r.attendanceStatus === "faltou" 
-          ? "Aluno Não Compareceu" 
-          : "Pendente",
+        feedbackPosAtendimento:
+          r.postAttendanceFeedback || r.attendanceFeedback || "Não fornecido",
+        statusAtendimento:
+          r.attendanceStatus === "concluido"
+            ? "Atendimento Realizado"
+            : r.attendanceStatus === "faltou"
+            ? "Aluno Não Compareceu"
+            : "Pendente",
       })),
     };
 
-    this.showNotification("Relatório gerado com sucesso! Verifique o console para detalhes.", "success");
+    this.showNotification(
+      "Relatório gerado com sucesso! Verifique o console para detalhes.",
+      "success"
+    );
     console.log("Relatório completo:", reportData);
-    console.log("Agendamentos com Feedback:", completedRequests.map(r => ({
-      id: r.id,
-      assunto: r.subject,
-      data: r.date,
-      horario: r.time,
-      status: r.attendanceStatus === "concluido" ? "Realizado" : "Não Compareceu",
-      feedback: r.postAttendanceFeedback || r.attendanceFeedback || "Não fornecido"
-    })));
+    console.log(
+      "Agendamentos com Feedback:",
+      completedRequests.map((r) => ({
+        id: r.id,
+        assunto: r.subject,
+        data: r.date,
+        horario: r.time,
+        status:
+          r.attendanceStatus === "concluido" ? "Realizado" : "Não Compareceu",
+        feedback:
+          r.postAttendanceFeedback || r.attendanceFeedback || "Não fornecido",
+      }))
+    );
   }
 
   exportReport() {
     // Filtrar apenas agendamentos encerrados para o relatório detalhado
     const completedRequests = this.requests.filter(
-      (r) => r.attendanceStatus === "concluido" || r.attendanceStatus === "faltou"
+      (r) =>
+        r.attendanceStatus === "concluido" || r.attendanceStatus === "faltou"
     );
 
     const reportData = {
@@ -4533,13 +4768,17 @@ class AgendaSystem {
         data: r.date,
         horario: r.time,
         status: this.getStatusText(r.status),
-        statusAtendimento: r.attendanceStatus === "concluido" 
-          ? "Atendimento Realizado" 
-          : r.attendanceStatus === "faltou" 
-          ? "Aluno Não Compareceu" 
-          : "Pendente",
-        feedbackPosAtendimento: r.postAttendanceFeedback || r.attendanceFeedback || "Não fornecido",
-        criadoEm: r.createdAt ? new Date(r.createdAt).toLocaleString("pt-BR") : "N/A",
+        statusAtendimento:
+          r.attendanceStatus === "concluido"
+            ? "Atendimento Realizado"
+            : r.attendanceStatus === "faltou"
+            ? "Aluno Não Compareceu"
+            : "Pendente",
+        feedbackPosAtendimento:
+          r.postAttendanceFeedback || r.attendanceFeedback || "Não fornecido",
+        criadoEm: r.createdAt
+          ? new Date(r.createdAt).toLocaleString("pt-BR")
+          : "N/A",
       })),
     };
 
@@ -4612,16 +4851,17 @@ class AgendaSystem {
                         </div>
                         <div class="stat">
                             <div class="stat-number">${
-                              this.requests.filter(
-                                (r) => this.needsFeedback(r)
-                              ).length
+                              this.requests.filter((r) => this.needsFeedback(r))
+                                .length
                             }</div>
                             <div>Aguardando Feedback</div>
                         </div>
                         <div class="stat">
                             <div class="stat-number">${
                               this.requests.filter(
-                                (r) => r.attendanceStatus === "concluido" || r.attendanceStatus === "faltou"
+                                (r) =>
+                                  r.attendanceStatus === "concluido" ||
+                                  r.attendanceStatus === "faltou"
                               ).length
                             }</div>
                             <div>Encerrados</div>
@@ -4643,28 +4883,36 @@ class AgendaSystem {
                         </thead>
                         <tbody>
                             ${this.requests
-                              .map(
-                                (request) => {
-                                  const statusAtendimento = request.attendanceStatus === "concluido" 
-                                    ? "Atendimento Realizado" 
-                                    : request.attendanceStatus === "faltou" 
-                                    ? "Aluno Não Compareceu" 
+                              .map((request) => {
+                                const statusAtendimento =
+                                  request.attendanceStatus === "concluido"
+                                    ? "Atendimento Realizado"
+                                    : request.attendanceStatus === "faltou"
+                                    ? "Aluno Não Compareceu"
                                     : "Pendente";
-                                  const feedback = request.postAttendanceFeedback || request.attendanceFeedback || "Não fornecido";
-                                  
-                                  return `
+                                const feedback =
+                                  request.postAttendanceFeedback ||
+                                  request.attendanceFeedback ||
+                                  "Não fornecido";
+
+                                return `
                                 <tr>
                                     <td>${this.formatDate(request.date)}</td>
                                     <td>${request.time}</td>
-                                    <td>${request.userName || request.responsavelNome || "N/A"}</td>
+                                    <td>${
+                                      request.userName ||
+                                      request.responsavelNome ||
+                                      "N/A"
+                                    }</td>
                                     <td>${request.subject}</td>
-                                    <td>${this.getStatusText(request.status)}</td>
+                                    <td>${this.getStatusText(
+                                      request.status
+                                    )}</td>
                                     <td>${statusAtendimento}</td>
                                     <td style="max-width: 300px; word-wrap: break-word;">${feedback}</td>
                                 </tr>
                             `;
-                                }
-                              )
+                              })
                               .join("")}
                         </tbody>
                     </table>
@@ -4677,6 +4925,470 @@ class AgendaSystem {
     printWindow.print();
 
     this.showNotification("Relatório enviado para impressão!", "success");
+  }
+
+  // ========== FUNÇÕES DE PERFIL DO ORIENTADOR ==========
+
+  async showProfileModal() {
+    if (this.userType !== "coordenador") {
+      this.showNotification("Acesso negado. Apenas orientadores podem acessar o perfil.", "error");
+      return;
+    }
+
+    await this.loadProfileData();
+    this.showModal("profileModal");
+  }
+
+  async loadProfileData() {
+    try {
+      const currentUser = firebase.auth().currentUser;
+      if (!currentUser) {
+        this.showNotification("Usuário não autenticado.", "error");
+        return;
+      }
+
+      const orientadorDoc = await window.db
+        .collection("orientador_pedagogico")
+        .doc(currentUser.uid)
+        .get();
+
+      if (!orientadorDoc.exists) {
+        this.showNotification("Dados do orientador não encontrados.", "error");
+        return;
+      }
+
+      const data = orientadorDoc.data();
+
+      // Preencher formulário
+      document.getElementById("profileNome").value = data.nome_orientador || "";
+      document.getElementById("profileEmail").value = data.email_orientador || currentUser.email || "";
+      document.getElementById("profileTelefone").value = data.telefone_orientador || "";
+      document.getElementById("profileEscola").value = data.escola_orientador || "";
+      document.getElementById("profileCpf").value = this.formatCPF(data.cpf_orientador || "");
+
+      // Limpar status de verificação e resetar botões
+      const emailStatus = document.getElementById("emailVerifyStatus");
+      const phoneStatus = document.getElementById("phoneVerifyStatus");
+      const emailBtn = document.getElementById("verifyEmailBtn");
+      const phoneBtn = document.getElementById("verifyPhoneBtn");
+      
+      if (emailStatus) {
+        emailStatus.textContent = "";
+        emailStatus.className = "verify-status";
+      }
+      if (phoneStatus) {
+        phoneStatus.textContent = "";
+        phoneStatus.className = "verify-status";
+      }
+      if (emailBtn) {
+        emailBtn.disabled = false;
+        emailBtn.innerHTML = '<i class="fas fa-check-circle"></i> <span>Verificar</span>';
+        emailBtn.classList.remove("verified");
+      }
+      if (phoneBtn) {
+        phoneBtn.disabled = false;
+        phoneBtn.innerHTML = '<i class="fas fa-check-circle"></i> <span>Verificar</span>';
+        phoneBtn.classList.remove("verified");
+      }
+
+      // Carregar foto de perfil
+      if (data.foto_perfil) {
+        const photoPreview = document.getElementById("profilePhotoPreview");
+        const photoPlaceholder = document.getElementById("profilePhotoPlaceholder");
+        if (photoPreview && photoPlaceholder) {
+          photoPreview.src = data.foto_perfil;
+          photoPreview.style.display = "block";
+          photoPlaceholder.style.display = "none";
+        }
+        // Atualizar foto no header também
+        const headerAvatar = document.getElementById("headerUserAvatar");
+        if (headerAvatar) {
+          headerAvatar.innerHTML = `<img src="${data.foto_perfil}" alt="Foto" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+        }
+      } else {
+        const photoPreview = document.getElementById("profilePhotoPreview");
+        const photoPlaceholder = document.getElementById("profilePhotoPlaceholder");
+        if (photoPreview && photoPlaceholder) {
+          photoPreview.style.display = "none";
+          photoPlaceholder.style.display = "flex";
+        }
+      }
+    } catch (error) {
+      console.error("Erro ao carregar dados do perfil:", error);
+      this.showNotification("Erro ao carregar dados do perfil.", "error");
+    }
+  }
+
+  async handleProfileUpdate(e) {
+    e.preventDefault();
+    
+    if (this.userType !== "coordenador") {
+      this.showNotification("Acesso negado.", "error");
+      return;
+    }
+
+    try {
+      const currentUser = firebase.auth().currentUser;
+      if (!currentUser) {
+        this.showNotification("Usuário não autenticado.", "error");
+        return;
+      }
+
+      const email = document.getElementById("profileEmail").value.trim();
+      const telefone = document.getElementById("profileTelefone").value.trim();
+      const escola = document.getElementById("profileEscola").value;
+
+      if (!email || !telefone || !escola) {
+        this.showNotification("Preencha todos os campos obrigatórios.", "error");
+        return;
+      }
+
+      // Validar telefone
+      const telefoneLimpo = this.onlyDigits(telefone);
+      if (telefoneLimpo.length < 10 || telefoneLimpo.length > 11) {
+        this.showNotification("Telefone inválido.", "error");
+        return;
+      }
+
+      // Atualizar no Firestore
+      await window.db
+        .collection("orientador_pedagogico")
+        .doc(currentUser.uid)
+        .update({
+          email_orientador: email,
+          telefone_orientador: telefone,
+          escola_orientador: escola,
+          atualizadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+
+      // Atualizar email no Auth se mudou
+      if (email !== currentUser.email) {
+        await currentUser.updateEmail(email);
+      }
+
+      // Atualizar dados locais
+      if (this.currentUser) {
+        this.currentUser.email = email;
+        this.saveUserData();
+      }
+
+      this.showNotification("Perfil atualizado com sucesso!", "success");
+      this.hideModal("profileModal");
+      this.updateUserProfile();
+    } catch (error) {
+      console.error("Erro ao atualizar perfil:", error);
+      let errorMessage = "Erro ao atualizar perfil.";
+      if (error.code === "auth/requires-recent-login") {
+        errorMessage = "Por segurança, faça login novamente para alterar o e-mail.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      this.showNotification(errorMessage, "error");
+    }
+  }
+
+  async handleProfilePhotoUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validar tipo de arquivo
+    if (!file.type.startsWith("image/")) {
+      this.showNotification("Por favor, selecione uma imagem.", "error");
+      return;
+    }
+
+    // Validar tamanho (máximo 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      this.showNotification("A imagem deve ter no máximo 5MB.", "error");
+      return;
+    }
+
+    try {
+      const currentUser = firebase.auth().currentUser;
+      if (!currentUser) {
+        this.showNotification("Usuário não autenticado.", "error");
+        return;
+      }
+
+      this.showNotification("Enviando foto...", "info");
+
+      // Inicializar Firebase Storage se ainda não foi
+      if (!firebase.storage) {
+        const storageScript = document.createElement("script");
+        storageScript.src = "https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js";
+        document.head.appendChild(storageScript);
+        await new Promise((resolve) => {
+          storageScript.onload = resolve;
+        });
+      }
+
+      const storage = firebase.storage();
+      const storageRef = storage.ref();
+      const photoRef = storageRef.child(`orientadores/${currentUser.uid}/foto_perfil.jpg`);
+
+      // Upload da foto
+      const uploadTask = photoRef.put(file);
+
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          // Progresso do upload (opcional)
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          console.log("Upload progress:", progress + "%");
+        },
+        (error) => {
+          console.error("Erro no upload:", error);
+          this.showNotification("Erro ao fazer upload da foto.", "error");
+        },
+        async () => {
+          try {
+            // Upload concluído, obter URL
+            const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+
+            // Salvar URL no Firestore
+            await window.db
+              .collection("orientador_pedagogico")
+              .doc(currentUser.uid)
+              .update({
+                foto_perfil: downloadURL,
+                atualizadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+              });
+
+            // Atualizar preview
+            const photoPreview = document.getElementById("profilePhotoPreview");
+            const photoPlaceholder = document.getElementById("profilePhotoPlaceholder");
+            if (photoPreview && photoPlaceholder) {
+              photoPreview.src = downloadURL;
+              photoPreview.style.display = "block";
+              photoPlaceholder.style.display = "none";
+            }
+
+            // Atualizar foto no header
+            const headerAvatar = document.getElementById("headerUserAvatar");
+            if (headerAvatar) {
+              headerAvatar.innerHTML = `<img src="${downloadURL}" alt="Foto" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+            }
+
+            this.showNotification("Foto de perfil atualizada com sucesso!", "success");
+          } catch (error) {
+            console.error("Erro ao salvar URL da foto:", error);
+            this.showNotification("Erro ao salvar foto de perfil.", "error");
+          }
+        }
+      );
+    } catch (error) {
+      console.error("Erro no upload da foto:", error);
+      this.showNotification("Erro ao fazer upload da foto.", "error");
+    }
+  }
+
+  // ========== FUNÇÕES DE MÁSCARA E VALIDAÇÃO ==========
+
+  initMasks() {
+    // Máscara de telefone
+    const telefoneInputs = document.querySelectorAll('input[type="tel"], input[id*="telefone"], input[name*="telefone"]');
+    telefoneInputs.forEach((input) => {
+      input.addEventListener("input", (e) => {
+        e.target.value = this.maskPhone(e.target.value);
+      });
+      input.addEventListener("blur", (e) => {
+        e.target.value = this.maskPhone(e.target.value);
+      });
+    });
+
+    // Máscara de CPF
+    const cpfInputs = document.querySelectorAll('input[id*="cpf"], input[name*="cpf"]');
+    cpfInputs.forEach((input) => {
+      input.addEventListener("input", (e) => {
+        e.target.value = this.maskCPF(e.target.value);
+      });
+      input.addEventListener("blur", (e) => {
+        const cpf = this.onlyDigits(e.target.value);
+        if (cpf.length === 11 && !this.validateCPF(cpf)) {
+          const errorElement = e.target.nextElementSibling || document.getElementById(e.target.id + "-error");
+          if (errorElement && errorElement.tagName === "SMALL") {
+            errorElement.textContent = "CPF inválido.";
+            errorElement.style.color = "red";
+          }
+        } else {
+          const errorElement = e.target.nextElementSibling || document.getElementById(e.target.id + "-error");
+          if (errorElement && errorElement.tagName === "SMALL") {
+            errorElement.textContent = "";
+          }
+        }
+      });
+    });
+  }
+
+  maskPhone(value) {
+    const digits = this.onlyDigits(value);
+    if (digits.length === 0) return "";
+    
+    if (digits.length <= 10) {
+      // Telefone fixo: (XX) XXXX-XXXX
+      if (digits.length <= 2) {
+        return `(${digits}`;
+      } else if (digits.length <= 6) {
+        return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+      } else {
+        return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6, 10)}`;
+      }
+    } else {
+      // Celular: (XX) XXXXX-XXXX
+      if (digits.length <= 2) {
+        return `(${digits}`;
+      } else if (digits.length <= 7) {
+        return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+      } else {
+        return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`;
+      }
+    }
+  }
+
+  maskCPF(value) {
+    const digits = this.onlyDigits(value);
+    return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/, (match, p1, p2, p3, p4) => {
+      if (p4) return `${p1}.${p2}.${p3}-${p4}`;
+      if (p3) return `${p1}.${p2}.${p3}`;
+      if (p2) return `${p1}.${p2}`;
+      if (p1) return p1;
+      return digits;
+    });
+  }
+
+  formatCPF(cpf) {
+    const digits = this.onlyDigits(cpf);
+    if (digits.length === 11) {
+      return this.maskCPF(digits);
+    }
+    return cpf;
+  }
+
+  validateCPF(cpf) {
+    const digits = this.onlyDigits(cpf);
+    
+    if (digits.length !== 11) return false;
+    
+    // Verificar se todos os dígitos são iguais
+    if (/^(\d)\1{10}$/.test(digits)) return false;
+
+    // Calcular primeiro dígito verificador
+    let sum = 0;
+    for (let i = 0; i < 9; i++) {
+      sum += parseInt(digits.charAt(i)) * (10 - i);
+    }
+    let digit1 = 11 - (sum % 11);
+    if (digit1 >= 10) digit1 = 0;
+    if (digit1 !== parseInt(digits.charAt(9))) return false;
+
+    // Calcular segundo dígito verificador
+    sum = 0;
+    for (let i = 0; i < 10; i++) {
+      sum += parseInt(digits.charAt(i)) * (11 - i);
+    }
+    let digit2 = 11 - (sum % 11);
+    if (digit2 >= 10) digit2 = 0;
+    if (digit2 !== parseInt(digits.charAt(10))) return false;
+
+    return true;
+  }
+
+  // ========== FUNÇÕES DE VERIFICAÇÃO FICTÍCIAS ==========
+
+  async verifyEmail() {
+    const emailInput = document.getElementById("profileEmail");
+    const statusElement = document.getElementById("emailVerifyStatus");
+    const verifyBtn = document.getElementById("verifyEmailBtn");
+    
+    if (!emailInput || !statusElement || !verifyBtn) return;
+
+    const email = emailInput.value.trim();
+    
+    if (!email) {
+      statusElement.textContent = "Por favor, preencha o e-mail.";
+      statusElement.className = "verify-status error";
+      return;
+    }
+
+    // Validar formato básico de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      statusElement.textContent = "Formato de e-mail inválido.";
+      statusElement.className = "verify-status error";
+      return;
+    }
+
+    // Desabilitar botão durante verificação
+    verifyBtn.disabled = true;
+    verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Verificando...</span>';
+    statusElement.textContent = "Verificando e-mail...";
+    statusElement.className = "verify-status verifying";
+
+    // Simular verificação (fictícia) - aguardar 2 segundos
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // Simular resultado (sempre bem-sucedido para demonstração)
+    const isVerified = Math.random() > 0.2; // 80% de chance de sucesso
+
+    if (isVerified) {
+      statusElement.textContent = "✓ E-mail verificado com sucesso!";
+      statusElement.className = "verify-status success";
+      verifyBtn.innerHTML = '<i class="fas fa-check-circle"></i> <span>Verificado</span>';
+      verifyBtn.classList.add("verified");
+    } else {
+      statusElement.textContent = "✗ Não foi possível verificar o e-mail. Tente novamente.";
+      statusElement.className = "verify-status error";
+      verifyBtn.innerHTML = '<i class="fas fa-check-circle"></i> <span>Verificar</span>';
+      verifyBtn.disabled = false;
+    }
+  }
+
+  async verifyPhone() {
+    const phoneInput = document.getElementById("profileTelefone");
+    const statusElement = document.getElementById("phoneVerifyStatus");
+    const verifyBtn = document.getElementById("verifyPhoneBtn");
+    
+    if (!phoneInput || !statusElement || !verifyBtn) return;
+
+    const phone = phoneInput.value.trim();
+    const phoneDigits = this.onlyDigits(phone);
+    
+    if (!phone) {
+      statusElement.textContent = "Por favor, preencha o telefone.";
+      statusElement.className = "verify-status error";
+      return;
+    }
+
+    // Validar tamanho do telefone
+    if (phoneDigits.length < 10 || phoneDigits.length > 11) {
+      statusElement.textContent = "Telefone inválido. Digite um telefone válido.";
+      statusElement.className = "verify-status error";
+      return;
+    }
+
+    // Desabilitar botão durante verificação
+    verifyBtn.disabled = true;
+    verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Verificando...</span>';
+    statusElement.textContent = "Enviando código de verificação...";
+    statusElement.className = "verify-status verifying";
+
+    // Simular envio de código SMS (fictício) - aguardar 2 segundos
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // Simular resultado (sempre bem-sucedido para demonstração)
+    const isVerified = Math.random() > 0.2; // 80% de chance de sucesso
+
+    if (isVerified) {
+      statusElement.textContent = "✓ Código enviado! Telefone verificado com sucesso!";
+      statusElement.className = "verify-status success";
+      verifyBtn.innerHTML = '<i class="fas fa-check-circle"></i> <span>Verificado</span>';
+      verifyBtn.classList.add("verified");
+    } else {
+      statusElement.textContent = "✗ Não foi possível enviar o código. Tente novamente.";
+      statusElement.className = "verify-status error";
+      verifyBtn.innerHTML = '<i class="fas fa-check-circle"></i> <span>Verificar</span>';
+      verifyBtn.disabled = false;
+    }
   }
 }
 

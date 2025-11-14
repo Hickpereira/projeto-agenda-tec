@@ -59,7 +59,7 @@
                     <div id="user-menu" class="hidden">
                         <div class="user-profile">
                             <div class="user-info">
-                                <div class="user-avatar">
+                                <div class="user-avatar" id="headerUserAvatar">
                                     <i class="fas fa-user"></i>
                                 </div>
                                 <div class="user-details">
@@ -67,6 +67,10 @@
                                     <span class="user-type" id="userTypeDisplay">Tipo de Usuário</span>
                                 </div>
                             </div>
+                            <button class="btn btn-outline" id="profileBtn" style="display: none;">
+                                <i class="fas fa-user-edit"></i>
+                                
+                            </button>
                             <button class="btn btn-outline btn-logout" id="logoutBtn">
                                 <i class="fas fa-sign-out-alt"></i>
                                 <span>Sair</span>
@@ -172,11 +176,11 @@
                     </div>
                     <div class="form-group">
                         <label for="loginEmail">Email</label>
-                        <input type="email" id="loginEmail" name="email">
+                        <input type="email" id="loginEmail" name="email" placeholder="Digite seu E-mail cadastrado">
                     </div>
                     <div class="form-group">
                         <label for="senhaLoginResponsavel">Senha</label>
-                        <input type="password" id="senhaLoginResponsavel" name="password">
+                        <input type="password" id="senhaLoginResponsavel" name="password" placeholder="Digite sua senha cadastrada">
                         <p class="forgot-password-link">
                             <a href="#" id="forgotPasswordLink">Esqueci minha senha</a>
                         </p>
@@ -202,7 +206,7 @@
                     </div>
                     <div class="form-group">
                         <label for="senhaLoginOrientador">Senha</label>
-                        <input type="password" id="senhaLoginOrientador" name="password">
+                        <input type="password" id="senhaLoginOrientador" name="password" placeholder="Digite sua senha cadastrada">
                     </div>
                 </div>
             </div>
@@ -285,7 +289,7 @@
 
                         <div class="form-group">
                             <label for="escola_orientador_register">Escola onde trabalha</label>
-                                <select id="escola_orientador_register" name="escola_orientador" required>
+                                <select id="escola_orientador_register" name="escola_orientador">
                                     <option value="">Selecione a escola...</option>
                                     <option value="escola_a">Etec de Heliópolis - Arquiteto Ruy Ohtake (ZS)</option>
                                     <option value="escola_b">Etec Getúlio Vargas (Ipiranga)</option>
@@ -315,6 +319,79 @@
     
                     
     
+
+    <!-- Modal de Perfil do Orientador -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>Meu Perfil</h2>
+                <span class="close" id="closeProfile">&times;</span>
+            </div>
+            <div class="profile-content">
+                <!-- Seção de Foto de Perfil -->
+                <div class="profile-photo-section">
+                    <div class="profile-photo-container">
+                        <img id="profilePhotoPreview" src="" alt="Foto de Perfil" style="display: none;">
+                        <div id="profilePhotoPlaceholder" class="profile-photo-placeholder">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <label for="profilePhotoInput" class="profile-photo-upload-btn">
+                            <i class="fas fa-camera"></i>
+                            <span>Alterar Foto</span>
+                        </label>
+                        <input type="file" id="profilePhotoInput" accept="image/*" style="display: none;">
+                    </div>
+                </div>
+
+                <!-- Formulário de Edição -->
+                <form id="profileForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="profileNome">Nome</label>
+                        <input type="text" id="profileNome" name="nome" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="profileEmail">E-mail</label>
+                        <div class="input-with-button">
+                            <input type="email" id="profileEmail" name="email" required>
+                            <button type="button" class="btn-verify" id="verifyEmailBtn" title="Verificar e-mail">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Verificar</span>
+                            </button>
+                        </div>
+                        <small id="emailVerifyStatus" class="verify-status"></small>
+                    </div>
+                    <div class="form-group">
+                        <label for="profileTelefone">Telefone</label>
+                        <div class="input-with-button">
+                            <input type="tel" id="profileTelefone" name="telefone" placeholder="(00) 00000-0000" required>
+                            <button type="button" class="btn-verify" id="verifyPhoneBtn" title="Verificar telefone">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Verificar</span>
+                            </button>
+                        </div>
+                        <small id="phoneVerifyStatus" class="verify-status"></small>
+                    </div>
+                    <div class="form-group">
+                        <label for="profileEscola">Unidade Escolar</label>
+                        <select id="profileEscola" name="escola" required>
+                            <option value="">Selecione a escola...</option>
+                            <option value="escola_a">Etec de Heliópolis - Arquiteto Ruy Ohtake (ZS)</option>
+                            <option value="escola_b">Etec Getúlio Vargas (Ipiranga)</option>
+                            <option value="escola_c">Etec Jorge Street - Jardim São Caetano</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="profileCpf">CPF</label>
+                        <input type="text" id="profileCpf" name="cpf" placeholder="000.000.000-00" readonly>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-outline" id="cancelProfileBtn">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <!-- Dashboard (hidden by default) -->
     <div id="dashboard" class="dashboard hidden">
@@ -495,6 +572,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 
     <script src="firebase-config.js"></script>
     <script src="app.js"></script>
