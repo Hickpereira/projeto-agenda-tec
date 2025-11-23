@@ -3624,15 +3624,12 @@ class AgendaSystem {
 
       const responsavelQuery = await db
         .collection("solicitacoes")
-
         .where("responsavelId", "==", authUid)
-        .orderBy("criadoEm", "desc")
         .get();
 
       const orientadorQuery = await db
         .collection("solicitacoes")
         .where("orientadorId", "==", authUid)
-        .orderBy("criadoEm", "desc")
         .get();
 
       const firebaseRequests = [];
@@ -3653,7 +3650,7 @@ class AgendaSystem {
           attendanceFeedback: data.attendanceFeedback || "",
           postAttendanceFeedback:
             data.postAttendanceFeedback || data.attendanceFeedback || "",
-          createdAt: data.criadoEm?.toDate?.() || new Date(),
+          createdAt: data.criadoEm?.toDate?.() || new Date(0),
           orientador: this.getOrientadorById(data.orientadorId),
           responsavelNome: data.responsavelNome,
           responsavelEmail: data.responsavelEmail,
@@ -3662,7 +3659,6 @@ class AgendaSystem {
 
       orientadorQuery.forEach((doc) => {
         const data = doc.data();
-
         if (!firebaseRequests.some((r) => r.id === doc.id)) {
           firebaseRequests.push({
             id: doc.id,
@@ -3678,13 +3674,17 @@ class AgendaSystem {
             attendanceFeedback: data.attendanceFeedback || "",
             postAttendanceFeedback:
               data.postAttendanceFeedback || data.attendanceFeedback || "",
-            createdAt: data.criadoEm?.toDate?.() || new Date(),
+            createdAt: data.criadoEm?.toDate?.() || new Date(0),
             orientador: this.getOrientadorById(data.orientadorId),
             responsavelNome: data.responsavelNome,
             responsavelEmail: data.responsavelEmail,
           });
         }
       });
+
+      firebaseRequests.sort(
+        (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+      );
 
       this.requests = firebaseRequests;
       this.saveRequests();
@@ -3695,27 +3695,39 @@ class AgendaSystem {
 
   /**
    * Carrega os horários (time slots) do Firebase,
-   * filtrados pelo Orientador logado.
+   * filtrados pelo Orientador (para gerenciar) ou
+   * todos (para o Responsável agendar).
    */
   async loadTimeSlotsFromFirebase() {
     try {
       const firebaseAuthUser = firebase.auth().currentUser;
 
-      // se nao for oe, limpa os hors locais e sai
-      if (!window.db || !firebaseAuthUser || this.userType !== "coordenador") {
+      if (!window.db || !firebaseAuthUser) {
+        console.error("loadTimeSlots: Auth/DB indisponível.");
         localStorage.setItem("timeSlots", JSON.stringify([]));
         return;
       }
 
       const authUid = firebaseAuthUser.uid;
+      let slotsQuery;
 
-      const slotsQuery = await db
-        .collection("horarios_disponiveis")
-        .where("orientadorId", "==", authUid)
-        .get();
+      if (this.userType === "coordenador") {
+        console.log(`Carregando horários PARA o Orientador ${authUid}`);
+        slotsQuery = db
+          .collection("horarios_disponiveis")
+          .where("orientadorId", "==", authUid);
+      } else if (this.userType === "responsavel") {
+        console.log("Carregando TODOS os horários para o Responsável");
+        slotsQuery = db.collection("horarios_disponiveis");
+      } else {
+        localStorage.setItem("timeSlots", JSON.stringify([]));
+        return;
+      }
+
+      const snapshot = await slotsQuery.get();
 
       const firebaseTimeSlots = [];
-      slotsQuery.forEach((doc) => {
+      snapshot.forEach((doc) => {
         firebaseTimeSlots.push({
           id: doc.id,
           ...doc.data(),
@@ -3724,12 +3736,9 @@ class AgendaSystem {
 
       localStorage.setItem("timeSlots", JSON.stringify(firebaseTimeSlots));
 
-      console.log(
-        `Carregados ${firebaseTimeSlots.length} horários para o Orientador ${authUid}`
-      );
+      console.log(`Carregados ${firebaseTimeSlots.length} horários no total.`);
     } catch (error) {
       console.error("Erro ao carregar horários do Firebase:", error);
-
       localStorage.setItem("timeSlots", JSON.stringify([]));
     }
   }
@@ -5423,7 +5432,6 @@ class AgendaSystem {
     // Simular verificação (fictícia) - aguardar 2 segundos
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    // Simular resultado (sempre bem-sucedido para demonstração)
     const isVerified = Math.random() > 0.2; // 80% de chance de sucesso
 
     if (isVerified) {
