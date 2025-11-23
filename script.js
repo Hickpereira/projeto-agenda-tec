@@ -183,17 +183,21 @@ class AgendaSystem {
     document.getElementById("closeProfile")?.addEventListener("click", () => {
       this.hideModal("profileModal");
     });
-    document.getElementById("cancelProfileBtn")?.addEventListener("click", () => {
-      this.hideModal("profileModal");
-    });
+    document
+      .getElementById("cancelProfileBtn")
+      ?.addEventListener("click", () => {
+        this.hideModal("profileModal");
+      });
     document.getElementById("profileForm")?.addEventListener("submit", (e) => {
       this.handleProfileUpdate(e);
     });
 
     // Upload de foto
-    document.getElementById("profilePhotoInput")?.addEventListener("change", (e) => {
-      this.handleProfilePhotoUpload(e);
-    });
+    document
+      .getElementById("profilePhotoInput")
+      ?.addEventListener("change", (e) => {
+        this.handleProfilePhotoUpload(e);
+      });
 
     // Botões de verificação
     document.getElementById("verifyEmailBtn")?.addEventListener("click", () => {
@@ -852,6 +856,11 @@ class AgendaSystem {
     this.userType = null;
     this.stopAutoRefresh();
     localStorage.removeItem("currentUser");
+
+    localStorage.removeItem("agenda_requests");
+    localStorage.removeItem("timeSlots");
+    this.requests = [];
+
     document.getElementById("dashboard").classList.add("hidden");
     document.querySelector("main").style.display = "block";
 
@@ -1081,7 +1090,7 @@ class AgendaSystem {
     } else {
       avatarElement.textContent = "👨‍🏫";
     }
-    
+
     document.querySelector(".orientador-name").textContent =
       orientadorData.nome_orientador || "Nome não informado";
     document.querySelector(".orientador-specialty").textContent =
@@ -3588,7 +3597,6 @@ class AgendaSystem {
     if (savedRequests) {
       this.requests = JSON.parse(savedRequests);
     }
-    // Também carregar do Firebase se disponível
     this.loadRequestsFromFirebase();
   }
 
@@ -3603,56 +3611,63 @@ class AgendaSystem {
         return;
       }
 
-      const currentUserId = this.currentUser?.id;
       const authUid = firebaseAuthUser.uid;
+      const currentUserId = this.currentUser?.id;
 
       if (currentUserId && authUid !== currentUserId) {
-        console.error(
+        console.warn(
           "AVISO: UID da aplicação (this.currentUser.id) difere do UID de Auth! Usando UID de Auth para a consulta."
         );
+      }
 
-        console.log("DEBUG AUTH UID (Usado na query):", authUid);
+      console.log("DEBUG AUTH UID (Usado na query):", authUid);
 
-        const responsavelQuery = await db
-          .collection("solicitacoes")
-          .where("responsavelId", "==", this.currentUser.id)
-          .orderBy("criadoEm", "desc")
-          .get();
+      const responsavelQuery = await db
+        .collection("solicitacoes")
 
-        const orientadorQuery = await db
-          .collection("solicitacoes")
-          .where("orientadorId", "==", this.currentUser.id)
-          .orderBy("criadoEm", "desc")
-          .get();
+        .where("responsavelId", "==", authUid)
+        .orderBy("criadoEm", "desc")
+        .get();
 
-        const firebaseRequests = [];
+      const orientadorQuery = await db
+        .collection("solicitacoes")
+        .where("orientadorId", "==", authUid)
+        .orderBy("criadoEm", "desc")
+        .get();
 
-        responsavelQuery.forEach((doc) => {
-          const data = doc.data();
-          firebaseRequests.push({
-            id: doc.id,
-            userId: data.responsavelId,
-            orientadorId: data.orientadorId,
-            date: data.data,
-            time: data.horario,
-            subject: data.assunto,
-            message: data.mensagem,
-            status: data.status,
-            attendanceStatus: data.attendanceStatus || "pendente",
-            attendanceFeedback: data.attendanceFeedback || "",
-            postAttendanceFeedback:
-              data.postAttendanceFeedback || data.attendanceFeedback || "",
-            createdAt: data.criadoEm?.toDate?.() || new Date(),
-            orientador: this.getOrientadorById(data.orientadorId),
-          });
+      const firebaseRequests = [];
+
+      responsavelQuery.forEach((doc) => {
+        const data = doc.data();
+        firebaseRequests.push({
+          id: doc.id,
+          userId: data.responsavelId,
+          responsavelId: data.responsavelId,
+          orientadorId: data.orientadorId,
+          date: data.data,
+          time: data.horario,
+          subject: data.assunto,
+          message: data.mensagem,
+          status: data.status,
+          attendanceStatus: data.attendanceStatus || "pendente",
+          attendanceFeedback: data.attendanceFeedback || "",
+          postAttendanceFeedback:
+            data.postAttendanceFeedback || data.attendanceFeedback || "",
+          createdAt: data.criadoEm?.toDate?.() || new Date(),
+          orientador: this.getOrientadorById(data.orientadorId),
+          responsavelNome: data.responsavelNome,
+          responsavelEmail: data.responsavelEmail,
         });
+      });
 
-        // Solicitações endereçadas diretamente ao orientador logado
-        orientadorQuery.forEach((doc) => {
-          const data = doc.data();
+      orientadorQuery.forEach((doc) => {
+        const data = doc.data();
+
+        if (!firebaseRequests.some((r) => r.id === doc.id)) {
           firebaseRequests.push({
             id: doc.id,
             userId: data.responsavelId,
+            responsavelId: data.responsavelId,
             orientadorId: data.orientadorId,
             date: data.data,
             time: data.horario,
@@ -3668,18 +3683,54 @@ class AgendaSystem {
             responsavelNome: data.responsavelNome,
             responsavelEmail: data.responsavelEmail,
           });
-        });
+        }
+      });
 
-        const existingIds = new Set(this.requests.map((r) => r.id));
-        const newRequests = firebaseRequests.filter(
-          (r) => !existingIds.has(r.id)
-        );
-        this.requests = [...this.requests, ...newRequests];
-
-        this.saveRequests();
-      }
+      this.requests = firebaseRequests;
+      this.saveRequests();
     } catch (error) {
       console.error("Erro ao carregar solicitações do Firebase:", error);
+    }
+  }
+
+  /**
+   * Carrega os horários (time slots) do Firebase,
+   * filtrados pelo Orientador logado.
+   */
+  async loadTimeSlotsFromFirebase() {
+    try {
+      const firebaseAuthUser = firebase.auth().currentUser;
+
+      // se nao for oe, limpa os hors locais e sai
+      if (!window.db || !firebaseAuthUser || this.userType !== "coordenador") {
+        localStorage.setItem("timeSlots", JSON.stringify([]));
+        return;
+      }
+
+      const authUid = firebaseAuthUser.uid;
+
+      const slotsQuery = await db
+        .collection("horarios_disponiveis")
+        .where("orientadorId", "==", authUid)
+        .get();
+
+      const firebaseTimeSlots = [];
+      slotsQuery.forEach((doc) => {
+        firebaseTimeSlots.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+
+      localStorage.setItem("timeSlots", JSON.stringify(firebaseTimeSlots));
+
+      console.log(
+        `Carregados ${firebaseTimeSlots.length} horários para o Orientador ${authUid}`
+      );
+    } catch (error) {
+      console.error("Erro ao carregar horários do Firebase:", error);
+
+      localStorage.setItem("timeSlots", JSON.stringify([]));
     }
   }
 
@@ -4931,7 +4982,10 @@ class AgendaSystem {
 
   async showProfileModal() {
     if (this.userType !== "coordenador") {
-      this.showNotification("Acesso negado. Apenas orientadores podem acessar o perfil.", "error");
+      this.showNotification(
+        "Acesso negado. Apenas orientadores podem acessar o perfil.",
+        "error"
+      );
       return;
     }
 
@@ -4961,17 +5015,22 @@ class AgendaSystem {
 
       // Preencher formulário
       document.getElementById("profileNome").value = data.nome_orientador || "";
-      document.getElementById("profileEmail").value = data.email_orientador || currentUser.email || "";
-      document.getElementById("profileTelefone").value = data.telefone_orientador || "";
-      document.getElementById("profileEscola").value = data.escola_orientador || "";
-      document.getElementById("profileCpf").value = this.formatCPF(data.cpf_orientador || "");
+      document.getElementById("profileEmail").value =
+        data.email_orientador || currentUser.email || "";
+      document.getElementById("profileTelefone").value =
+        data.telefone_orientador || "";
+      document.getElementById("profileEscola").value =
+        data.escola_orientador || "";
+      document.getElementById("profileCpf").value = this.formatCPF(
+        data.cpf_orientador || ""
+      );
 
       // Limpar status de verificação e resetar botões
       const emailStatus = document.getElementById("emailVerifyStatus");
       const phoneStatus = document.getElementById("phoneVerifyStatus");
       const emailBtn = document.getElementById("verifyEmailBtn");
       const phoneBtn = document.getElementById("verifyPhoneBtn");
-      
+
       if (emailStatus) {
         emailStatus.textContent = "";
         emailStatus.className = "verify-status";
@@ -4982,19 +5041,23 @@ class AgendaSystem {
       }
       if (emailBtn) {
         emailBtn.disabled = false;
-        emailBtn.innerHTML = '<i class="fas fa-check-circle"></i> <span>Verificar</span>';
+        emailBtn.innerHTML =
+          '<i class="fas fa-check-circle"></i> <span>Verificar</span>';
         emailBtn.classList.remove("verified");
       }
       if (phoneBtn) {
         phoneBtn.disabled = false;
-        phoneBtn.innerHTML = '<i class="fas fa-check-circle"></i> <span>Verificar</span>';
+        phoneBtn.innerHTML =
+          '<i class="fas fa-check-circle"></i> <span>Verificar</span>';
         phoneBtn.classList.remove("verified");
       }
 
       // Carregar foto de perfil
       if (data.foto_perfil) {
         const photoPreview = document.getElementById("profilePhotoPreview");
-        const photoPlaceholder = document.getElementById("profilePhotoPlaceholder");
+        const photoPlaceholder = document.getElementById(
+          "profilePhotoPlaceholder"
+        );
         if (photoPreview && photoPlaceholder) {
           photoPreview.src = data.foto_perfil;
           photoPreview.style.display = "block";
@@ -5007,7 +5070,9 @@ class AgendaSystem {
         }
       } else {
         const photoPreview = document.getElementById("profilePhotoPreview");
-        const photoPlaceholder = document.getElementById("profilePhotoPlaceholder");
+        const photoPlaceholder = document.getElementById(
+          "profilePhotoPlaceholder"
+        );
         if (photoPreview && photoPlaceholder) {
           photoPreview.style.display = "none";
           photoPlaceholder.style.display = "flex";
@@ -5021,7 +5086,7 @@ class AgendaSystem {
 
   async handleProfileUpdate(e) {
     e.preventDefault();
-    
+
     if (this.userType !== "coordenador") {
       this.showNotification("Acesso negado.", "error");
       return;
@@ -5039,7 +5104,10 @@ class AgendaSystem {
       const escola = document.getElementById("profileEscola").value;
 
       if (!email || !telefone || !escola) {
-        this.showNotification("Preencha todos os campos obrigatórios.", "error");
+        this.showNotification(
+          "Preencha todos os campos obrigatórios.",
+          "error"
+        );
         return;
       }
 
@@ -5079,7 +5147,8 @@ class AgendaSystem {
       console.error("Erro ao atualizar perfil:", error);
       let errorMessage = "Erro ao atualizar perfil.";
       if (error.code === "auth/requires-recent-login") {
-        errorMessage = "Por segurança, faça login novamente para alterar o e-mail.";
+        errorMessage =
+          "Por segurança, faça login novamente para alterar o e-mail.";
       } else if (error.message) {
         errorMessage = error.message;
       }
@@ -5115,7 +5184,8 @@ class AgendaSystem {
       // Inicializar Firebase Storage se ainda não foi
       if (!firebase.storage) {
         const storageScript = document.createElement("script");
-        storageScript.src = "https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js";
+        storageScript.src =
+          "https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js";
         document.head.appendChild(storageScript);
         await new Promise((resolve) => {
           storageScript.onload = resolve;
@@ -5124,7 +5194,9 @@ class AgendaSystem {
 
       const storage = firebase.storage();
       const storageRef = storage.ref();
-      const photoRef = storageRef.child(`orientadores/${currentUser.uid}/foto_perfil.jpg`);
+      const photoRef = storageRef.child(
+        `orientadores/${currentUser.uid}/foto_perfil.jpg`
+      );
 
       // Upload da foto
       const uploadTask = photoRef.put(file);
@@ -5133,7 +5205,8 @@ class AgendaSystem {
         "state_changed",
         (snapshot) => {
           // Progresso do upload (opcional)
-          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          const progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
           console.log("Upload progress:", progress + "%");
         },
         (error) => {
@@ -5156,7 +5229,9 @@ class AgendaSystem {
 
             // Atualizar preview
             const photoPreview = document.getElementById("profilePhotoPreview");
-            const photoPlaceholder = document.getElementById("profilePhotoPlaceholder");
+            const photoPlaceholder = document.getElementById(
+              "profilePhotoPlaceholder"
+            );
             if (photoPreview && photoPlaceholder) {
               photoPreview.src = downloadURL;
               photoPreview.style.display = "block";
@@ -5169,7 +5244,10 @@ class AgendaSystem {
               headerAvatar.innerHTML = `<img src="${downloadURL}" alt="Foto" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
             }
 
-            this.showNotification("Foto de perfil atualizada com sucesso!", "success");
+            this.showNotification(
+              "Foto de perfil atualizada com sucesso!",
+              "success"
+            );
           } catch (error) {
             console.error("Erro ao salvar URL da foto:", error);
             this.showNotification("Erro ao salvar foto de perfil.", "error");
@@ -5186,7 +5264,9 @@ class AgendaSystem {
 
   initMasks() {
     // Máscara de telefone
-    const telefoneInputs = document.querySelectorAll('input[type="tel"], input[id*="telefone"], input[name*="telefone"]');
+    const telefoneInputs = document.querySelectorAll(
+      'input[type="tel"], input[id*="telefone"], input[name*="telefone"]'
+    );
     telefoneInputs.forEach((input) => {
       input.addEventListener("input", (e) => {
         e.target.value = this.maskPhone(e.target.value);
@@ -5197,7 +5277,9 @@ class AgendaSystem {
     });
 
     // Máscara de CPF
-    const cpfInputs = document.querySelectorAll('input[id*="cpf"], input[name*="cpf"]');
+    const cpfInputs = document.querySelectorAll(
+      'input[id*="cpf"], input[name*="cpf"]'
+    );
     cpfInputs.forEach((input) => {
       input.addEventListener("input", (e) => {
         e.target.value = this.maskCPF(e.target.value);
@@ -5205,13 +5287,17 @@ class AgendaSystem {
       input.addEventListener("blur", (e) => {
         const cpf = this.onlyDigits(e.target.value);
         if (cpf.length === 11 && !this.validateCPF(cpf)) {
-          const errorElement = e.target.nextElementSibling || document.getElementById(e.target.id + "-error");
+          const errorElement =
+            e.target.nextElementSibling ||
+            document.getElementById(e.target.id + "-error");
           if (errorElement && errorElement.tagName === "SMALL") {
             errorElement.textContent = "CPF inválido.";
             errorElement.style.color = "red";
           }
         } else {
-          const errorElement = e.target.nextElementSibling || document.getElementById(e.target.id + "-error");
+          const errorElement =
+            e.target.nextElementSibling ||
+            document.getElementById(e.target.id + "-error");
           if (errorElement && errorElement.tagName === "SMALL") {
             errorElement.textContent = "";
           }
@@ -5223,7 +5309,7 @@ class AgendaSystem {
   maskPhone(value) {
     const digits = this.onlyDigits(value);
     if (digits.length === 0) return "";
-    
+
     if (digits.length <= 10) {
       // Telefone fixo: (XX) XXXX-XXXX
       if (digits.length <= 2) {
@@ -5231,7 +5317,10 @@ class AgendaSystem {
       } else if (digits.length <= 6) {
         return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
       } else {
-        return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6, 10)}`;
+        return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(
+          6,
+          10
+        )}`;
       }
     } else {
       // Celular: (XX) XXXXX-XXXX
@@ -5240,20 +5329,26 @@ class AgendaSystem {
       } else if (digits.length <= 7) {
         return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
       } else {
-        return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`;
+        return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(
+          7,
+          11
+        )}`;
       }
     }
   }
 
   maskCPF(value) {
     const digits = this.onlyDigits(value);
-    return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/, (match, p1, p2, p3, p4) => {
-      if (p4) return `${p1}.${p2}.${p3}-${p4}`;
-      if (p3) return `${p1}.${p2}.${p3}`;
-      if (p2) return `${p1}.${p2}`;
-      if (p1) return p1;
-      return digits;
-    });
+    return digits.replace(
+      /(\d{3})(\d{3})(\d{3})(\d{0,2})/,
+      (match, p1, p2, p3, p4) => {
+        if (p4) return `${p1}.${p2}.${p3}-${p4}`;
+        if (p3) return `${p1}.${p2}.${p3}`;
+        if (p2) return `${p1}.${p2}`;
+        if (p1) return p1;
+        return digits;
+      }
+    );
   }
 
   formatCPF(cpf) {
@@ -5266,9 +5361,9 @@ class AgendaSystem {
 
   validateCPF(cpf) {
     const digits = this.onlyDigits(cpf);
-    
+
     if (digits.length !== 11) return false;
-    
+
     // Verificar se todos os dígitos são iguais
     if (/^(\d)\1{10}$/.test(digits)) return false;
 
@@ -5299,11 +5394,11 @@ class AgendaSystem {
     const emailInput = document.getElementById("profileEmail");
     const statusElement = document.getElementById("emailVerifyStatus");
     const verifyBtn = document.getElementById("verifyEmailBtn");
-    
+
     if (!emailInput || !statusElement || !verifyBtn) return;
 
     const email = emailInput.value.trim();
-    
+
     if (!email) {
       statusElement.textContent = "Por favor, preencha o e-mail.";
       statusElement.className = "verify-status error";
@@ -5320,12 +5415,13 @@ class AgendaSystem {
 
     // Desabilitar botão durante verificação
     verifyBtn.disabled = true;
-    verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Verificando...</span>';
+    verifyBtn.innerHTML =
+      '<i class="fas fa-spinner fa-spin"></i> <span>Verificando...</span>';
     statusElement.textContent = "Verificando e-mail...";
     statusElement.className = "verify-status verifying";
 
     // Simular verificação (fictícia) - aguardar 2 segundos
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // Simular resultado (sempre bem-sucedido para demonstração)
     const isVerified = Math.random() > 0.2; // 80% de chance de sucesso
@@ -5333,12 +5429,15 @@ class AgendaSystem {
     if (isVerified) {
       statusElement.textContent = "✓ E-mail verificado com sucesso!";
       statusElement.className = "verify-status success";
-      verifyBtn.innerHTML = '<i class="fas fa-check-circle"></i> <span>Verificado</span>';
+      verifyBtn.innerHTML =
+        '<i class="fas fa-check-circle"></i> <span>Verificado</span>';
       verifyBtn.classList.add("verified");
     } else {
-      statusElement.textContent = "✗ Não foi possível verificar o e-mail. Tente novamente.";
+      statusElement.textContent =
+        "✗ Não foi possível verificar o e-mail. Tente novamente.";
       statusElement.className = "verify-status error";
-      verifyBtn.innerHTML = '<i class="fas fa-check-circle"></i> <span>Verificar</span>';
+      verifyBtn.innerHTML =
+        '<i class="fas fa-check-circle"></i> <span>Verificar</span>';
       verifyBtn.disabled = false;
     }
   }
@@ -5347,12 +5446,12 @@ class AgendaSystem {
     const phoneInput = document.getElementById("profileTelefone");
     const statusElement = document.getElementById("phoneVerifyStatus");
     const verifyBtn = document.getElementById("verifyPhoneBtn");
-    
+
     if (!phoneInput || !statusElement || !verifyBtn) return;
 
     const phone = phoneInput.value.trim();
     const phoneDigits = this.onlyDigits(phone);
-    
+
     if (!phone) {
       statusElement.textContent = "Por favor, preencha o telefone.";
       statusElement.className = "verify-status error";
@@ -5361,32 +5460,38 @@ class AgendaSystem {
 
     // Validar tamanho do telefone
     if (phoneDigits.length < 10 || phoneDigits.length > 11) {
-      statusElement.textContent = "Telefone inválido. Digite um telefone válido.";
+      statusElement.textContent =
+        "Telefone inválido. Digite um telefone válido.";
       statusElement.className = "verify-status error";
       return;
     }
 
     // Desabilitar botão durante verificação
     verifyBtn.disabled = true;
-    verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Verificando...</span>';
+    verifyBtn.innerHTML =
+      '<i class="fas fa-spinner fa-spin"></i> <span>Verificando...</span>';
     statusElement.textContent = "Enviando código de verificação...";
     statusElement.className = "verify-status verifying";
 
     // Simular envio de código SMS (fictício) - aguardar 2 segundos
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // Simular resultado (sempre bem-sucedido para demonstração)
     const isVerified = Math.random() > 0.2; // 80% de chance de sucesso
 
     if (isVerified) {
-      statusElement.textContent = "✓ Código enviado! Telefone verificado com sucesso!";
+      statusElement.textContent =
+        "✓ Código enviado! Telefone verificado com sucesso!";
       statusElement.className = "verify-status success";
-      verifyBtn.innerHTML = '<i class="fas fa-check-circle"></i> <span>Verificado</span>';
+      verifyBtn.innerHTML =
+        '<i class="fas fa-check-circle"></i> <span>Verificado</span>';
       verifyBtn.classList.add("verified");
     } else {
-      statusElement.textContent = "✗ Não foi possível enviar o código. Tente novamente.";
+      statusElement.textContent =
+        "✗ Não foi possível enviar o código. Tente novamente.";
       statusElement.className = "verify-status error";
-      verifyBtn.innerHTML = '<i class="fas fa-check-circle"></i> <span>Verificar</span>';
+      verifyBtn.innerHTML =
+        '<i class="fas fa-check-circle"></i> <span>Verificar</span>';
       verifyBtn.disabled = false;
     }
   }

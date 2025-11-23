@@ -48,6 +48,11 @@ document.addEventListener("DOMContentLoaded", () => {
       window.agendaSystem.showDashboard();
       window.agendaSystem.hideModal("loginModal");
       window.agendaSystem.hideModal("registerModal");
+      window.agendaSystem.requests = [];
+
+      // carrega solicitação e horários do ususario logado
+      await window.agendaSystem.loadRequestsFromFirebase();
+      await window.agendaSystem.loadTimeSlotsFromFirebase();
     },
 
     async logout() {
@@ -180,13 +185,18 @@ document.addEventListener("DOMContentLoaded", () => {
           const senha = document.getElementById(
             "senhaCadastroOrientador"
           ).value;
-          
+
           // Validar CPF
           const cpfLimpo = window.agendaSystem.onlyDigits(cpf);
-          if (cpfLimpo.length !== 11 || !window.agendaSystem.validateCPF(cpfLimpo)) {
-            throw new Error("CPF inválido. Por favor, verifique o CPF digitado.");
+          if (
+            cpfLimpo.length !== 11 ||
+            !window.agendaSystem.validateCPF(cpfLimpo)
+          ) {
+            throw new Error(
+              "CPF inválido. Por favor, verifique o CPF digitado."
+            );
           }
-          
+
           const chaveQuery = await db
             .collection("chave_acesso_orientador")
             .where("chave", "==", chaveAcesso)
@@ -254,13 +264,28 @@ document.addEventListener("DOMContentLoaded", () => {
         );
       } catch (error) {
         console.error("Erro no login:", error);
-        const message =
+        const errorMessageString = (error.message || "").toLowerCase();
+        let message;
+
+        if (
           error.code === "auth/user-not-found" ||
           error.code === "auth/wrong-password" ||
-          error.code === "auth/invalid-credential"
-            ? "E-mail ou senha inválidos."
-            : "Ocorreu um erro ao tentar fazer login.";
-        window.agendaSystem.showNotification(message, "error");
+          error.code === "auth/invalid-credential" ||
+          (error.code === "auth/internal-error" &&
+            errorMessageString.includes("invalid_login_credentials"))
+        ) {
+          message = "E-mail ou senha inválidos.";
+        } else if (
+          errorMessageString.includes("dados do usuário não encontrados")
+        ) {
+          message = `Login aprovado, mas não foi encontrado um perfil de ${
+            userType === "responsavel" ? "Responsável" : "Orientador"
+          } para este usuário.`;
+        } else {
+          message = "Ocorreu um erro ao tentar fazer login.";
+
+          window.agendaSystem.showNotification(message, "error");
+        }
       }
     },
 
