@@ -1,0 +1,15 @@
+[
+  {
+    "origin": [
+      "http://127.0.0.1:5500",
+      "https://projeto-agenda-tec.vercel.app/"
+    ],
+    "method": ["POST", "PUT", "GET", "HEAD"],
+    "responseHeader": [
+      "Content-Type",
+      "Access-Control-Allow-Origin",
+      "x-goog-resumable"
+    ],
+    "maxAgeSeconds": 3600
+  }
+]

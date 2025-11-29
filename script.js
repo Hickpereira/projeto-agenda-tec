@@ -183,17 +183,21 @@ class AgendaSystem {
     document.getElementById("closeProfile")?.addEventListener("click", () => {
       this.hideModal("profileModal");
     });
-    document.getElementById("cancelProfileBtn")?.addEventListener("click", () => {
-      this.hideModal("profileModal");
-    });
+    document
+      .getElementById("cancelProfileBtn")
+      ?.addEventListener("click", () => {
+        this.hideModal("profileModal");
+      });
     document.getElementById("profileForm")?.addEventListener("submit", (e) => {
       this.handleProfileUpdate(e);
     });
 
     // Upload de foto
-    document.getElementById("profilePhotoInput")?.addEventListener("change", (e) => {
-      this.handleProfilePhotoUpload(e);
-    });
+    document
+      .getElementById("profilePhotoInput")
+      ?.addEventListener("change", (e) => {
+        this.handleProfilePhotoUpload(e);
+      });
 
     // Botões de verificação
     document.getElementById("verifyEmailBtn")?.addEventListener("click", () => {
@@ -840,9 +844,37 @@ class AgendaSystem {
     const pendingRequests = this.requests.filter(
       (req) => req.status === "pending"
     );
+
+    // Agendamentos aprovados futuros (próximos), ainda não concluídos/não compareceu
+    const upcomingApproved = this.requests.filter((req) => {
+      if (req.status !== "approved") return false;
+      if (req.attendanceStatus === "concluido" || req.attendanceStatus === "faltou")
+        return false;
+      if (this.needsFeedback(req)) return false;
+      return !this.isSchedulePast(req);
+    });
+
     const pendingCount = document.getElementById("pendingCount");
     if (pendingCount) {
-      pendingCount.textContent = `${pendingRequests.length} solicitações aguardando`;
+      const total = pendingRequests.length + upcomingApproved.length;
+
+      if (total === 0) {
+        pendingCount.textContent = "Nenhum agendamento pendente ou próximo";
+      } else {
+        let text = "";
+        if (pendingRequests.length > 0) {
+          text += `${pendingRequests.length} solicitação${
+            pendingRequests.length > 1 ? "es" : ""
+          } aguardando`;
+        }
+        if (upcomingApproved.length > 0) {
+          if (text) text += " • ";
+          text += `${upcomingApproved.length} agendamento${
+            upcomingApproved.length > 1 ? "s" : ""
+          } próximo${upcomingApproved.length > 1 ? "s" : ""}`;
+        }
+        pendingCount.textContent = text;
+      }
     }
   }
 
@@ -852,6 +884,16 @@ class AgendaSystem {
     this.userType = null;
     this.stopAutoRefresh();
     localStorage.removeItem("currentUser");
+
+    localStorage.removeItem("agenda_requests");
+    localStorage.removeItem("timeSlots");
+    localStorage.removeItem("blockedDates");
+    this.requests = [];
+
+    const headerAvatar = document.getElementById("headerUserAvatar");
+    if (headerAvatar) {
+      headerAvatar.innerHTML = "";
+    }
     document.getElementById("dashboard").classList.add("hidden");
     document.querySelector("main").style.display = "block";
 
@@ -887,6 +929,17 @@ class AgendaSystem {
       const userTypeDisplay = document.getElementById("userTypeDisplay");
       const profileBtn = document.getElementById("profileBtn");
 
+      const headerAvatar = document.getElementById("headerUserAvatar");
+      if (headerAvatar) {
+        if (this.userType === "coordenador" && this.currentUser.foto_perfil) {
+          headerAvatar.innerHTML = `<img src="${this.currentUser.foto_perfil}" alt="Foto" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+        } else if (this.userType === "coordenador") {
+          headerAvatar.innerHTML = '<i class="fas fa-user-shield"></i>';
+        } else {
+          headerAvatar.innerHTML = '<i class="fas fa-user-circle"></i>';
+        }
+      }
+
       if (userGreeting) {
         userGreeting.textContent = `Olá, ${
           this.currentUser.name.split(" ")[0]
@@ -900,7 +953,6 @@ class AgendaSystem {
         userTypeDisplay.className = `user-type ${this.userType}`;
       }
 
-      // Mostrar botão de perfil apenas para orientadores
       if (profileBtn) {
         if (this.userType === "coordenador") {
           profileBtn.style.display = "inline-flex";
@@ -1006,17 +1058,12 @@ class AgendaSystem {
 
     const orientadorSelectElement = document.getElementById("orientadorSelect");
     if (orientadorSelectElement) {
-      console.log(
-        "DEBUG: Elemento 'orientadorSelect' encontrado. Adicionando event listener."
-      );
       orientadorSelectElement.addEventListener("change", (e) => {
-        console.log("DEBUG: Evento 'change' DISPARADO em orientadorSelect."); // <-- PONTO 1
         const selectedOption = e.target.options[e.target.selectedIndex];
-        console.log("DEBUG: Option selecionada:", selectedOption); // <-- PONTO 2
         console.log(
           "DEBUG: dataset.info da option:",
           selectedOption.dataset.info
-        ); // <-- PONTO 3
+        );
         this.showOrientadorInfo(selectedOption);
       });
     } else {
@@ -1081,7 +1128,7 @@ class AgendaSystem {
     } else {
       avatarElement.textContent = "👨‍🏫";
     }
-    
+
     document.querySelector(".orientador-name").textContent =
       orientadorData.nome_orientador || "Nome não informado";
     document.querySelector(".orientador-specialty").textContent =
@@ -1178,17 +1225,13 @@ class AgendaSystem {
         "SUCESSO! A solicitação foi enviada. Fechando o modal agora."
       );
 
-      // A notificação de sucesso já é mostrada pelo app.js.
-      // Agora, fechamos e removemos o modal da tela.
       this.hideModal("scheduleModal");
       const scheduleModal = document.getElementById("scheduleModal");
       if (scheduleModal) {
-        scheduleModal.remove(); // Garante que o modal seja removido do DOM
+        scheduleModal.remove();
       }
     } catch (error) {
-      // Se qualquer erro ocorrer (seja no `await` ou antes), ele será capturado aqui.
       console.error("Falha no handleScheduleRequest:", error.message);
-      // Mostrar notificação de erro se não foi mostrada pelo app.js
       if (!error.handled) {
         this.showNotification(
           error.message || "Falha ao enviar solicitação. Tente novamente.",
@@ -1196,55 +1239,74 @@ class AgendaSystem {
         );
       }
     } finally {
-      // ESTE BLOCO SEMPRE EXECUTA, independentemente de sucesso ou erro.
-      // Garante que o botão seja reativado para o usuário poder tentar de novo.
       if (submitButton) submitButton.disabled = false;
     }
   }
 
   /**
-   * Verifica se uma data específica está bloqueada (bloqueio de dia inteiro)
+   * Verifica se uma data específica está bloqueada PARA O ORIENTADOR SELECIONADO
    * @param {string} date - Data no formato YYYY-MM-DD
    * @returns {boolean} - true se a data estiver bloqueada
    */
   isDateBlocked(date) {
     if (!date) return false;
+
+    // id oe
+    const orientadorId = this.selectedOrientador?.id;
+    if (!orientadorId) return false;
+
     const blockedDates = this.getBlockedDates();
-    return blockedDates.some((blocked) => blocked.date === date);
+
+    return blockedDates.some(
+      (blocked) =>
+        blocked.date === date && blocked.orientadorId === orientadorId
+    );
   }
 
   /**
-   * Verifica se há horários cadastrados para uma data específica
+   * Verifica se há horários cadastrados PARA O ORIENTADOR SELECIONADO
    * @param {string} date - Data no formato YYYY-MM-DD
-   * @returns {boolean} - true se houver horários cadastrados
+   * @returns {boolean} - true se houver horários
    */
   hasTimeSlotsForDate(date) {
     if (!date) return false;
+
+    const orientadorId = this.selectedOrientador?.id;
+    if (!orientadorId) return false;
+
     const customTimeSlots = this.getTimeSlots();
-    return customTimeSlots.some((slot) => slot.date === date);
+
+    return customTimeSlots.some(
+      (slot) => slot.date === date && slot.orientadorId === orientadorId
+    );
   }
 
   generateAvailableTimeSlots() {
     const selectedDate = document.getElementById("scheduleDate")?.value;
 
+    const orientadorId = this.selectedOrientador?.id;
+
+    if (!orientadorId) {
+      return '<option value="">Selecione um Orientador primeiro</option>';
+    }
+
     if (!selectedDate) {
       return '<option value="">Selecione uma data primeiro</option>';
     }
 
-    // data bloqueada pelo oe
+    // data bloqueada (agora filtra por orientadorId)
     if (this.isDateBlocked(selectedDate)) {
-      return '<option value="" disabled>Data Indisponível</option>';
+      return '<option value="" disabled>Data Indisponível (Orientador)</option>';
     }
 
-    //Verificação de Horários Cadastrados
     const customTimeSlots = this.getTimeSlots();
     if (customTimeSlots.length > 0 && selectedDate) {
-      // Filtraslots pela data específica selecionada
       const dateSlots = customTimeSlots.filter(
-        (slot) => slot.date === selectedDate
+        (slot) =>
+          slot.date === selectedDate && slot.orientadorId === orientadorId
       );
 
-      // sem horarios para data escolhia
+      // sem horarios para data escolhida
       if (dateSlots.length === 0) {
         return '<option value="" disabled>Nenhum horário disponível para esta data</option>';
       }
@@ -1303,10 +1365,10 @@ class AgendaSystem {
     if (timeSelect) {
       const selectedDate = document.getElementById("scheduleDate")?.value;
 
-      // Verificar se a data foi selecionada
-      if (!selectedDate) {
+      const orientadorId = this.selectedOrientador?.id;
+      if (!orientadorId) {
         timeSelect.innerHTML =
-          '<option value="">Selecione uma data primeiro</option>';
+          '<option value="">Selecione um Orientador primeiro</option>';
         timeSelect.disabled = true;
         return;
       }
@@ -1317,7 +1379,6 @@ class AgendaSystem {
           '<option value="" disabled>Data Indisponível</option>';
         timeSelect.disabled = true;
 
-        // Mostrar notificação informativa
         const blockedDates = this.getBlockedDates();
         const blockedDate = blockedDates.find((bd) => bd.date === selectedDate);
         const reason = blockedDate?.reason ? ` (${blockedDate.reason})` : "";
@@ -1325,7 +1386,6 @@ class AgendaSystem {
         return;
       }
 
-      // Verificar se há horários cadastrados
       if (!this.hasTimeSlotsForDate(selectedDate)) {
         timeSelect.innerHTML =
           '<option value="" disabled>Nenhum horário disponível para esta data</option>';
@@ -1340,7 +1400,6 @@ class AgendaSystem {
       // Há horários disponíveis - gerar lista
       const slotsHTML = this.generateAvailableTimeSlots();
 
-      // Verificar se a lista de slots está vazia (todos agendados)
       if (slotsHTML.includes("disabled")) {
         timeSelect.disabled = true;
       } else {
@@ -1355,11 +1414,8 @@ class AgendaSystem {
   }
 
   async showSchedulesList() {
-    // Recarregar solicitações do Firebase antes de exibir
     await this.loadRequestsFromFirebase();
 
-    // Para responsáveis: mostrar seus próprios agendamentos
-    // Para coordenadores: mostrar todos os agendamentos aprovados
     let schedulesToShow;
     let modalTitle;
 
@@ -1477,7 +1533,7 @@ class AgendaSystem {
   }
 
   /**
-   * Verifica se um agendamento precisa de feedback (passou e não foi encerrado)
+   * Verifica se um agendamento precisa de feedback
    */
   needsFeedback(request) {
     // Apenas agendamentos aprovados que já passaram e não foram encerrados
@@ -1488,13 +1544,15 @@ class AgendaSystem {
     )
       return false;
 
-    // Verificar se a data/hora já passou
+    // verificar se a data/hora já passou
     return this.isSchedulePast(request);
   }
 
   async showRequestsList() {
-    // Recarregar solicitações do Firebase antes de exibir
+    // puxa solicitacoes firebase antes de mostrar
     await this.loadRequestsFromFirebase();
+
+    this.updateCoordinatorDashboard();
 
     const pendingRequests = this.requests.filter(
       (req) => req.status === "pending"
@@ -1789,23 +1847,19 @@ class AgendaSystem {
 
   async approveRequest(requestId) {
     try {
-      // Atualizar no backend primeiro (usando "aceita" que é o valor esperado pelo backend)
-      await window.services.schedule.updateRequestStatus(requestId, "aceita");
+      await window.services.schedule.updateRequestStatus(requestId, "approved");
 
       const request = this.requests.find((req) => req.id === requestId);
       if (request) {
-        request.status = "approved"; // Status interno do frontend
+        request.status = "approved";
         request.responseDate = new Date().toISOString().split("T")[0];
         this.saveRequests();
       }
 
-      // ATUALIZAR DASHBOARD ANTES DA NOTIFICAÇÃO
       this.updateCoordinatorDashboard();
 
-      // MOSTRAR NOTIFICAÇÃO IMEDIATAMENTE (com z-index alto) - CRÍTICO
       this.showNotification("Agendamento confirmado com sucesso!", "success");
 
-      // Aguardar um pequeno delay para garantir que a notificação seja vista antes de atualizar a lista
       setTimeout(() => {
         this.refreshRequestsModal();
       }, 500);
@@ -1820,14 +1874,11 @@ class AgendaSystem {
 
   async rejectRequest(requestId) {
     try {
-      await window.services.schedule.updateRequestStatus(
-        requestId,
-        "rejeitada"
-      );
+      await window.services.schedule.updateRequestStatus(requestId, "reject");
 
       const request = this.requests.find((req) => req.id === requestId);
       if (request) {
-        request.status = "rejeitada";
+        request.status = "rejected";
         request.responseDate = new Date().toISOString().split("T")[0];
         this.saveRequests();
       }
@@ -2224,10 +2275,6 @@ class AgendaSystem {
                                 <i class="fas fa-ban"></i>
                                 Datas Bloqueadas
                             </button>
-                            <button class="tab-btn" data-tab="settings">
-                                <i class="fas fa-cog"></i>
-                                Configurações
-                            </button>
                         </div>
                         
                         <div class="tab-content">
@@ -2254,74 +2301,6 @@ class AgendaSystem {
                                 </div>
                                 <div class="blocked-dates-container" id="blockedDatesContainer">
                                     ${this.generateBlockedDatesHTML()}
-                                </div>
-                            </div>
-                            
-                            <div id="settings-tab" class="tab-pane">
-                                <div class="settings-content">
-                                    <h3>Configurações da Agenda</h3>
-                                    <form id="scheduleSettingsForm">
-                                        <div class="form-group">
-                                            <label for="defaultDuration">Duração Padrão (minutos):</label>
-                                            <input type="number" id="defaultDuration" name="defaultDuration" 
-                                                   value="${
-                                                     this.getScheduleSettings()
-                                                       .defaultDuration
-                                                   }" min="15" max="120" step="15">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="advanceNotice">Aviso Prévio (horas):</label>
-                                            <input type="number" id="advanceNotice" name="advanceNotice" 
-                                                   value="${
-                                                     this.getScheduleSettings()
-                                                       .advanceNotice
-                                                   }" min="1" max="168">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="maxDailySlots">Máximo de Agendamentos por Dia:</label>
-                                            <input type="number" id="maxDailySlots" name="maxDailySlots" 
-                                                   value="${
-                                                     this.getScheduleSettings()
-                                                       .maxDailySlots
-                                                   }" min="1" max="20">
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Dias de Funcionamento:</label>
-                                            <div class="checkbox-group">
-                                                ${[
-                                                  "Segunda",
-                                                  "Terça",
-                                                  "Quarta",
-                                                  "Quinta",
-                                                  "Sexta",
-                                                  "Sábado",
-                                                  "Domingo",
-                                                ]
-                                                  .map(
-                                                    (day, index) => `
-                                                    <label class="checkbox-label">
-                                                        <input type="checkbox" name="workingDays" value="${index}" 
-                                                               ${
-                                                                 this.getScheduleSettings().workingDays.includes(
-                                                                   index
-                                                                 )
-                                                                   ? "checked"
-                                                                   : ""
-                                                               }>
-                                                        ${day}
-                                                    </label>
-                                                `
-                                                  )
-                                                  .join("")}
-                                            </div>
-                                        </div>
-                                        <div class="form-actions">
-                                            <button type="submit" class="btn btn-primary">
-                                                <i class="fas fa-save"></i>
-                                                Salvar Configurações
-                                            </button>
-                                        </div>
-                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -2363,18 +2342,11 @@ class AgendaSystem {
         this.showAddBlockedDateForm();
       });
 
-    // Save settings
-    document
-      .getElementById("scheduleSettingsForm")
-      .addEventListener("submit", (e) => {
-        e.preventDefault();
-        this.saveScheduleSettings();
-      });
-
     this.showModal("scheduleManagerModal");
   }
 
-  showReports() {
+  async showReports() {
+    await this.loadRequestsFromFirebase();
     const modalHTML = `
             <div id="reportsModal" class="modal">
                 <div class="modal-content modal-large">
@@ -3588,7 +3560,6 @@ class AgendaSystem {
     if (savedRequests) {
       this.requests = JSON.parse(savedRequests);
     }
-    // Também carregar do Firebase se disponível
     this.loadRequestsFromFirebase();
   }
 
@@ -3603,56 +3574,59 @@ class AgendaSystem {
         return;
       }
 
-      const currentUserId = this.currentUser?.id;
       const authUid = firebaseAuthUser.uid;
+      const currentUserId = this.currentUser?.id;
 
       if (currentUserId && authUid !== currentUserId) {
-        console.error(
+        console.warn(
           "AVISO: UID da aplicação (this.currentUser.id) difere do UID de Auth! Usando UID de Auth para a consulta."
         );
+      }
 
-        console.log("DEBUG AUTH UID (Usado na query):", authUid);
+      console.log("DEBUG AUTH UID (Usado na query):", authUid);
 
-        const responsavelQuery = await db
-          .collection("solicitacoes")
-          .where("responsavelId", "==", this.currentUser.id)
-          .orderBy("criadoEm", "desc")
-          .get();
+      const responsavelQuery = await db
+        .collection("solicitacoes")
+        .where("responsavelId", "==", authUid)
+        .get();
 
-        const orientadorQuery = await db
-          .collection("solicitacoes")
-          .where("orientadorId", "==", this.currentUser.id)
-          .orderBy("criadoEm", "desc")
-          .get();
+      const orientadorQuery = await db
+        .collection("solicitacoes")
+        .where("orientadorId", "==", authUid)
+        .get();
 
-        const firebaseRequests = [];
+      const firebaseRequests = [];
 
-        responsavelQuery.forEach((doc) => {
-          const data = doc.data();
-          firebaseRequests.push({
-            id: doc.id,
-            userId: data.responsavelId,
-            orientadorId: data.orientadorId,
-            date: data.data,
-            time: data.horario,
-            subject: data.assunto,
-            message: data.mensagem,
-            status: data.status,
-            attendanceStatus: data.attendanceStatus || "pendente",
-            attendanceFeedback: data.attendanceFeedback || "",
-            postAttendanceFeedback:
-              data.postAttendanceFeedback || data.attendanceFeedback || "",
-            createdAt: data.criadoEm?.toDate?.() || new Date(),
-            orientador: this.getOrientadorById(data.orientadorId),
-          });
+      responsavelQuery.forEach((doc) => {
+        const data = doc.data();
+        firebaseRequests.push({
+          id: doc.id,
+          userId: data.responsavelId,
+          responsavelId: data.responsavelId,
+          orientadorId: data.orientadorId,
+          date: data.data,
+          time: data.horario,
+          subject: data.assunto,
+          message: data.mensagem,
+          status: data.status,
+          attendanceStatus: data.attendanceStatus || "pendente",
+          attendanceFeedback: data.attendanceFeedback || "",
+          postAttendanceFeedback:
+            data.postAttendanceFeedback || data.attendanceFeedback || "",
+          createdAt: data.criadoEm?.toDate?.() || new Date(0),
+          orientador: this.getOrientadorById(data.orientadorId),
+          responsavelNome: data.responsavelNome,
+          responsavelEmail: data.responsavelEmail,
         });
+      });
 
-        // Solicitações endereçadas diretamente ao orientador logado
-        orientadorQuery.forEach((doc) => {
-          const data = doc.data();
+      orientadorQuery.forEach((doc) => {
+        const data = doc.data();
+        if (!firebaseRequests.some((r) => r.id === doc.id)) {
           firebaseRequests.push({
             id: doc.id,
             userId: data.responsavelId,
+            responsavelId: data.responsavelId,
             orientadorId: data.orientadorId,
             date: data.data,
             time: data.horario,
@@ -3663,23 +3637,132 @@ class AgendaSystem {
             attendanceFeedback: data.attendanceFeedback || "",
             postAttendanceFeedback:
               data.postAttendanceFeedback || data.attendanceFeedback || "",
-            createdAt: data.criadoEm?.toDate?.() || new Date(),
+            createdAt: data.criadoEm?.toDate?.() || new Date(0),
             orientador: this.getOrientadorById(data.orientadorId),
             responsavelNome: data.responsavelNome,
             responsavelEmail: data.responsavelEmail,
           });
-        });
+        }
+      });
 
-        const existingIds = new Set(this.requests.map((r) => r.id));
-        const newRequests = firebaseRequests.filter(
-          (r) => !existingIds.has(r.id)
-        );
-        this.requests = [...this.requests, ...newRequests];
+      firebaseRequests.sort(
+        (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+      );
 
-        this.saveRequests();
+      this.requests = firebaseRequests;
+      this.saveRequests();
+
+      // Atualiza contador automaticamente para o painel do orientador
+      if (this.userType === "coordenador" && this.isLoggedIn) {
+        this.updateCoordinatorDashboard();
       }
     } catch (error) {
       console.error("Erro ao carregar solicitações do Firebase:", error);
+    }
+  }
+
+  /**
+   * Carrega os horários (time slots) do Firebase,
+   * filtrados pelo Orientador (para gerenciar) ou
+   * todos (para o Responsável agendar).
+   */
+  async loadTimeSlotsFromFirebase() {
+    try {
+      const firebaseAuthUser = firebase.auth().currentUser;
+
+      if (!window.db || !firebaseAuthUser) {
+        console.error("loadTimeSlots: Auth/DB indisponível.");
+        localStorage.setItem("timeSlots", JSON.stringify([]));
+        return;
+      }
+
+      const authUid = firebaseAuthUser.uid;
+      let slotsQuery;
+
+      if (this.userType === "coordenador") {
+        console.log(`Carregando horários PARA o Orientador ${authUid}`);
+        slotsQuery = db
+          .collection("horarios_disponiveis")
+          .where("orientadorId", "==", authUid);
+      } else if (this.userType === "responsavel") {
+        console.log("Carregando TODOS os horários para o Responsável");
+        slotsQuery = db.collection("horarios_disponiveis");
+      } else {
+        localStorage.setItem("timeSlots", JSON.stringify([]));
+        return;
+      }
+
+      const snapshot = await slotsQuery.get();
+
+      const firebaseTimeSlots = [];
+      snapshot.forEach((doc) => {
+        firebaseTimeSlots.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+
+      localStorage.setItem("timeSlots", JSON.stringify(firebaseTimeSlots));
+
+      console.log(`Carregados ${firebaseTimeSlots.length} horários no total.`);
+    } catch (error) {
+      console.error("Erro ao carregar horários do Firebase:", error);
+      localStorage.setItem("timeSlots", JSON.stringify([]));
+    }
+  }
+
+  /**
+   * Carrega as DATAS BLOQUEADAS do Firebase,
+   * filtradas pelo Orientador (para gerenciar) ou
+   * todas (para o Responsável agendar).
+   */
+  async loadBlockedDatesFromFirebase() {
+    try {
+      const firebaseAuthUser = firebase.auth().currentUser;
+
+      if (!window.db || !firebaseAuthUser) {
+        localStorage.setItem("blockedDates", JSON.stringify([]));
+        return;
+      }
+
+      const authUid = firebaseAuthUser.uid;
+      let blockedQuery;
+
+      if (this.userType === "coordenador") {
+        // Orientador: Carrega APENAS os seus bloqueios
+        console.log(`Carregando bloqueios PARA o Orientador ${authUid}`);
+        blockedQuery = db
+          .collection("datas_bloqueadas")
+          .where("orientadorId", "==", authUid);
+      } else if (this.userType === "responsavel") {
+        // Responsável: Carrega TODOS os bloqueios de TODOS orientadores
+        console.log("Carregando TODOS os bloqueios para o Responsável");
+        blockedQuery = db.collection("datas_bloqueadas");
+      } else {
+        localStorage.setItem("blockedDates", JSON.stringify([]));
+        return;
+      }
+
+      const snapshot = await blockedQuery.get();
+
+      const firebaseBlockedDates = [];
+      snapshot.forEach((doc) => {
+        firebaseBlockedDates.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+
+      localStorage.setItem(
+        "blockedDates",
+        JSON.stringify(firebaseBlockedDates)
+      );
+      console.log(
+        `Carregadas ${firebaseBlockedDates.length} datas bloqueadas.`
+      );
+    } catch (error) {
+      console.error("Erro ao carregar datas bloqueadas do Firebase:", error);
+      localStorage.setItem("blockedDates", JSON.stringify([]));
     }
   }
 
@@ -4332,24 +4415,52 @@ class AgendaSystem {
     }
   }
 
-  saveBlockedDate() {
+  async saveBlockedDate() {
     const formData = new FormData(
       document.getElementById("addBlockedDateForm")
     );
-    const blockedDate = {
-      id: Date.now().toString(),
-      date: formData.get("date"),
-      reason: formData.get("reason"),
-    };
+    const date = formData.get("date");
+    const reason = formData.get("reason");
 
-    const blockedDates = this.getBlockedDates();
-    blockedDates.push(blockedDate);
-    localStorage.setItem("blockedDates", JSON.stringify(blockedDates));
+    if (!date || !reason) {
+      this.showNotification("Data e Motivo são obrigatórios.", "error");
+      return;
+    }
 
-    this.showNotification("Data bloqueada com sucesso!", "success");
-    this.refreshBlockedDates();
+    try {
+      const orientadorId = this.currentUser.id;
+      if (!window.db || !orientadorId) {
+        throw new Error("Usuário não autenticado ou DB indisponível.");
+      }
+
+      // firebase
+      const docRef = await db.collection("datas_bloqueadas").add({
+        orientadorId: orientadorId,
+        date: date,
+        reason: reason,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+
+      //localStorage
+      const blockedDates = this.getBlockedDates();
+      blockedDates.push({
+        id: docRef.id,
+        date: date,
+        reason: reason,
+        orientadorId: orientadorId,
+      });
+      localStorage.setItem("blockedDates", JSON.stringify(blockedDates));
+
+      this.showNotification("Data bloqueada com sucesso!", "success");
+      this.refreshBlockedDates();
+    } catch (error) {
+      console.error("Erro ao salvar data bloqueada:", error);
+      this.showNotification(
+        "Erro ao salvar bloqueio. Tente novamente.",
+        "error"
+      );
+    }
   }
-
   saveScheduleSettings() {
     const formData = new FormData(
       document.getElementById("scheduleSettingsForm")
@@ -4387,25 +4498,60 @@ class AgendaSystem {
     this.refreshBlockedDates();
   }
 
-  deleteTimeSlot(slotId) {
+  async deleteTimeSlot(slotId) {
+    //busca o id do horario
+    const timeSlots = this.getTimeSlots();
+    const slot = timeSlots.find((s) => s.id === slotId);
+
+    if (!slotId) {
+      this.showNotification("ID do horário não encontrado.", "error");
+      return;
+    }
+
     if (confirm("Tem certeza que deseja excluir este horário?")) {
-      const timeSlots = this.getTimeSlots().filter(
-        (slot) => slot.id !== slotId
-      );
-      localStorage.setItem("timeSlots", JSON.stringify(timeSlots));
-      this.showNotification("Horário excluído!", "success");
-      this.refreshTimeSlots();
+      try {
+        //exclui do firebase
+        await window.services.schedule.deleteTimeSlot(slotId);
+
+        //excluir loalstorage
+        const updatedTimeSlots = this.getTimeSlots().filter(
+          (slot) => slot.id !== slotId
+        );
+        localStorage.setItem("timeSlots", JSON.stringify(updatedTimeSlots));
+
+        this.showNotification("Horário excluído com sucesso!", "success");
+        this.refreshTimeSlots();
+      } catch (error) {
+        console.error("Erro ao excluir horário:", error);
+      }
     }
   }
 
-  deleteBlockedDate(dateId) {
+  async deleteBlockedDate(dateId) {
+    if (!dateId) {
+      this.showNotification("ID do bloqueio não encontrado.", "error");
+      return;
+    }
+
     if (confirm("Tem certeza que deseja excluir esta data bloqueada?")) {
-      const blockedDates = this.getBlockedDates().filter(
-        (date) => date.id !== dateId
-      );
-      localStorage.setItem("blockedDates", JSON.stringify(blockedDates));
-      this.showNotification("Data bloqueada excluída!", "success");
-      this.refreshBlockedDates();
+      try {
+        //excluir firebase
+        await window.services.schedule.deleteBlockedDate(dateId);
+
+        //excluir localstorage
+        const blockedDates = this.getBlockedDates().filter(
+          (date) => date.id !== dateId
+        );
+        localStorage.setItem("blockedDates", JSON.stringify(blockedDates));
+
+        this.showNotification(
+          "Data bloqueada excluída com sucesso!",
+          "success"
+        );
+        this.refreshBlockedDates();
+      } catch (error) {
+        console.error("Erro ao excluir data bloqueada:", error);
+      }
     }
   }
 
@@ -4931,7 +5077,10 @@ class AgendaSystem {
 
   async showProfileModal() {
     if (this.userType !== "coordenador") {
-      this.showNotification("Acesso negado. Apenas orientadores podem acessar o perfil.", "error");
+      this.showNotification(
+        "Acesso negado. Apenas orientadores podem acessar o perfil.",
+        "error"
+      );
       return;
     }
 
@@ -4961,17 +5110,22 @@ class AgendaSystem {
 
       // Preencher formulário
       document.getElementById("profileNome").value = data.nome_orientador || "";
-      document.getElementById("profileEmail").value = data.email_orientador || currentUser.email || "";
-      document.getElementById("profileTelefone").value = data.telefone_orientador || "";
-      document.getElementById("profileEscola").value = data.escola_orientador || "";
-      document.getElementById("profileCpf").value = this.formatCPF(data.cpf_orientador || "");
+      document.getElementById("profileEmail").value =
+        data.email_orientador || currentUser.email || "";
+      document.getElementById("profileTelefone").value =
+        data.telefone_orientador || "";
+      document.getElementById("profileEscola").value =
+        data.escola_orientador || "";
+      document.getElementById("profileCpf").value = this.formatCPF(
+        data.cpf_orientador || ""
+      );
 
       // Limpar status de verificação e resetar botões
       const emailStatus = document.getElementById("emailVerifyStatus");
       const phoneStatus = document.getElementById("phoneVerifyStatus");
       const emailBtn = document.getElementById("verifyEmailBtn");
       const phoneBtn = document.getElementById("verifyPhoneBtn");
-      
+
       if (emailStatus) {
         emailStatus.textContent = "";
         emailStatus.className = "verify-status";
@@ -4982,19 +5136,23 @@ class AgendaSystem {
       }
       if (emailBtn) {
         emailBtn.disabled = false;
-        emailBtn.innerHTML = '<i class="fas fa-check-circle"></i> <span>Verificar</span>';
+        emailBtn.innerHTML =
+          '<i class="fas fa-check-circle"></i> <span>Verificar</span>';
         emailBtn.classList.remove("verified");
       }
       if (phoneBtn) {
         phoneBtn.disabled = false;
-        phoneBtn.innerHTML = '<i class="fas fa-check-circle"></i> <span>Verificar</span>';
+        phoneBtn.innerHTML =
+          '<i class="fas fa-check-circle"></i> <span>Verificar</span>';
         phoneBtn.classList.remove("verified");
       }
 
       // Carregar foto de perfil
       if (data.foto_perfil) {
         const photoPreview = document.getElementById("profilePhotoPreview");
-        const photoPlaceholder = document.getElementById("profilePhotoPlaceholder");
+        const photoPlaceholder = document.getElementById(
+          "profilePhotoPlaceholder"
+        );
         if (photoPreview && photoPlaceholder) {
           photoPreview.src = data.foto_perfil;
           photoPreview.style.display = "block";
@@ -5007,7 +5165,9 @@ class AgendaSystem {
         }
       } else {
         const photoPreview = document.getElementById("profilePhotoPreview");
-        const photoPlaceholder = document.getElementById("profilePhotoPlaceholder");
+        const photoPlaceholder = document.getElementById(
+          "profilePhotoPlaceholder"
+        );
         if (photoPreview && photoPlaceholder) {
           photoPreview.style.display = "none";
           photoPlaceholder.style.display = "flex";
@@ -5021,7 +5181,7 @@ class AgendaSystem {
 
   async handleProfileUpdate(e) {
     e.preventDefault();
-    
+
     if (this.userType !== "coordenador") {
       this.showNotification("Acesso negado.", "error");
       return;
@@ -5039,7 +5199,10 @@ class AgendaSystem {
       const escola = document.getElementById("profileEscola").value;
 
       if (!email || !telefone || !escola) {
-        this.showNotification("Preencha todos os campos obrigatórios.", "error");
+        this.showNotification(
+          "Preencha todos os campos obrigatórios.",
+          "error"
+        );
         return;
       }
 
@@ -5079,7 +5242,8 @@ class AgendaSystem {
       console.error("Erro ao atualizar perfil:", error);
       let errorMessage = "Erro ao atualizar perfil.";
       if (error.code === "auth/requires-recent-login") {
-        errorMessage = "Por segurança, faça login novamente para alterar o e-mail.";
+        errorMessage =
+          "Por segurança, faça login novamente para alterar o e-mail.";
       } else if (error.message) {
         errorMessage = error.message;
       }
@@ -5115,7 +5279,8 @@ class AgendaSystem {
       // Inicializar Firebase Storage se ainda não foi
       if (!firebase.storage) {
         const storageScript = document.createElement("script");
-        storageScript.src = "https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js";
+        storageScript.src =
+          "https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js";
         document.head.appendChild(storageScript);
         await new Promise((resolve) => {
           storageScript.onload = resolve;
@@ -5124,7 +5289,9 @@ class AgendaSystem {
 
       const storage = firebase.storage();
       const storageRef = storage.ref();
-      const photoRef = storageRef.child(`orientadores/${currentUser.uid}/foto_perfil.jpg`);
+      const photoRef = storageRef.child(
+        `orientadores/${currentUser.uid}/foto_perfil.jpg`
+      );
 
       // Upload da foto
       const uploadTask = photoRef.put(file);
@@ -5133,7 +5300,8 @@ class AgendaSystem {
         "state_changed",
         (snapshot) => {
           // Progresso do upload (opcional)
-          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          const progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
           console.log("Upload progress:", progress + "%");
         },
         (error) => {
@@ -5142,7 +5310,6 @@ class AgendaSystem {
         },
         async () => {
           try {
-            // Upload concluído, obter URL
             const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
 
             // Salvar URL no Firestore
@@ -5154,9 +5321,13 @@ class AgendaSystem {
                 atualizadoEm: firebase.firestore.FieldValue.serverTimestamp(),
               });
 
+            if (this.currentUser) this.currentUser.foto_perfil = downloadURL;
+
             // Atualizar preview
             const photoPreview = document.getElementById("profilePhotoPreview");
-            const photoPlaceholder = document.getElementById("profilePhotoPlaceholder");
+            const photoPlaceholder = document.getElementById(
+              "profilePhotoPlaceholder"
+            );
             if (photoPreview && photoPlaceholder) {
               photoPreview.src = downloadURL;
               photoPreview.style.display = "block";
@@ -5169,7 +5340,10 @@ class AgendaSystem {
               headerAvatar.innerHTML = `<img src="${downloadURL}" alt="Foto" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
             }
 
-            this.showNotification("Foto de perfil atualizada com sucesso!", "success");
+            this.showNotification(
+              "Foto de perfil atualizada com sucesso!",
+              "success"
+            );
           } catch (error) {
             console.error("Erro ao salvar URL da foto:", error);
             this.showNotification("Erro ao salvar foto de perfil.", "error");
@@ -5186,7 +5360,9 @@ class AgendaSystem {
 
   initMasks() {
     // Máscara de telefone
-    const telefoneInputs = document.querySelectorAll('input[type="tel"], input[id*="telefone"], input[name*="telefone"]');
+    const telefoneInputs = document.querySelectorAll(
+      'input[type="tel"], input[id*="telefone"], input[name*="telefone"]'
+    );
     telefoneInputs.forEach((input) => {
       input.addEventListener("input", (e) => {
         e.target.value = this.maskPhone(e.target.value);
@@ -5197,7 +5373,9 @@ class AgendaSystem {
     });
 
     // Máscara de CPF
-    const cpfInputs = document.querySelectorAll('input[id*="cpf"], input[name*="cpf"]');
+    const cpfInputs = document.querySelectorAll(
+      'input[id*="cpf"], input[name*="cpf"]'
+    );
     cpfInputs.forEach((input) => {
       input.addEventListener("input", (e) => {
         e.target.value = this.maskCPF(e.target.value);
@@ -5205,13 +5383,17 @@ class AgendaSystem {
       input.addEventListener("blur", (e) => {
         const cpf = this.onlyDigits(e.target.value);
         if (cpf.length === 11 && !this.validateCPF(cpf)) {
-          const errorElement = e.target.nextElementSibling || document.getElementById(e.target.id + "-error");
+          const errorElement =
+            e.target.nextElementSibling ||
+            document.getElementById(e.target.id + "-error");
           if (errorElement && errorElement.tagName === "SMALL") {
             errorElement.textContent = "CPF inválido.";
             errorElement.style.color = "red";
           }
         } else {
-          const errorElement = e.target.nextElementSibling || document.getElementById(e.target.id + "-error");
+          const errorElement =
+            e.target.nextElementSibling ||
+            document.getElementById(e.target.id + "-error");
           if (errorElement && errorElement.tagName === "SMALL") {
             errorElement.textContent = "";
           }
@@ -5223,7 +5405,7 @@ class AgendaSystem {
   maskPhone(value) {
     const digits = this.onlyDigits(value);
     if (digits.length === 0) return "";
-    
+
     if (digits.length <= 10) {
       // Telefone fixo: (XX) XXXX-XXXX
       if (digits.length <= 2) {
@@ -5231,7 +5413,10 @@ class AgendaSystem {
       } else if (digits.length <= 6) {
         return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
       } else {
-        return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6, 10)}`;
+        return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(
+          6,
+          10
+        )}`;
       }
     } else {
       // Celular: (XX) XXXXX-XXXX
@@ -5240,20 +5425,26 @@ class AgendaSystem {
       } else if (digits.length <= 7) {
         return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
       } else {
-        return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`;
+        return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(
+          7,
+          11
+        )}`;
       }
     }
   }
 
   maskCPF(value) {
     const digits = this.onlyDigits(value);
-    return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/, (match, p1, p2, p3, p4) => {
-      if (p4) return `${p1}.${p2}.${p3}-${p4}`;
-      if (p3) return `${p1}.${p2}.${p3}`;
-      if (p2) return `${p1}.${p2}`;
-      if (p1) return p1;
-      return digits;
-    });
+    return digits.replace(
+      /(\d{3})(\d{3})(\d{3})(\d{0,2})/,
+      (match, p1, p2, p3, p4) => {
+        if (p4) return `${p1}.${p2}.${p3}-${p4}`;
+        if (p3) return `${p1}.${p2}.${p3}`;
+        if (p2) return `${p1}.${p2}`;
+        if (p1) return p1;
+        return digits;
+      }
+    );
   }
 
   formatCPF(cpf) {
@@ -5266,9 +5457,9 @@ class AgendaSystem {
 
   validateCPF(cpf) {
     const digits = this.onlyDigits(cpf);
-    
+
     if (digits.length !== 11) return false;
-    
+
     // Verificar se todos os dígitos são iguais
     if (/^(\d)\1{10}$/.test(digits)) return false;
 
@@ -5299,11 +5490,11 @@ class AgendaSystem {
     const emailInput = document.getElementById("profileEmail");
     const statusElement = document.getElementById("emailVerifyStatus");
     const verifyBtn = document.getElementById("verifyEmailBtn");
-    
+
     if (!emailInput || !statusElement || !verifyBtn) return;
 
     const email = emailInput.value.trim();
-    
+
     if (!email) {
       statusElement.textContent = "Por favor, preencha o e-mail.";
       statusElement.className = "verify-status error";
@@ -5320,25 +5511,28 @@ class AgendaSystem {
 
     // Desabilitar botão durante verificação
     verifyBtn.disabled = true;
-    verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Verificando...</span>';
+    verifyBtn.innerHTML =
+      '<i class="fas fa-spinner fa-spin"></i> <span>Verificando...</span>';
     statusElement.textContent = "Verificando e-mail...";
     statusElement.className = "verify-status verifying";
 
     // Simular verificação (fictícia) - aguardar 2 segundos
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    // Simular resultado (sempre bem-sucedido para demonstração)
     const isVerified = Math.random() > 0.2; // 80% de chance de sucesso
 
     if (isVerified) {
       statusElement.textContent = "✓ E-mail verificado com sucesso!";
       statusElement.className = "verify-status success";
-      verifyBtn.innerHTML = '<i class="fas fa-check-circle"></i> <span>Verificado</span>';
+      verifyBtn.innerHTML =
+        '<i class="fas fa-check-circle"></i> <span>Verificado</span>';
       verifyBtn.classList.add("verified");
     } else {
-      statusElement.textContent = "✗ Não foi possível verificar o e-mail. Tente novamente.";
+      statusElement.textContent =
+        "✗ Não foi possível verificar o e-mail. Tente novamente.";
       statusElement.className = "verify-status error";
-      verifyBtn.innerHTML = '<i class="fas fa-check-circle"></i> <span>Verificar</span>';
+      verifyBtn.innerHTML =
+        '<i class="fas fa-check-circle"></i> <span>Verificar</span>';
       verifyBtn.disabled = false;
     }
   }
@@ -5347,12 +5541,12 @@ class AgendaSystem {
     const phoneInput = document.getElementById("profileTelefone");
     const statusElement = document.getElementById("phoneVerifyStatus");
     const verifyBtn = document.getElementById("verifyPhoneBtn");
-    
+
     if (!phoneInput || !statusElement || !verifyBtn) return;
 
     const phone = phoneInput.value.trim();
     const phoneDigits = this.onlyDigits(phone);
-    
+
     if (!phone) {
       statusElement.textContent = "Por favor, preencha o telefone.";
       statusElement.className = "verify-status error";
@@ -5361,38 +5555,43 @@ class AgendaSystem {
 
     // Validar tamanho do telefone
     if (phoneDigits.length < 10 || phoneDigits.length > 11) {
-      statusElement.textContent = "Telefone inválido. Digite um telefone válido.";
+      statusElement.textContent =
+        "Telefone inválido. Digite um telefone válido.";
       statusElement.className = "verify-status error";
       return;
     }
 
     // Desabilitar botão durante verificação
     verifyBtn.disabled = true;
-    verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Verificando...</span>';
+    verifyBtn.innerHTML =
+      '<i class="fas fa-spinner fa-spin"></i> <span>Verificando...</span>';
     statusElement.textContent = "Enviando código de verificação...";
     statusElement.className = "verify-status verifying";
 
     // Simular envio de código SMS (fictício) - aguardar 2 segundos
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // Simular resultado (sempre bem-sucedido para demonstração)
     const isVerified = Math.random() > 0.2; // 80% de chance de sucesso
 
     if (isVerified) {
-      statusElement.textContent = "✓ Código enviado! Telefone verificado com sucesso!";
+      statusElement.textContent =
+        "✓ Código enviado! Telefone verificado com sucesso!";
       statusElement.className = "verify-status success";
-      verifyBtn.innerHTML = '<i class="fas fa-check-circle"></i> <span>Verificado</span>';
+      verifyBtn.innerHTML =
+        '<i class="fas fa-check-circle"></i> <span>Verificado</span>';
       verifyBtn.classList.add("verified");
     } else {
-      statusElement.textContent = "✗ Não foi possível enviar o código. Tente novamente.";
+      statusElement.textContent =
+        "✗ Não foi possível enviar o código. Tente novamente.";
       statusElement.className = "verify-status error";
-      verifyBtn.innerHTML = '<i class="fas fa-check-circle"></i> <span>Verificar</span>';
+      verifyBtn.innerHTML =
+        '<i class="fas fa-check-circle"></i> <span>Verificar</span>';
       verifyBtn.disabled = false;
     }
   }
 }
 
-// Inicializar o sistema quando o DOM estiver carregado
 document.addEventListener("DOMContentLoaded", () => {
   window.agendaSystem = new AgendaSystem();
 });

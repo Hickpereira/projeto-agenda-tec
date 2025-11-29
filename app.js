@@ -39,6 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
         name: userData.nome_responsavel || userData.nome_orientador,
         email: firebaseUser.email,
         userType: userType,
+        foto_perfil: userData.foto_perfil || null,
       };
       window.agendaSystem.isLoggedIn = true;
       window.agendaSystem.userType = userType;
@@ -48,6 +49,12 @@ document.addEventListener("DOMContentLoaded", () => {
       window.agendaSystem.showDashboard();
       window.agendaSystem.hideModal("loginModal");
       window.agendaSystem.hideModal("registerModal");
+      window.agendaSystem.requests = [];
+
+      // carrega solicitação e horários e datas bloq do ususario logado
+      await window.agendaSystem.loadRequestsFromFirebase();
+      await window.agendaSystem.loadTimeSlotsFromFirebase();
+      await window.agendaSystem.loadBlockedDatesFromFirebase();
     },
 
     async logout() {
@@ -180,13 +187,18 @@ document.addEventListener("DOMContentLoaded", () => {
           const senha = document.getElementById(
             "senhaCadastroOrientador"
           ).value;
-          
+
           // Validar CPF
           const cpfLimpo = window.agendaSystem.onlyDigits(cpf);
-          if (cpfLimpo.length !== 11 || !window.agendaSystem.validateCPF(cpfLimpo)) {
-            throw new Error("CPF inválido. Por favor, verifique o CPF digitado.");
+          if (
+            cpfLimpo.length !== 11 ||
+            !window.agendaSystem.validateCPF(cpfLimpo)
+          ) {
+            throw new Error(
+              "CPF inválido. Por favor, verifique o CPF digitado."
+            );
           }
-          
+
           const chaveQuery = await db
             .collection("chave_acesso_orientador")
             .where("chave", "==", chaveAcesso)
@@ -254,13 +266,28 @@ document.addEventListener("DOMContentLoaded", () => {
         );
       } catch (error) {
         console.error("Erro no login:", error);
-        const message =
+        const errorMessageString = (error.message || "").toLowerCase();
+        let message;
+
+        if (
           error.code === "auth/user-not-found" ||
           error.code === "auth/wrong-password" ||
-          error.code === "auth/invalid-credential"
-            ? "E-mail ou senha inválidos."
-            : "Ocorreu um erro ao tentar fazer login.";
-        window.agendaSystem.showNotification(message, "error");
+          error.code === "auth/invalid-credential" ||
+          (error.code === "auth/internal-error" &&
+            errorMessageString.includes("invalid_login_credentials"))
+        ) {
+          message = "E-mail ou senha inválidos.";
+        } else if (
+          errorMessageString.includes("dados do usuário não encontrados")
+        ) {
+          message = `Login aprovado, mas não foi encontrado um perfil de ${
+            userType === "responsavel" ? "Responsável" : "Orientador"
+          } para este usuário.`;
+        } else {
+          message = "Ocorreu um erro ao tentar fazer login.";
+
+          window.agendaSystem.showNotification(message, "error");
+        }
       }
     },
 
@@ -426,6 +453,50 @@ document.addEventListener("DOMContentLoaded", () => {
         console.error("Erro ao atualizar status no Firestore:", error);
         window.agendaSystem.showNotification(
           "Falha ao atualizar o status da solicitação.",
+          "error"
+        );
+        throw error;
+      }
+    },
+
+    /**
+     * Exclui um horário disponível do Firestore.
+     * @param {string} slotId - O ID do documento do horário.
+     */
+    async deleteTimeSlot(slotId) {
+      if (!slotId) {
+        throw new Error("ID do horário é obrigatório.");
+      }
+      const slotDocRef = db.collection("horarios_disponiveis").doc(slotId);
+      try {
+        await slotDocRef.delete();
+        console.log(`Horário ${slotId} excluído do Firestore.`);
+      } catch (error) {
+        console.error("Erro ao excluir horário do Firestore:", error);
+        window.agendaSystem.showNotification(
+          "Falha ao excluir o horário do banco de dados.",
+          "error"
+        );
+        throw error;
+      }
+    },
+
+    /**
+     * Exclui uma data bloqueada do Firestore.
+     * @param {string} dateId - O ID do documento de bloqueio.
+     */
+    async deleteBlockedDate(dateId) {
+      if (!dateId) {
+        throw new Error("ID do bloqueio é obrigatório.");
+      }
+      const dateDocRef = db.collection("datas_bloqueadas").doc(dateId);
+      try {
+        await dateDocRef.delete();
+        console.log(`Bloqueio ${dateId} excluído do Firestore.`);
+      } catch (error) {
+        console.error("Erro ao excluir bloqueio do Firestore:", error);
+        window.agendaSystem.showNotification(
+          "Falha ao excluir o bloqueio do banco de dados.",
           "error"
         );
         throw error;
