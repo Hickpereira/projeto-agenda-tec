@@ -16,14 +16,13 @@ class AgendaSystem {
     this.loadUserData();
     this.setupAccessibility();
     this.checkAuthStatus();
-    // Padroniza termos visíveis na interface
+    // PADRONIZACAO DA INTERFACE 
     this.replaceCoordinatorTerms();
   }
 
   addSearchFunctionality() {
     console.log("Futura implementação: Lógica de busca no painel.");
-    // TODO: Adicionar aqui a lógica para filtrar agendamentos ou solicitações.
-    // Por enquanto, a função existe e não vai mais causar erro.
+  
   }
 
   replaceCoordinatorTerms() {
@@ -54,14 +53,13 @@ class AgendaSystem {
     // Por enquanto, a função existe e não vai mais causar erro.
   }
 
-  // Event Listeners
   setupEventListeners() {
-    // Navegação
+    // NAVEGACAO
     document
       .getElementById("nav-toggle")
       ?.addEventListener("click", this.toggleMobileMenu.bind(this));
 
-    // Modais
+    // MODAIS
     document
       .getElementById("loginBtn")
       ?.addEventListener("click", () => this.showModal("loginModal"));
@@ -75,7 +73,7 @@ class AgendaSystem {
       .getElementById("closeRegister")
       ?.addEventListener("click", () => this.hideFormModal("registerModal"));
 
-    // Tabs: Login
+    // LOGIN
     document
       .getElementById("loginTabResponsavel")
       ?.addEventListener("click", () =>
@@ -86,7 +84,7 @@ class AgendaSystem {
       ?.addEventListener("click", () =>
         this.switchAuthTab("login", "coordenador")
       );
-    // Tabs: Register
+    // REGISTER
     document
       .getElementById("registerTabResponsavel")
       ?.addEventListener("click", () =>
@@ -102,7 +100,7 @@ class AgendaSystem {
     //document.getElementById('loginForm')?.addEventListener('submit', this.handleLogin.bind(this));
     //document.getElementById('registerForm')?.addEventListener('submit', this.handleRegister.bind(this));
 
-    // Alternância entre modais
+    // ALTERNACAO ENTRE MODAIS
     document
       .getElementById("switchToRegister")
       ?.addEventListener("click", (e) => {
@@ -116,7 +114,7 @@ class AgendaSystem {
       this.showModal("loginModal");
     });
 
-    // Dashboard
+    // DASHBOARD
     document
       .getElementById("startScheduling")
       ?.addEventListener("click", this.startScheduling.bind(this));
@@ -136,12 +134,11 @@ class AgendaSystem {
       .getElementById("viewReportsBtn")
       ?.addEventListener("click", this.showReports.bind(this));
 
-    // Adicionar botão de visualização de agenda para coordenadores será feito no showDashboard
 
-    // Acessibilidade - painel único
+    // ACESSIBILIDADE - PANEL UNICO
     this.initAccessibilityPanel();
 
-    // Botão de acessibilidade alternativo no header
+    // BOTAO DE ACESSIBILIDADE ALTERNATIVO NO HEADER
     document.getElementById("a11yHeaderBtn")?.addEventListener("click", () => {
       const panel = document.getElementById("a11yPanel");
       if (panel) {
@@ -149,13 +146,13 @@ class AgendaSystem {
       }
     });
 
-    // Navegação por teclado para acessibilidade
+   
     document.addEventListener(
       "keydown",
       this.handleKeyboardNavigation.bind(this)
     );
 
-    // Fechar modais ao clicar fora (apenas para modais específicos, não formulários)
+    
     window.addEventListener("click", (e) => {
       if (
         e.target.classList.contains("modal") &&
@@ -167,19 +164,19 @@ class AgendaSystem {
       }
     });
 
-    // Header logout button
+    // HEADER LOGOUT BUTTON
     document.addEventListener("click", (e) => {
       if (e.target && e.target.id === "logoutBtn") {
         this.handleLogout();
       }
     });
 
-    // Botão de perfil
+    // BOTAO DE PERFIL
     document.getElementById("profileBtn")?.addEventListener("click", () => {
       this.showProfileModal();
     });
 
-    // Modal de perfil
+    // MODAL DE PERFIL
     document.getElementById("closeProfile")?.addEventListener("click", () => {
       this.hideModal("profileModal");
     });
@@ -192,14 +189,14 @@ class AgendaSystem {
       this.handleProfileUpdate(e);
     });
 
-    // Upload de foto
+    // UPLOAD DE FOTO
     document
       .getElementById("profilePhotoInput")
       ?.addEventListener("change", (e) => {
         this.handleProfilePhotoUpload(e);
       });
 
-    // Botões de verificação
+    // BOTOES DE VERIFICACAO
     document.getElementById("verifyEmailBtn")?.addEventListener("click", () => {
       this.verifyEmail();
     });
@@ -207,10 +204,10 @@ class AgendaSystem {
       this.verifyPhone();
     });
 
-    // Aplicar máscaras
+    // APLICAR MASCARAS
     this.initMasks();
 
-    // Navegação suave
+  
     document
       .querySelectorAll('a[href^="#"]:not([href="#"])')
       .forEach((anchor) => {
@@ -223,10 +220,9 @@ class AgendaSystem {
         });
       });
 
-    // Removido recarregamento ao trocar abas; uso de switchAuthTab já cuida da alternância
   }
 
-  // Acessibilidade: painel e preferências
+  // ACESSIBILIDADE: PANEL E PREFERENCIAS
   initAccessibilityPanel() {
     const openBtn = document.getElementById("a11yOpenBtn");
     const closeBtn = document.getElementById("a11yCloseBtn");
@@ -433,13 +429,13 @@ class AgendaSystem {
     });
   }
 
-  // Sistema de Autenticação
-  /*async handleLogin(e) {
+  // SISTEMA DE AUTENTICACAO
+  async handleLogin(e) {
         e.preventDefault();
         const formData = new FormData(e.target);
         const raw = Object.fromEntries(formData);
         const selectedType = raw.loginUserType || 'responsavel';
-        // Coletar apenas campos da aba ativa para evitar conflitos de nomes repetidos
+        // COLETAR APENAS CAMPOS DA ABA ATIVA PARA EVITAR CONFLITOS DE NOMES REPETIDOS
         const loginData = selectedType === 'coordenador'
             ? {
                 loginUserType: 'coordenador',
@@ -454,7 +450,7 @@ class AgendaSystem {
         
         try {
             if (this.validateLogin(loginData)) {
-                // Se for o coordenador fixo, criar o usuário automaticamente
+                // SE FOR O COORDENADOR FIXO, CRIAR O USUARIO AUTOMATICAMENTE
                 if (loginData.email === 'coordenador@escola.com' && loginData.password === '123456') {
                     this.currentUser = {
                         id: 'coord-001',
@@ -492,7 +488,6 @@ class AgendaSystem {
         const formData = new FormData(e.target);
         const raw = Object.fromEntries(formData);
         const regType = raw.registerUserType || 'responsavel';
-        // Coletar apenas campos da aba ativa para evitar conflitos de nomes repetidos
         const registerData = regType === 'coordenador'
             ? {
                 registerUserType: 'coordenador',
@@ -532,13 +527,12 @@ class AgendaSystem {
     }
 
     validateLogin(loginData) {
-        // Coordenador fixo por e-mail
+        // COORDENADOR FIXO POR E-MAIL
         if (loginData.email === 'coordenador@escola.com' && loginData.password === '123456') {
             return true;
         }
-        // Coordenador demo por CPF
+       
         if (this.onlyDigits(loginData.cpf) === '12345678911' && loginData.password === '123456') {
-            // Garante que exista um usuário demo em memória sem depender do storage
             this.currentUser = {
                 id: 'coord-demo',
                 name: 'Orientador Educacional',
@@ -643,8 +637,7 @@ class AgendaSystem {
         
         return user;
     }
-        */
-
+        
   switchAuthTab(kind, type) {
     if (kind === "login") {
       const respBtn = document.getElementById("loginTabResponsavel");
@@ -694,40 +687,7 @@ class AgendaSystem {
     }
   }
 
-  getOrientadorById(orientadorId) {
-    const orientadores = [
-      {
-        id: "orientador1",
-        name: "Dr. Carlos Silva",
-        specialty: "Orientação Educacional",
-        email: "carlos.silva@escola.com",
-        phone: "(11) 99999-1111",
-      },
-      {
-        id: "orientador2",
-        name: "Dra. Maria Santos",
-        specialty: "Psicologia Escolar",
-        email: "maria.santos@escola.com",
-        phone: "(11) 99999-2222",
-      },
-      {
-        id: "orientador3",
-        name: "Prof. João Oliveira",
-        specialty: "Coordenação Pedagógica",
-        email: "joao.oliveira@escola.com",
-        phone: "(11) 99999-3333",
-      },
-    ];
-
-    return (
-      orientadores.find((o) => o.id === orientadorId) || {
-        id: orientadorId,
-        name: "Orientador",
-        specialty: "Orientação Educacional",
-      }
-    );
-  }
-
+ 
   async carregarOrientadoresPorEscola(escolaId) {
     console.log(
       `Buscando no Firestore onde 'escola_orientador' == '${escolaId}'`
@@ -735,10 +695,10 @@ class AgendaSystem {
     const orientadorSelect = document.getElementById("orientadorSelect");
     const orientadorInfoCard = document.getElementById("orientadorInfo");
 
-    // Limpa as opções anteriores e desabilita o seletor enquanto carrega
+    // LIMPA AS OPCOES ANTERIORES E DESABILITA O SELETOR ENQUANTO CARREGA
     orientadorSelect.innerHTML = '<option value="">Carregando...</option>';
     orientadorSelect.disabled = true;
-    orientadorInfoCard.classList.add("hidden"); // Esconde o card de informações
+    orientadorInfoCard.classList.add("hidden"); 
 
     if (!escolaId) {
       orientadorSelect.innerHTML =
@@ -748,15 +708,15 @@ class AgendaSystem {
     }
 
     try {
-      // Assumindo que a instância do Firestore está em window.db
+      // ASSUMINDO QUE A INSTANCIA DO FIRESTORE ESTA EM window.db
       const orientadoresRef = window.db.collection("orientador_pedagogico");
 
-      // Busca no Firestore por orientadores onde o campo 'escola_orientador' é igual ao ID da escola
+      // BUSCA NO FIRESTORE POR ORIENTADORES ONDE O CAMPO 'ESCOLA_ORIENTADOR' E IGUAL AO ID DA ESCOLA
       const snapshot = await orientadoresRef
         .where("escola_orientador", "==", escolaId)
         .get();
 
-      // Limpa novamente para adicionar os novos resultados
+      // LIMPA NOVAMENTE PARA ADICIONAR OS NOVOS RESULTADOS
       orientadorSelect.innerHTML =
         '<option value="">Selecione um orientador...</option>';
 
@@ -768,8 +728,8 @@ class AgendaSystem {
           option.value = orientadorId;
           option.textContent = orientadorData.nome_orientador;
 
-          // Armazena todos os dados do orientador no próprio elemento <option>
-          // para fácil acesso posterior, evitando novas consultas.
+          // ARMAZENA TODOS OS DADOS DO ORIENTADOR NO PROPRIO ELEMENTO <OPTION>
+          // PARA FACIL ACESSO POSTERIOR, EVITANDO NOVAS CONSULTAS.
           option.dataset.info = JSON.stringify(orientadorData);
 
           orientadorSelect.appendChild(option);
@@ -783,7 +743,6 @@ class AgendaSystem {
       orientadorSelect.innerHTML =
         '<option value="">Erro ao carregar orientadores</option>';
     } finally {
-      // Reabilita o seletor após a operação
       orientadorSelect.disabled = false;
     }
   }
@@ -797,16 +756,16 @@ class AgendaSystem {
   }
 
   showDashboard() {
-    // Recarrega uma vez ao entrar em cada dashboard para garantir atualização
+    // RECARREGA UMA VEZ AO ENTRAR EM CADA DASHBOARD PARA GARANTIR ATUALIZACAO
     if (this.refreshOnceOnDashboardEntry(this.userType)) {
       return;
     }
 
-    // Esconder todo o conteúdo principal
+    // ESCONDER TODO O CONTEUDO PRINCIPAL
     document.querySelector("main").style.display = "none";
     document.getElementById("dashboard").classList.remove("hidden");
 
-    // Animar entrada do dashboard
+    // ANIMAR ENTRADA DO DASHBOARD
     const dashboard = document.getElementById("dashboard");
     dashboard.style.opacity = "0";
     dashboard.style.transform = "translateY(20px)";
@@ -817,7 +776,7 @@ class AgendaSystem {
       dashboard.style.transform = "translateY(0)";
     }, 100);
 
-    // Mostrar dashboard específico do tipo de usuário
+    // MOSTRAR DASHBOARD ESPECIFICO DO TIPO DE USUARIO
     if (this.userType === "responsavel") {
       document
         .getElementById("responsavelDashboard")
@@ -835,7 +794,7 @@ class AgendaSystem {
     }
   }
 
-  // Evita recarregamento automático ao entrar no dashboard
+  // EVITA RECARREGAMENTO AUTOMATICO AO ENTRAR NO DASHBOARD
   refreshOnceOnDashboardEntry(userType) {
     return false;
   }
@@ -844,37 +803,9 @@ class AgendaSystem {
     const pendingRequests = this.requests.filter(
       (req) => req.status === "pending"
     );
-
-    // Agendamentos aprovados futuros (próximos), ainda não concluídos/não compareceu
-    const upcomingApproved = this.requests.filter((req) => {
-      if (req.status !== "approved") return false;
-      if (req.attendanceStatus === "concluido" || req.attendanceStatus === "faltou")
-        return false;
-      if (this.needsFeedback(req)) return false;
-      return !this.isSchedulePast(req);
-    });
-
     const pendingCount = document.getElementById("pendingCount");
     if (pendingCount) {
-      const total = pendingRequests.length + upcomingApproved.length;
-
-      if (total === 0) {
-        pendingCount.textContent = "Nenhum agendamento pendente ou próximo";
-      } else {
-        let text = "";
-        if (pendingRequests.length > 0) {
-          text += `${pendingRequests.length} solicitação${
-            pendingRequests.length > 1 ? "es" : ""
-          } aguardando`;
-        }
-        if (upcomingApproved.length > 0) {
-          if (text) text += " • ";
-          text += `${upcomingApproved.length} agendamento${
-            upcomingApproved.length > 1 ? "s" : ""
-          } próximo${upcomingApproved.length > 1 ? "s" : ""}`;
-        }
-        pendingCount.textContent = text;
-      }
+      pendingCount.textContent = `${pendingRequests.length} solicitações aguardando`;
     }
   }
 
@@ -901,7 +832,7 @@ class AgendaSystem {
     this.showNotification("Logout realizado com sucesso!", "success");
   }
 
-  // Funções para atualizar o header
+  // FUNCOES PARA ATUALIZAR O HEADER
   updateHeaderForLoggedUser() {
     const guestMenu = document.getElementById("guest-menu");
     const userMenu = document.getElementById("user-menu");
@@ -1049,7 +980,7 @@ class AgendaSystem {
 
     document.body.insertAdjacentHTML("beforeend", modalHTML);
 
-    // Adiciona os listeners DEPOIS que o modal existe no DOM
+    // ADICIONA OS LISTENERS DEPOIS QUE O MODAL EXISTE NO DOM
     document
       .getElementById("escola_orientador_modal")
       .addEventListener("change", (e) => {
@@ -1148,14 +1079,14 @@ class AgendaSystem {
     const form = e.target;
     const submitButton = form.querySelector('button[type="submit"]');
 
-    // Desabilita o botão para prevenir múltiplos envios
+    // DESABILITA O BOTAO PARA PREVENIR MULTIPLOS ENVIOS
     if (submitButton) submitButton.disabled = true;
 
     try {
       const formData = new FormData(form);
       const scheduleData = Object.fromEntries(formData);
 
-      // Validações
+      // VALIDACOES
       if (!this.selectedOrientador) {
         this.showNotification("Por favor, selecione um orientador.", "error");
         throw new Error("Orientador não selecionado.");
@@ -1244,9 +1175,9 @@ class AgendaSystem {
   }
 
   /**
-   * Verifica se uma data específica está bloqueada PARA O ORIENTADOR SELECIONADO
-   * @param {string} date - Data no formato YYYY-MM-DD
-   * @returns {boolean} - true se a data estiver bloqueada
+   * VERIFICA SE UMA DATA ESPECIFICA ESTA BLOQUEADA PARA O ORIENTADOR SELECIONADO
+   * @param {string} date - DATA NO FORMATO YYYY-MM-DD
+   * @returns {boolean} - TRUE SE A DATA ESTIVER BLOQUEADA
    */
   isDateBlocked(date) {
     if (!date) return false;
@@ -1264,9 +1195,9 @@ class AgendaSystem {
   }
 
   /**
-   * Verifica se há horários cadastrados PARA O ORIENTADOR SELECIONADO
-   * @param {string} date - Data no formato YYYY-MM-DD
-   * @returns {boolean} - true se houver horários
+   * VERIFICA SE HÁ HORARIOS CRIADOS PARA O ORIENTADOR SELECIONADO
+   * @param {string} date - DATA NO FORMATO YYYY-MM-DD
+   * @returns {boolean} - TRUE SE HOUVER HORARIOS
    */
   hasTimeSlotsForDate(date) {
     if (!date) return false;
@@ -1294,7 +1225,7 @@ class AgendaSystem {
       return '<option value="">Selecione uma data primeiro</option>';
     }
 
-    // data bloqueada (agora filtra por orientadorId)
+    // DATA BLOQUEADA (AGORA FILTRA POR ORIENTADORID)
     if (this.isDateBlocked(selectedDate)) {
       return '<option value="" disabled>Data Indisponível (Orientador)</option>';
     }
@@ -1306,12 +1237,12 @@ class AgendaSystem {
           slot.date === selectedDate && slot.orientadorId === orientadorId
       );
 
-      // sem horarios para data escolhida
+      // SEM HORARIOS PARA DATA ESCOLHIDA
       if (dateSlots.length === 0) {
         return '<option value="" disabled>Nenhum horário disponível para esta data</option>';
       }
 
-      // horarios disponiveis
+      // HORARIOS DISPONIVEIS
       const availableSlots = [];
       dateSlots.forEach((slot) => {
         const start = this.timeToMinutes(slot.startTime);
@@ -1373,7 +1304,7 @@ class AgendaSystem {
         return;
       }
 
-      // Verificar se a data está bloqueada
+      // VERIFICAR SE A DATA ESTA BLOQUEADA
       if (this.isDateBlocked(selectedDate)) {
         timeSelect.innerHTML =
           '<option value="" disabled>Data Indisponível</option>';
@@ -1397,7 +1328,7 @@ class AgendaSystem {
         return;
       }
 
-      // Há horários disponíveis - gerar lista
+      // HÁ HORARIOS DISPONIVEIS - GERAR LISTA
       const slotsHTML = this.generateAvailableTimeSlots();
 
       if (slotsHTML.includes("disabled")) {
@@ -1524,7 +1455,7 @@ class AgendaSystem {
   }
 
   /**
-   * Verifica se um agendamento está passado (data/hora já expiraram)
+   * VERIFICA SE UM AGENDAMENTO ESTA PASSADO (DATA/HORA JÁ EXPIRARAM)
    */
   isSchedulePast(schedule) {
     if (!schedule.date || !schedule.time) return false;
@@ -1533,10 +1464,10 @@ class AgendaSystem {
   }
 
   /**
-   * Verifica se um agendamento precisa de feedback
+   * VERIFICA SE UM AGENDAMENTO PRECISA DE FEEDBACK
    */
   needsFeedback(request) {
-    // Apenas agendamentos aprovados que já passaram e não foram encerrados
+    // APENAS AGENDAMENTOS APROVADOS QUE JÁ PASSARAM E NÃO FORAM ENCERRADOS
     if (request.status !== "approved") return false;
     if (
       request.attendanceStatus === "concluido" ||
@@ -1544,12 +1475,12 @@ class AgendaSystem {
     )
       return false;
 
-    // verificar se a data/hora já passou
+    // VERIFICAR SE A DATA/HORA JÁ PASSOU
     return this.isSchedulePast(request);
   }
 
   async showRequestsList() {
-    // puxa solicitacoes firebase antes de mostrar
+    // PULA SOLICITACOES FIREBASE ANTES DE MOSTRAR
     await this.loadRequestsFromFirebase();
 
     this.updateCoordinatorDashboard();
@@ -1558,7 +1489,7 @@ class AgendaSystem {
       (req) => req.status === "pending"
     );
 
-    // Agendamentos aprovados que ainda não passaram OU que já foram encerrados
+    // AGENDAMENTOS APROVADOS QUE AINDA NÃO PASSARAM OU QUE JÁ FORAM ENCERRADOS
     const acceptedRequests = this.requests.filter(
       (req) =>
         req.status === "approved" &&
@@ -1567,7 +1498,7 @@ class AgendaSystem {
         !this.needsFeedback(req)
     );
 
-    // Agendamentos passados que precisam de feedback (AGUARDANDO FEEDBACK)
+    // AGENDAMENTOS PASSADOS QUE PRECISAM DE FEEDBACK (AGUARDANDO FEEDBACK)
     const awaitingFeedback = this.requests.filter((req) =>
       this.needsFeedback(req)
     );
@@ -1576,7 +1507,7 @@ class AgendaSystem {
       (req) => req.status === "rejected"
     );
 
-    // Agendamentos já encerrados (com feedback)
+    // AGENDAMENTOS JÁ ENCERRADOS (COM FEEDBACK)
     const completedRequests = this.requests.filter(
       (req) =>
         req.attendanceStatus === "concluido" ||
@@ -1659,13 +1590,13 @@ class AgendaSystem {
 
     document.body.insertAdjacentHTML("beforeend", modalHTML);
 
-    // Event listeners
+    // EVENT LISTENERS
     document.getElementById("closeRequests").addEventListener("click", () => {
       this.hideModal("requestsModal");
       document.getElementById("requestsModal").remove();
     });
 
-    // Tab switching (scoped to this modal)
+    // TAB SWITCHING (SCOPED TO THIS MODAL)
     document.querySelectorAll("#requestsModal .tab-btn").forEach((btn) => {
       btn.addEventListener("click", (e) => {
         const buttonEl = e.currentTarget || e.target.closest("button");
@@ -1693,7 +1624,7 @@ class AgendaSystem {
     const attendanceStatus = request.attendanceStatus || "pendente";
     const attendanceStatusText = this.getAttendanceStatusText(attendanceStatus);
 
-    // Se precisa de feedback, destacar visualmente
+    // SE PRECISA DE FEEDBACK, DESTACAR VISUALMENTE
     const feedbackClass = needsFeedback ? "needs-feedback" : "";
 
     return `
@@ -1821,7 +1752,7 @@ class AgendaSystem {
   }
 
   switchRequestTab(tabName, modalId = "requestsModal") {
-    // Remove active class from all tabs and panes inside the modal
+   
     document
       .querySelectorAll(`#${modalId} .tab-btn`)
       .forEach((btn) => btn.classList.remove("active"));
@@ -1829,7 +1760,7 @@ class AgendaSystem {
       .querySelectorAll(`#${modalId} .tab-pane`)
       .forEach((pane) => pane.classList.remove("active"));
 
-    // Add active class to selected tab and pane
+
     document
       .querySelector(`#${modalId} [data-tab="${tabName}"]`)
       .classList.add("active");
@@ -1892,16 +1823,16 @@ class AgendaSystem {
   }
 
   async refreshRequestsModal() {
-    // Recarregar solicitações do Firebase
+    // RECARREGAR SOLICITACOES DO FIREBASE
     await this.loadRequestsFromFirebase();
 
-    // Remove modal atual
+    // REMOVE MODAL ATUAL
     const currentModal = document.getElementById("requestsModal");
     if (currentModal) {
       currentModal.remove();
     }
 
-    // Recriar modal com dados atualizados
+    // RECRIAR MODAL COM DADOS ATUALIZADOS
     await this.showRequestsList();
   }
 
@@ -1913,16 +1844,8 @@ class AgendaSystem {
         return;
       }
 
-      // Atualizar no Firebase
-      if (window.db) {
-        const requestRef = db.collection("solicitacoes").doc(requestId);
-        await requestRef.update({
-          attendanceStatus: status,
-          attendanceUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        });
-      }
 
-      // Atualizar localmente
+      // ATUALIZAR LOCALMENTE
       request.attendanceStatus = status;
       this.saveRequests();
 
@@ -1982,7 +1905,7 @@ class AgendaSystem {
 
     document.body.insertAdjacentHTML("beforeend", modalHTML);
 
-    // Event listeners
+    // lista de eventos para o modal de feedback de atendimento
     document
       .getElementById("closeAttendanceFeedback")
       .addEventListener("click", () => {
@@ -2015,7 +1938,7 @@ class AgendaSystem {
         return;
       }
 
-      // Atualizar no Firebase
+      // ATUALIZAR NO FIREBASE
       if (window.db) {
         const requestRef = db.collection("solicitacoes").doc(requestId);
         await requestRef.update({
@@ -2025,7 +1948,7 @@ class AgendaSystem {
         });
       }
 
-      // Atualizar localmente
+      // ATUALIZAR LOCALMENTE
       request.attendanceStatus = "faltou";
       request.attendanceFeedback = feedback || "";
       this.saveRequests();
@@ -2043,7 +1966,7 @@ class AgendaSystem {
   }
 
   /**
-   * Modal obrigatório para encerrar agendamentos passados com feedback
+   * MODAL OBRIGATORIO PARA ENCERRAR AGENDAMENTOS PASSADOS COM FEEDBACK
    */
   showCloseScheduleModal(requestId) {
     const request = this.requests.find((req) => req.id === requestId);
@@ -2121,14 +2044,14 @@ class AgendaSystem {
 
     document.body.insertAdjacentHTML("beforeend", modalHTML);
 
-    // Event listeners
+    
     document
       .getElementById("closeCloseSchedule")
       .addEventListener("click", () => {
         this.closeCloseScheduleModal();
       });
 
-    // Validar formulário antes de enviar
+    // VALIDAR FORMULARIO ANTES DE ENVIAR
     document
       .getElementById("closeScheduleForm")
       .addEventListener("submit", async (e) => {
@@ -2138,7 +2061,7 @@ class AgendaSystem {
         const attendanceStatus = formData.get("attendanceStatus");
         const feedback = formData.get("feedback")?.trim();
 
-        // Validação adicional
+        // VALIDACAO ADICIONAL
         if (!attendanceStatus) {
           this.showNotification(
             "Por favor, selecione o status do atendimento.",
@@ -2156,7 +2079,7 @@ class AgendaSystem {
           return;
         }
 
-        // Encerrar agendamento
+        // ENCERRAR AGENDAMENTO
         await this.closeScheduleWithFeedback(
           requestId,
           attendanceStatus,
@@ -2275,6 +2198,10 @@ class AgendaSystem {
                                 <i class="fas fa-ban"></i>
                                 Datas Bloqueadas
                             </button>
+                            <button class="tab-btn" data-tab="settings">
+                                <i class="fas fa-cog"></i>
+                                Configurações
+                            </button>
                         </div>
                         
                         <div class="tab-content">
@@ -2301,6 +2228,74 @@ class AgendaSystem {
                                 </div>
                                 <div class="blocked-dates-container" id="blockedDatesContainer">
                                     ${this.generateBlockedDatesHTML()}
+                                </div>
+                            </div>
+                            
+                            <div id="settings-tab" class="tab-pane">
+                                <div class="settings-content">
+                                    <h3>Configurações da Agenda</h3>
+                                    <form id="scheduleSettingsForm">
+                                        <div class="form-group">
+                                            <label for="defaultDuration">Duração Padrão (minutos):</label>
+                                            <input type="number" id="defaultDuration" name="defaultDuration" 
+                                                   value="${
+                                                     this.getScheduleSettings()
+                                                       .defaultDuration
+                                                   }" min="15" max="120" step="15">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="advanceNotice">Aviso Prévio (horas):</label>
+                                            <input type="number" id="advanceNotice" name="advanceNotice" 
+                                                   value="${
+                                                     this.getScheduleSettings()
+                                                       .advanceNotice
+                                                   }" min="1" max="168">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="maxDailySlots">Máximo de Agendamentos por Dia:</label>
+                                            <input type="number" id="maxDailySlots" name="maxDailySlots" 
+                                                   value="${
+                                                     this.getScheduleSettings()
+                                                       .maxDailySlots
+                                                   }" min="1" max="20">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Dias de Funcionamento:</label>
+                                            <div class="checkbox-group">
+                                                ${[
+                                                  "Segunda",
+                                                  "Terça",
+                                                  "Quarta",
+                                                  "Quinta",
+                                                  "Sexta",
+                                                  "Sábado",
+                                                  "Domingo",
+                                                ]
+                                                  .map(
+                                                    (day, index) => `
+                                                    <label class="checkbox-label">
+                                                        <input type="checkbox" name="workingDays" value="${index}" 
+                                                               ${
+                                                                 this.getScheduleSettings().workingDays.includes(
+                                                                   index
+                                                                 )
+                                                                   ? "checked"
+                                                                   : ""
+                                                               }>
+                                                        ${day}
+                                                    </label>
+                                                `
+                                                  )
+                                                  .join("")}
+                                            </div>
+                                        </div>
+                                        <div class="form-actions">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-save"></i>
+                                                Salvar Configurações
+                                            </button>
+                                        </div>
+                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -2340,6 +2335,14 @@ class AgendaSystem {
       .getElementById("addBlockedDateBtn")
       .addEventListener("click", () => {
         this.showAddBlockedDateForm();
+      });
+
+    // Save settings
+    document
+      .getElementById("scheduleSettingsForm")
+      .addEventListener("submit", (e) => {
+        e.preventDefault();
+        this.saveScheduleSettings();
       });
 
     this.showModal("scheduleManagerModal");
@@ -3651,11 +3654,6 @@ class AgendaSystem {
 
       this.requests = firebaseRequests;
       this.saveRequests();
-
-      // Atualiza contador automaticamente para o painel do orientador
-      if (this.userType === "coordenador" && this.isLoggedIn) {
-        this.updateCoordinatorDashboard();
-      }
     } catch (error) {
       console.error("Erro ao carregar solicitações do Firebase:", error);
     }
