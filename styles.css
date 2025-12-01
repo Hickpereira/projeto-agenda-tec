@@ -506,7 +506,7 @@ body.dark-mode .notification.info .notification-icon {
 body.dark-mode .notification::before {
   background: linear-gradient(90deg, #ff161f, #ff3d47, #ff161f);
 }
-
+aaaaaaaaaaaaaaaaaaa
 body.dark-mode .notification.success::before {
   background: linear-gradient(90deg, #10b981, #34d058, #10b981);
 }
@@ -2043,7 +2043,7 @@ body.dark-mode .user-profile:hover {
 .hero-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 var(--spacing-md);
+  padding: 0 ;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--spacing-2xl);
@@ -2057,7 +2057,7 @@ body.dark-mode .user-profile:hover {
 }
 
 .hero-title {
-  font-size: 3.5rem;
+  font-size: 3.0rem;
   font-weight: 800;
   color: var(--text-primary);
   margin-bottom: var(--spacing-lg);
@@ -2065,7 +2065,7 @@ body.dark-mode .user-profile:hover {
 }
 
 .hero-description {
-  font-size: 1.25rem;
+  font-size: 1.0rem;
   color: var(--text-secondary);
   margin-bottom: var(--spacing-xl);
   line-height: 1.6;
@@ -2100,6 +2100,7 @@ body.dark-mode .user-profile:hover {
   border: 1px solid var(--accent-color);
   animation: float 6s ease-in-out infinite;
   position: relative;
+  margin-left: -20px;
 }
 
 .hero-illustration::before {
