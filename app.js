@@ -40,6 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
         email: firebaseUser.email,
         userType: userType,
         foto_perfil: userData.foto_perfil || null,
+        telefone: userData.telefone_responsavel || null,
       };
       window.agendaSystem.isLoggedIn = true;
       window.agendaSystem.userType = userType;
@@ -55,6 +56,8 @@ document.addEventListener("DOMContentLoaded", () => {
       await window.agendaSystem.loadRequestsFromFirebase();
       await window.agendaSystem.loadTimeSlotsFromFirebase();
       await window.agendaSystem.loadBlockedDatesFromFirebase();
+
+      window.agendaSystem.showDashboard();
     },
 
     async logout() {
@@ -320,7 +323,7 @@ document.addEventListener("DOMContentLoaded", () => {
      * @param {object} requestData
      * * Atualiza o status de uma solicitação específica no Firestore
      * @param {string} requestId - id do documento da solicitação
-     * @param {string} newStatus - status - aceita,rejeitada,concluida
+     * @param {string} newStatus - status - aceita,rejeitada,concluida,cancelada
      */
 
     async createRequest(requestData) {
@@ -333,75 +336,63 @@ document.addEventListener("DOMContentLoaded", () => {
         throw new Error("Usuário não autenticado.");
       }
 
-      auth.onAuthStateChanged(async (user) => {
-        if (window.agendaSystem) {
-          if (user) {
-            const responsavelDoc = await db
-              .collection("responsaveis")
-              .doc(user.uid)
-              .get();
-            const userType = responsavelDoc.exists
-              ? "responsavel"
-              : "coordenador";
-
-            await window.services.auth.updateUserSession(user, userType);
-
-            window.agendaSystem.isLoggedIn = true;
-            window.agendaSystem.updateHeaderForLoggedUser();
-            window.agendaSystem.showDashboard();
-            window.agendaSystem.loadRequests();
-          } else {
-            if (window.agendaSystem.isLoggedIn) {
-              window.agendaSystem.handleLogout();
-            }
-          }
-        }
-      });
-
-      const finalRequestData = {
-        responsavelId: currentUser.uid,
-        orientadorId: requestData.orientador.id,
-        responsavelNome:
-          window.agendaSystem.currentUser.name || currentUser.displayName,
-        responsavelEmail: currentUser.email,
-        data: requestData.date,
-        horario: requestData.time,
-        assunto: requestData.subject,
-        mensagem: requestData.message || "",
-        escolaAluno: requestData.escola_orientador,
-        status: "pending",
-        criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
-      };
       try {
+        // verifica se data já esta como "aceita"
+        const approvedSlotQuery = await db
+          .collection("solicitacoes")
+          .where("orientadorId", "==", requestData.orientador.id)
+          .where("data", "==", requestData.date)
+          .where("horario", "==", requestData.time)
+          .where("status", "==", "approved") // checa se solicitaçao esta como aceita
+          .get();
+
+        if (!approvedSlotQuery.empty) {
+          // Se não estiver vazio, o horário está ocupado
+          throw new Error(
+            "Este horário já foi preenchido. Tente outro horário."
+          );
+        }
+
+        // verifica se pai tem solicitacao igual pendente
+        const duplicateCheckQuery = await db
+          .collection("solicitacoes")
+          .where("responsavelId", "==", currentUser.uid)
+          .where("orientadorId", "==", requestData.orientador.id)
+          .where("data", "==", requestData.date)
+          .where("horario", "==", requestData.time)
+          .where("status", "==", "pending")
+          .get();
+
+        if (!duplicateCheckQuery.empty) {
+          throw new Error(
+            "Você já possui uma solicitação pendente para este mesmo horário."
+          );
+        }
+
+        const finalRequestData = {
+          responsavelId: currentUser.uid,
+          orientadorId: requestData.orientador.id,
+          responsavelNome:
+            window.agendaSystem.currentUser.name || currentUser.displayName,
+          responsavelEmail: currentUser.email,
+          data: requestData.date,
+          horario: requestData.time,
+          assunto: requestData.subject,
+          mensagem: requestData.message || "",
+          escolaAluno: requestData.escola_orientador,
+          alunoNome: requestData.studentName,
+          alunoSerie: requestData.studentGrade,
+          alunoTurma: requestData.studentClass,
+          status: "pending",
+          criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+        };
+
         const docRef = await db
           .collection("solicitacoes")
           .add(finalRequestData);
 
         console.log("Solicitação salva com sucesso! ID:", docRef.id);
 
-        const localRequest = {
-          id: docRef.id,
-          responsavelId: finalRequestData.responsavelId,
-          userId: finalRequestData.responsavelId,
-          orientadorId: finalRequestData.orientadorId,
-          date: finalRequestData.data,
-          time: finalRequestData.horario,
-          subject: finalRequestData.assunto,
-          message: finalRequestData.mensagem || "",
-          status: finalRequestData.status,
-          createdAt: new Date(),
-          orientador: window.agendaSystem.getOrientadorById(
-            finalRequestData.orientadorId
-          ),
-          responsavelNome: finalRequestData.responsavelNome,
-          responsavelEmail: finalRequestData.responsavelEmail,
-        };
-
-        // Adicionar à lista local
-        window.agendaSystem.requests.push(localRequest);
-        window.agendaSystem.saveRequests();
-
-        // Recarregar solicitações do Firebase para sincronizar
         await window.agendaSystem.loadRequestsFromFirebase();
 
         window.agendaSystem.showNotification(
@@ -411,51 +402,107 @@ document.addEventListener("DOMContentLoaded", () => {
       } catch (error) {
         console.error("Erro ao salvar a solicitação no Firestore:", error);
 
-        // Mensagem de erro mais específica
         let errorMessage =
           "Ocorreu um erro ao enviar sua solicitação. Tente novamente.";
-        if (error.code === "permission-denied") {
-          errorMessage = "Você não tem permissão para realizar esta ação.";
-        } else if (error.code === "unavailable") {
-          errorMessage =
-            "Serviço temporariamente indisponível. Tente novamente em alguns instantes.";
-        } else if (error.message) {
+
+        if (
+          error.message.includes("duplicada") ||
+          error.message.includes("preenchido")
+        ) {
           errorMessage = error.message;
+        } else if (error.code === "permission-denied") {
+          errorMessage = "Você não tem permissão para realizar esta ação.";
         }
 
         window.agendaSystem.showNotification(errorMessage, "error");
 
-        // Marcar erro como tratado para evitar duplicação de notificações
         error.handled = true;
         throw error;
       }
     },
+
     /**
-     * Atualiza o status de uma solicitação específica no Firestore.
-     * @param {string} requestId - O ID do documento da solicitação.
-     * @param {string} newStatus - O novo status ('aceita', 'rejeitada', 'concluida').
-     */ async updateRequestStatus(requestId, newStatus) {
+     * Atualiza o status de uma solicitação.
+     * SE o newStatus for 'approved', ele rejeita automaticamente
+     * todas as outras solicitações pendentes para o mesmo horário.
+     */
+    async updateRequestStatus(requestId, newStatus) {
       if (!requestId || !newStatus) {
         throw new Error("ID da solicitação e novo status são obrigatórios.");
       }
 
       const requestDocRef = db.collection("solicitacoes").doc(requestId);
 
-      try {
-        await requestDocRef.update({
-          status: newStatus,
-          atualizadoEm: firebase.firestore.FieldValue.serverTimestamp(),
-        });
-        console.log(
-          `Status da solicitação ${requestId} atualizado para ${newStatus}.`
-        );
-      } catch (error) {
-        console.error("Erro ao atualizar status no Firestore:", error);
-        window.agendaSystem.showNotification(
-          "Falha ao atualizar o status da solicitação.",
-          "error"
-        );
-        throw error;
+      if (newStatus === "approved") {
+        const batch = db.batch();
+
+        try {
+          const requestDoc = await requestDocRef.get();
+          if (!requestDoc.exists) {
+            throw new Error("Solicitação a ser aprovada não encontrada.");
+          }
+          const requestData = requestDoc.data();
+
+          // busca todas as solicitacoes pendentes na msm data e hoarrio
+          const conflictsQuery = await db
+            .collection("solicitacoes")
+            .where("orientadorId", "==", requestData.orientadorId)
+            .where("data", "==", requestData.data)
+            .where("horario", "==", requestData.horario)
+            .where("status", "==", "pending")
+            .get();
+
+          let rejectedCount = 0;
+          conflictsQuery.forEach((doc) => {
+            // Garante que não vai rejeita a própria solicitação que esta sendo aprovada
+            if (doc.id !== requestId) {
+              const conflictDocRef = db.collection("solicitacoes").doc(doc.id);
+              batch.update(conflictDocRef, {
+                status: "rejected",
+                rejectionReason:
+                  "Horário preenchido por outra solicitação. Tente outro horário",
+                atualizadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+              });
+              rejectedCount++;
+            }
+          });
+
+          batch.update(requestDocRef, {
+            status: "approved",
+            rejectionReason: null,
+            atualizadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+          });
+
+          await batch.commit();
+          console.log(
+            `Solicitação ${requestId} aprovada e ${rejectedCount} conflitos rejeitados.`
+          );
+        } catch (error) {
+          console.error("Erro na transação de aprovação/rejeição:", error);
+          window.agendaSystem.showNotification(
+            "Falha ao aprovar a solicitação e rejeitar conflitos.",
+            "error"
+          );
+          throw error;
+        }
+      } else {
+        // se for outro status apenas atualiza
+        try {
+          await requestDocRef.update({
+            status: newStatus,
+            atualizadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+          });
+          console.log(
+            `Status da solicitação ${requestId} atualizado para ${newStatus}.`
+          );
+        } catch (error) {
+          console.error("Erro ao atualizar status no Firestore:", error);
+          window.agendaSystem.showNotification(
+            "Falha ao atualizar o status da solicitação.",
+            "error"
+          );
+          throw error;
+        }
       }
     },
 

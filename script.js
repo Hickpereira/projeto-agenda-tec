@@ -748,15 +748,13 @@ class AgendaSystem {
     }
 
     try {
-      // Assumindo que a instância do Firestore está em window.db
       const orientadoresRef = window.db.collection("orientador_pedagogico");
 
-      // Busca no Firestore por orientadores onde o campo 'escola_orientador' é igual ao ID da escola
+      // no firebase busca por orientadores q escola_orientador = id da escola
       const snapshot = await orientadoresRef
         .where("escola_orientador", "==", escolaId)
         .get();
 
-      // Limpa novamente para adicionar os novos resultados
       orientadorSelect.innerHTML =
         '<option value="">Selecione um orientador...</option>';
 
@@ -768,8 +766,6 @@ class AgendaSystem {
           option.value = orientadorId;
           option.textContent = orientadorData.nome_orientador;
 
-          // Armazena todos os dados do orientador no próprio elemento <option>
-          // para fácil acesso posterior, evitando novas consultas.
           option.dataset.info = JSON.stringify(orientadorData);
 
           orientadorSelect.appendChild(option);
@@ -848,7 +844,10 @@ class AgendaSystem {
     // Agendamentos aprovados futuros (próximos), ainda não concluídos/não compareceu
     const upcomingApproved = this.requests.filter((req) => {
       if (req.status !== "approved") return false;
-      if (req.attendanceStatus === "concluido" || req.attendanceStatus === "faltou")
+      if (
+        req.attendanceStatus === "concluido" ||
+        req.attendanceStatus === "faltou"
+      )
         return false;
       if (this.needsFeedback(req)) return false;
       return !this.isSchedulePast(req);
@@ -1413,6 +1412,47 @@ class AgendaSystem {
     }
   }
 
+  /**
+   * Chamada pelo Responsável para cancelar um agendamento.
+   * Usa o 'updateRequestStatus' do app.js
+   */
+  async cancelScheduleByResponsavel(scheduleId) {
+    if (
+      !confirm(
+        "Tem certeza que deseja cancelar este agendamento? Esta ação não pode ser desfeita."
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await window.services.schedule.updateRequestStatus(
+        scheduleId,
+        "cancelled"
+      );
+
+      const schedule = this.requests.find((req) => req.id === scheduleId);
+      if (schedule) {
+        schedule.status = "cancelled";
+        this.saveRequests();
+      }
+
+      this.showNotification("Agendamento cancelado com sucesso!", "success");
+
+      const schedulesModal = document.getElementById("schedulesModal");
+      if (schedulesModal) {
+        schedulesModal.remove();
+        this.showSchedulesList();
+      }
+    } catch (error) {
+      console.error("Erro ao cancelar agendamento:", error);
+      this.showNotification(
+        "Erro ao cancelar o agendamento. Verifique suas permissões (Regras do Firebase).",
+        "error"
+      );
+    }
+  }
+
   async showSchedulesList() {
     await this.loadRequestsFromFirebase();
 
@@ -1536,7 +1576,6 @@ class AgendaSystem {
    * Verifica se um agendamento precisa de feedback
    */
   needsFeedback(request) {
-    // Apenas agendamentos aprovados que já passaram e não foram encerrados
     if (request.status !== "approved") return false;
     if (
       request.attendanceStatus === "concluido" ||
@@ -1544,12 +1583,10 @@ class AgendaSystem {
     )
       return false;
 
-    // verificar se a data/hora já passou
     return this.isSchedulePast(request);
   }
 
   async showRequestsList() {
-    // puxa solicitacoes firebase antes de mostrar
     await this.loadRequestsFromFirebase();
 
     this.updateCoordinatorDashboard();
@@ -1558,7 +1595,6 @@ class AgendaSystem {
       (req) => req.status === "pending"
     );
 
-    // Agendamentos aprovados que ainda não passaram OU que já foram encerrados
     const acceptedRequests = this.requests.filter(
       (req) =>
         req.status === "approved" &&
@@ -1567,16 +1603,21 @@ class AgendaSystem {
         !this.needsFeedback(req)
     );
 
-    // Agendamentos passados que precisam de feedback (AGUARDANDO FEEDBACK)
+    // agendamento aguardando feedback
     const awaitingFeedback = this.requests.filter((req) =>
       this.needsFeedback(req)
     );
 
+    //rejeitada pelo oe
     const rejectedRequests = this.requests.filter(
       (req) => req.status === "rejected"
     );
 
-    // Agendamentos já encerrados (com feedback)
+    //canceladas - pelo pai
+    const cancelledRequests = this.requests.filter(
+      (req) => req.status === "cancelled"
+    );
+
     const completedRequests = this.requests.filter(
       (req) =>
         req.attendanceStatus === "concluido" ||
@@ -1600,10 +1641,17 @@ class AgendaSystem {
                             <i class="fas fa-check-circle"></i>
                             Aceitas (${acceptedRequests.length})
                         </button>
+                        
                         <button class="tab-btn" data-tab="rejected">
                             <i class="fas fa-times-circle"></i>
                             Rejeitadas (${rejectedRequests.length})
                         </button>
+
+                        <button class="tab-btn" data-tab="cancelled">
+                            <i class="fas fa-ban"></i>
+                            Canceladas (${cancelledRequests.length})
+                        </button>
+
                     </div>
                     
                     <div class="tab-content">
@@ -1652,6 +1700,21 @@ class AgendaSystem {
                                 }
                             </div>
                         </div>
+
+                        <div id="cancelled-tab" class="tab-pane">
+                            <div class="requests-list">
+                                ${
+                                  cancelledRequests.length === 0
+                                    ? '<div class="empty-state"><i class="fas fa-ban"></i><p>Nenhuma solicitação cancelada</p></div>'
+                                    : cancelledRequests
+                                        .map((request) =>
+                                          this.createRequestItem(request, true)
+                                        )
+                                        .join("")
+                                }
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -1659,13 +1722,11 @@ class AgendaSystem {
 
     document.body.insertAdjacentHTML("beforeend", modalHTML);
 
-    // Event listeners
     document.getElementById("closeRequests").addEventListener("click", () => {
       this.hideModal("requestsModal");
       document.getElementById("requestsModal").remove();
     });
 
-    // Tab switching (scoped to this modal)
     document.querySelectorAll("#requestsModal .tab-btn").forEach((btn) => {
       btn.addEventListener("click", (e) => {
         const buttonEl = e.currentTarget || e.target.closest("button");
@@ -1740,13 +1801,10 @@ class AgendaSystem {
                         <p><strong>Email:</strong> ${
                           request.userEmail || request.responsavelEmail || "N/A"
                         }</p>
-                        ${
-                          request.orientador
-                            ? `
-                            <p><strong>Orientador:</strong> ${request.orientador.name} - ${request.orientador.specialty}</p>
-                        `
-                            : ""
-                        }
+                       <p><strong>Aluno:</strong> ${request.alunoNome}</p>
+                            <p><strong>Turma:</strong> ${
+                              request.alunoTurma
+                            } (${this.formatGrade(request.alunoSerie)})</p>
                         <p><strong>Data:</strong> ${this.formatDate(
                           request.date
                         )}</p>
@@ -1841,8 +1899,10 @@ class AgendaSystem {
       pending: "Pendente",
       approved: "Aprovada",
       rejected: "Rejeitada",
+      cancelled: "Cancelado",
+      reject: "Recusado",
     };
-    return statusMap[status] || status;
+    return statusTexts[String(status).toLowerCase()] || String(status);
   }
 
   async approveRequest(requestId) {
@@ -1874,7 +1934,7 @@ class AgendaSystem {
 
   async rejectRequest(requestId) {
     try {
-      await window.services.schedule.updateRequestStatus(requestId, "reject");
+      await window.services.schedule.updateRequestStatus(requestId, "rejected");
 
       const request = this.requests.find((req) => req.id === requestId);
       if (request) {
@@ -2405,20 +2465,16 @@ class AgendaSystem {
                                         }</span>
                                         <span class="stat-label">Rejeitadas</span>
                                     </div>
-                                    <div class="stat-item ${
-                                      this.requests.filter((r) =>
-                                        this.needsFeedback(r)
-                                      ).length > 0
-                                        ? "stat-item-warning"
-                                        : ""
-                                    }">
+
+                                    <div class="stat-item">
                                         <span class="stat-number">${
-                                          this.requests.filter((r) =>
-                                            this.needsFeedback(r)
+                                          this.requests.filter(
+                                            (r) => r.status === "cancelled"
                                           ).length
                                         }</span>
-                                        <span class="stat-label">Aguardando Feedback</span>
+                                        <span class="stat-label">Canceladas</span>
                                     </div>
+
                                     <div class="stat-item">
                                         <span class="stat-number">${
                                           this.requests.filter(
@@ -3615,8 +3671,13 @@ class AgendaSystem {
             data.postAttendanceFeedback || data.attendanceFeedback || "",
           createdAt: data.criadoEm?.toDate?.() || new Date(0),
           orientador: this.getOrientadorById(data.orientadorId),
+          responsavelTelefone: data.responsavelTelefone || null,
           responsavelNome: data.responsavelNome,
           responsavelEmail: data.responsavelEmail,
+          alunoNome: data.alunoNome || "Aluno não informado",
+          alunoSerie: data.alunoSerie || "N/A",
+          alunoTurma: data.alunoTurma || "N/A",
+          rejectionReason: data.rejectionReason || null,
         });
       });
 
@@ -3641,6 +3702,10 @@ class AgendaSystem {
             orientador: this.getOrientadorById(data.orientadorId),
             responsavelNome: data.responsavelNome,
             responsavelEmail: data.responsavelEmail,
+            alunoNome: data.alunoNome || "Aluno não informado",
+            alunoSerie: data.alunoSerie || "N/A",
+            alunoTurma: data.alunoTurma || "N/A",
+            rejectionReason: data.rejectionReason || null,
           });
         }
       });
@@ -3652,7 +3717,6 @@ class AgendaSystem {
       this.requests = firebaseRequests;
       this.saveRequests();
 
-      // Atualiza contador automaticamente para o painel do orientador
       if (this.userType === "coordenador" && this.isLoggedIn) {
         this.updateCoordinatorDashboard();
       }
@@ -3931,8 +3995,11 @@ class AgendaSystem {
         ? "success"
         : schedule.status === "rejected"
         ? "danger"
+        : schedule.status === "cancelled"
+        ? "danger"
         : "warning";
 
+    const statusText = this.getStatusText(schedule.status);
     return `
             <div class="schedule-item ${statusClass} ${
       isUpcoming ? "upcoming" : "past"
@@ -3941,8 +4008,17 @@ class AgendaSystem {
                     <div class="schedule-header">
                         <h4>${schedule.subject}</h4>
                         <span class="schedule-status status-${schedule.status}">
-                            ${this.getStatusText(schedule.status)}
+                            ${statusText}
                         </span>
+                        
+                        ${
+                          schedule.status === "rejected" &&
+                          schedule.rejectionReason
+                            ? `<span class="schedule-status-detail">Motivo: ${schedule.rejectionReason}</span>`
+                            : schedule.status === "rejected"
+                            ? `<span class="schedule-status-detail">Rejeitado pelo orientador</span>`
+                            : ""
+                        }
                     </div>
                     <div class="schedule-details">
                         ${
@@ -3997,13 +4073,12 @@ class AgendaSystem {
                 </div>
                 <div class="schedule-actions">
                     ${
-                      isUpcoming && this.userType === "coordenador"
+                      this.userType === "responsavel" &&
+                      (schedule.status === "pending" ||
+                        schedule.status === "approved")
                         ? `
-                        <button class="btn btn-sm btn-outline" onclick="agendaSystem.editSchedule('${schedule.id}')">
-                            <i class="fas fa-edit"></i> Editar
-                        </button>
-                        <button class="btn btn-sm btn-danger" onclick="agendaSystem.cancelSchedule('${schedule.id}')">
-                            <i class="fas fa-times"></i> Cancelar
+                        <button class="btn btn-sm btn-danger" onclick="agendaSystem.cancelScheduleByResponsavel('${schedule.id}')">
+                            <i class="fas fa-times-circle"></i> Cancelar
                         </button>
                     `
                         : ""
@@ -4709,7 +4784,6 @@ class AgendaSystem {
     this.saveRequests();
     this.showNotification("Solicitação de reagendamento enviada!", "success");
 
-    // Refresh the schedules modal if it's open
     const schedulesModal = document.getElementById("schedulesModal");
     if (schedulesModal) {
       schedulesModal.remove();
@@ -4717,7 +4791,6 @@ class AgendaSystem {
     }
   }
 
-  // Funções auxiliares para relatórios
   generateActivityTimeline() {
     const recentRequests = this.requests
       .sort((a, b) => new Date(b.date) - new Date(a.date))
@@ -4728,29 +4801,40 @@ class AgendaSystem {
     }
 
     return recentRequests
-      .map(
-        (request) => `
+      .map((request) => {
+        const statusKey = String(request.status || "pending").toLowerCase();
+        const statusText = this.getStatusText(statusKey);
+        return `
             <div class="timeline-item">
                 <div class="timeline-marker"></div>
                 <div class="timeline-content">
-                    <h4>${request.subject}</h4>
-                    <p>${request.userName} - ${this.formatDate(
-          request.date
-        )}</p>
-                    <span class="timeline-status status-${
-                      request.status
-                    }">${this.getStatusText(request.status)}</span>
+                    <h4>${request.subject || "Assunto não informado"}</h4>
+                    
+                    <p class="timeline-user-info">
+                        <strong>Solicitante:</strong> ${
+                          request.responsavelNome || "N/A"
+                        }<br>
+                        <strong>Email:</strong> ${
+                          request.responsavelEmail || "N/A"
+                        }<br>
+                        <strong>Data:</strong> ${this.formatDate(
+                          request.date
+                        )} às ${request.time}
+                    </p>
+                    <span class="timeline-status status-${statusKey}">${statusText}</span>
                 </div>
             </div>
-        `
-      )
+        `;
+      })
       .join("");
   }
-
   generateTopUsers() {
     const userCounts = {};
     this.requests.forEach((request) => {
-      userCounts[request.userName] = (userCounts[request.userName] || 0) + 1;
+      const key = `${request.responsavelNome || "N/A"}|${
+        request.responsavelEmail || "N/A"
+      }`;
+      userCounts[key] = (userCounts[key] || 0) + 1;
     });
 
     const topUsers = Object.entries(userCounts)
@@ -4762,22 +4846,28 @@ class AgendaSystem {
     }
 
     return topUsers
-      .map(
-        ([userName, count]) => `
+      .map(([userData, count]) => {
+        const [userName, userEmail] = userData.split("|");
+        return `
             <div class="user-item">
-                <span class="user-name">${userName}</span>
+                <div>
+                  <span class="user-name">${userName}</span>
+                  <span class="user-email">${
+                    userEmail !== "N/A" ? userEmail : ""
+                  }</span>
+                </div>
                 <span class="user-count">${count} solicitações</span>
             </div>
-        `
-      )
+        `;
+      })
       .join("");
   }
-
   createStatusChart() {
     const canvas = document.getElementById("statusChart");
     if (!canvas) return;
 
     const ctx = canvas.getContext("2d");
+
     const pending = this.requests.filter((r) => r.status === "pending").length;
     const approved = this.requests.filter(
       (r) => r.status === "approved"
@@ -4785,12 +4875,15 @@ class AgendaSystem {
     const rejected = this.requests.filter(
       (r) => r.status === "rejected"
     ).length;
+    const cancelled = this.requests.filter(
+      (r) => r.status === "cancelled"
+    ).length;
 
-    const data = [pending, approved, rejected];
-    const labels = ["Pendentes", "Aprovadas", "Rejeitadas"];
-    const colors = ["#ffc107", "#28a745", "#dc3545"];
+    const data = [pending, approved, rejected, cancelled];
+    const labels = ["Pendentes", "Aprovadas", "Rejeitadas", "Canceladas"];
+    const colors = ["#ffc107", "#28a745", "#dc3545", "#6c757d"];
 
-    // Desenhar gráfico de pizza simples
+    // grafico de pizza relatorio
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
     const radius = Math.min(centerX, centerY) - 20;
@@ -4825,7 +4918,7 @@ class AgendaSystem {
       currentAngle += sliceAngle;
     });
 
-    // Adicionar legenda
+    // legenda
     ctx.font = "12px Arial";
     ctx.textAlign = "left";
     let legendY = 20;
@@ -4839,7 +4932,6 @@ class AgendaSystem {
   }
 
   generateFullReport() {
-    // Filtrar apenas agendamentos encerrados para o relatório detalhado
     const completedRequests = this.requests.filter(
       (r) =>
         r.attendanceStatus === "concluido" || r.attendanceStatus === "faltou"
@@ -4997,10 +5089,11 @@ class AgendaSystem {
                         </div>
                         <div class="stat">
                             <div class="stat-number">${
-                              this.requests.filter((r) => this.needsFeedback(r))
-                                .length
+                              this.requests.filter(
+                                (r) => r.status === "cancelled"
+                              ).length
                             }</div>
-                            <div>Aguardando Feedback</div>
+                            <div>Canceladas</div>
                         </div>
                         <div class="stat">
                             <div class="stat-number">${
@@ -5013,7 +5106,6 @@ class AgendaSystem {
                             <div>Encerrados</div>
                         </div>
                     </div>
-                    
                     <h2>Detalhes das Solicitações</h2>
                     <table>
                         <thead>
@@ -5072,8 +5164,6 @@ class AgendaSystem {
 
     this.showNotification("Relatório enviado para impressão!", "success");
   }
-
-  // ========== FUNÇÕES DE PERFIL DO ORIENTADOR ==========
 
   async showProfileModal() {
     if (this.userType !== "coordenador") {
@@ -5571,8 +5661,7 @@ class AgendaSystem {
     // Simular envio de código SMS (fictício) - aguardar 2 segundos
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    // Simular resultado (sempre bem-sucedido para demonstração)
-    const isVerified = Math.random() > 0.2; // 80% de chance de sucesso
+    const isVerified = Math.random() > 0.2;
 
     if (isVerified) {
       statusElement.textContent =
