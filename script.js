@@ -2503,11 +2503,7 @@ class AgendaSystem {
                                 </div>
                             </div>
                             
-                            <div class="report-card">
-                                <h3>Top Solicitantes</h3>
-                                <div class="top-users" id="topUsers">
-                                    ${this.generateTopUsers()}
-                                </div>
+                            
                             </div>
                         </div>
                     </div>
