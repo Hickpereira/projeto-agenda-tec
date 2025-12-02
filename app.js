@@ -372,6 +372,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const finalRequestData = {
           responsavelId: currentUser.uid,
           orientadorId: requestData.orientador.id,
+          orientadorNome: requestData.orientador.nome_orientador,
           responsavelNome:
             window.agendaSystem.currentUser.name || currentUser.displayName,
           responsavelEmail: currentUser.email,

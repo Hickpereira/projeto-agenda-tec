@@ -16,14 +16,11 @@ class AgendaSystem {
     this.loadUserData();
     this.setupAccessibility();
     this.checkAuthStatus();
-    // Padroniza termos visíveis na interface
     this.replaceCoordinatorTerms();
   }
 
   addSearchFunctionality() {
     console.log("Futura implementação: Lógica de busca no painel.");
-    // TODO: Adicionar aqui a lógica para filtrar agendamentos ou solicitações.
-    // Por enquanto, a função existe e não vai mais causar erro.
   }
 
   replaceCoordinatorTerms() {
@@ -48,20 +45,24 @@ class AgendaSystem {
     }
   }
 
-  startAutoRefresh() {
-    console.log("Futura implementação: Lógica de auto-refresh.");
-    // TODO: Adicionar aqui a lógica para atualizar o painel periodicamente.
-    // Por enquanto, a função existe e não vai mais causar erro.
+  getEscolaDisplayName(escolaId) {
+    const escolas = {
+      escola_a: "Etec de Heliópolis - Arquiteto Ruy Ohtake (ZS)",
+      escola_b: "Etec Getúlio Vargas (Ipiranga)",
+      escola_c: "Etec Jorge Street - Jardim São Caetano",
+    };
+    return escolas[escolaId] || escolaId || "Escola não informada";
   }
 
-  // Event Listeners
+  startAutoRefresh() {
+    console.log("Futura implementação: Lógica de auto-refresh.");
+  }
+
   setupEventListeners() {
-    // Navegação
     document
       .getElementById("nav-toggle")
       ?.addEventListener("click", this.toggleMobileMenu.bind(this));
 
-    // Modais
     document
       .getElementById("loginBtn")
       ?.addEventListener("click", () => this.showModal("loginModal"));
@@ -75,7 +76,6 @@ class AgendaSystem {
       .getElementById("closeRegister")
       ?.addEventListener("click", () => this.hideFormModal("registerModal"));
 
-    // Tabs: Login
     document
       .getElementById("loginTabResponsavel")
       ?.addEventListener("click", () =>
@@ -86,7 +86,7 @@ class AgendaSystem {
       ?.addEventListener("click", () =>
         this.switchAuthTab("login", "coordenador")
       );
-    // Tabs: Register
+
     document
       .getElementById("registerTabResponsavel")
       ?.addEventListener("click", () =>
@@ -98,11 +98,6 @@ class AgendaSystem {
         this.switchAuthTab("register", "coordenador")
       );
 
-    // Formulários - Jogados para 'firebase-config.js'
-    //document.getElementById('loginForm')?.addEventListener('submit', this.handleLogin.bind(this));
-    //document.getElementById('registerForm')?.addEventListener('submit', this.handleRegister.bind(this));
-
-    // Alternância entre modais
     document
       .getElementById("switchToRegister")
       ?.addEventListener("click", (e) => {
@@ -116,7 +111,6 @@ class AgendaSystem {
       this.showModal("loginModal");
     });
 
-    // Dashboard
     document
       .getElementById("startScheduling")
       ?.addEventListener("click", this.startScheduling.bind(this));
@@ -136,12 +130,8 @@ class AgendaSystem {
       .getElementById("viewReportsBtn")
       ?.addEventListener("click", this.showReports.bind(this));
 
-    // Adicionar botão de visualização de agenda para coordenadores será feito no showDashboard
-
-    // Acessibilidade - painel único
     this.initAccessibilityPanel();
 
-    // Botão de acessibilidade alternativo no header
     document.getElementById("a11yHeaderBtn")?.addEventListener("click", () => {
       const panel = document.getElementById("a11yPanel");
       if (panel) {
@@ -149,13 +139,11 @@ class AgendaSystem {
       }
     });
 
-    // Navegação por teclado para acessibilidade
     document.addEventListener(
       "keydown",
       this.handleKeyboardNavigation.bind(this)
     );
 
-    // Fechar modais ao clicar fora (apenas para modais específicos, não formulários)
     window.addEventListener("click", (e) => {
       if (
         e.target.classList.contains("modal") &&
@@ -167,19 +155,16 @@ class AgendaSystem {
       }
     });
 
-    // Header logout button
     document.addEventListener("click", (e) => {
       if (e.target && e.target.id === "logoutBtn") {
         this.handleLogout();
       }
     });
 
-    // Botão de perfil
     document.getElementById("profileBtn")?.addEventListener("click", () => {
       this.showProfileModal();
     });
 
-    // Modal de perfil
     document.getElementById("closeProfile")?.addEventListener("click", () => {
       this.hideModal("profileModal");
     });
@@ -199,7 +184,6 @@ class AgendaSystem {
         this.handleProfilePhotoUpload(e);
       });
 
-    // Botões de verificação
     document.getElementById("verifyEmailBtn")?.addEventListener("click", () => {
       this.verifyEmail();
     });
@@ -207,7 +191,7 @@ class AgendaSystem {
       this.verifyPhone();
     });
 
-    // Aplicar máscaras
+    // máscaras
     this.initMasks();
 
     // Navegação suave
@@ -222,8 +206,6 @@ class AgendaSystem {
           }
         });
       });
-
-    // Removido recarregamento ao trocar abas; uso de switchAuthTab já cuida da alternância
   }
 
   // Acessibilidade: painel e preferências
@@ -692,40 +674,6 @@ class AgendaSystem {
       );
       return [];
     }
-  }
-
-  getOrientadorById(orientadorId) {
-    const orientadores = [
-      {
-        id: "orientador1",
-        name: "Dr. Carlos Silva",
-        specialty: "Orientação Educacional",
-        email: "carlos.silva@escola.com",
-        phone: "(11) 99999-1111",
-      },
-      {
-        id: "orientador2",
-        name: "Dra. Maria Santos",
-        specialty: "Psicologia Escolar",
-        email: "maria.santos@escola.com",
-        phone: "(11) 99999-2222",
-      },
-      {
-        id: "orientador3",
-        name: "Prof. João Oliveira",
-        specialty: "Coordenação Pedagógica",
-        email: "joao.oliveira@escola.com",
-        phone: "(11) 99999-3333",
-      },
-    ];
-
-    return (
-      orientadores.find((o) => o.id === orientadorId) || {
-        id: orientadorId,
-        name: "Orientador",
-        specialty: "Orientação Educacional",
-      }
-    );
   }
 
   async carregarOrientadoresPorEscola(escolaId) {
@@ -3666,7 +3614,7 @@ class AgendaSystem {
           postAttendanceFeedback:
             data.postAttendanceFeedback || data.attendanceFeedback || "",
           createdAt: data.criadoEm?.toDate?.() || new Date(0),
-          orientador: this.getOrientadorById(data.orientadorId),
+          orientadorNome: data.orientadorNome || "Orientador",
           responsavelTelefone: data.responsavelTelefone || null,
           responsavelNome: data.responsavelNome,
           responsavelEmail: data.responsavelEmail,
@@ -3674,6 +3622,7 @@ class AgendaSystem {
           alunoSerie: data.alunoSerie || "N/A",
           alunoTurma: data.alunoTurma || "N/A",
           rejectionReason: data.rejectionReason || null,
+          escolaAluno: data.escolaAluno || null,
         });
       });
 
@@ -3695,13 +3644,14 @@ class AgendaSystem {
             postAttendanceFeedback:
               data.postAttendanceFeedback || data.attendanceFeedback || "",
             createdAt: data.criadoEm?.toDate?.() || new Date(0),
-            orientador: this.getOrientadorById(data.orientadorId),
+            orientadorNome: data.orientadorNome || "Orientador",
             responsavelNome: data.responsavelNome,
             responsavelEmail: data.responsavelEmail,
             alunoNome: data.alunoNome || "Aluno não informado",
             alunoSerie: data.alunoSerie || "N/A",
             alunoTurma: data.alunoTurma || "N/A",
             rejectionReason: data.rejectionReason || null,
+            escolaAluno: data.escolaAluno || null,
           });
         }
       });
@@ -4017,13 +3967,9 @@ class AgendaSystem {
                         }
                     </div>
                     <div class="schedule-details">
-                        ${
-                          schedule.orientador
-                            ? `
-                            <p><strong>Orientador:</strong> ${schedule.orientador.name} - ${schedule.orientador.specialty}</p>
-                        `
-                            : ""
-                        }
+                       <p><strong>Orientador:</strong> ${
+                         schedule.orientadorNome
+                       }</p>
                         ${
                           schedule.studentName
                             ? `<p><strong>Aluno:</strong> ${schedule.studentName}</p>`
@@ -4036,6 +3982,9 @@ class AgendaSystem {
                               )}</p>`
                             : ""
                         }
+                        <p><strong>Escola:</strong> ${this.getEscolaDisplayName(
+                          schedule.escolaAluno
+                        )}</p
                         ${
                           schedule.studentClass
                             ? `<p><strong>Turma:</strong> ${schedule.studentClass}</p>`
@@ -5647,14 +5596,12 @@ class AgendaSystem {
       return;
     }
 
-    // Desabilitar botão durante verificação
     verifyBtn.disabled = true;
     verifyBtn.innerHTML =
       '<i class="fas fa-spinner fa-spin"></i> <span>Verificando...</span>';
     statusElement.textContent = "Enviando código de verificação...";
     statusElement.className = "verify-status verifying";
 
-    // Simular envio de código SMS (fictício) - aguardar 2 segundos
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
     const isVerified = Math.random() > 0.2;
@@ -5681,10 +5628,6 @@ document.addEventListener("DOMContentLoaded", () => {
   window.agendaSystem = new AgendaSystem();
 });
 
-// ==========================================================
-// 1. FUNÇÃO PRINCIPAL DE VALIDAÇÃO DE SENHA
-// ==========================================================
-
 /**
  * Valida a força de uma senha com base em vários critérios de segurança.
  * @param {string} password A senha a ser validada.
@@ -5698,272 +5641,265 @@ function validatePassword(password) {
   const hasSpecialChar = /[^A-Za-z0-9]/.test(password);
 
   return {
-      isLongEnough,
-      hasUpperCase,
-      hasLowerCase,
-      hasNumber,
+    isLongEnough,
+    hasUpperCase,
+    hasLowerCase,
+    hasNumber,
+    hasSpecialChar,
+    isValid:
+      isLongEnough &&
+      hasUpperCase &&
+      hasLowerCase &&
+      hasNumber &&
       hasSpecialChar,
-      isValid: isLongEnough && hasUpperCase && hasLowerCase && hasNumber && hasSpecialChar
   };
 }
 
-
-// ==========================================================
-// 2. FUNÇÃO DE REGISTRO (INTEGRAÇÃO COM FIREBASE - SIMULADA)
-//    - AGORA USA showNotification
-// ==========================================================
-
-/**
-* Função placeholder para lidar com o registro no Firebase Auth e Firestore.
-* ⚠️ SUBSTITUA ESTA SIMULAÇÃO PELA SUA LÓGICA REAL DO FIREBASE.
-*/
 function handleUserRegistration(userData, password, email) {
-  // 
-  // --- LÓGICA FIREBASE REAL DEVE ENTRAR AQUI ---
-  //
+  console.log(
+    `[SIMULADO] Sucesso no cadastro para: ${userData.userType}. Dados:`,
+    userData
+  );
 
-  // SIMULAÇÃO: 
-  console.log(`[SIMULADO] Sucesso no cadastro para: ${userData.userType}. Dados:`, userData);
-  
-  // Usa o sistema de notificação da AgendaSystem
-  if (window.agendaSystem && typeof window.agendaSystem.showNotification === 'function') {
-      window.agendaSystem.showNotification(`Cadastro de ${userData.name || 'usuário'} concluído com sucesso!`, 'success');
+  if (
+    window.agendaSystem &&
+    typeof window.agendaSystem.showNotification === "function"
+  ) {
+    window.agendaSystem.showNotification(
+      `Cadastro de ${userData.name || "usuário"} concluído com sucesso!`,
+      "success"
+    );
   }
 
-  // Fecha o modal após o 'sucesso' simulado
-  const registerModal = document.getElementById('registerModal');
+  const registerModal = document.getElementById("registerModal");
   if (registerModal) {
-      registerModal.style.display = 'none';
-      
-      // Em um ambiente real com Firebase, o onAuthStateChanged cuidaria disso,
-      // mas em caso de simulação, a linha abaixo apenas lembra o ponto de integração.
-      if (window.agendaSystem && typeof window.agendaSystem.checkAuthStatus === 'function') {
-           console.warn("[SIMULADO] Integrar a lógica de login/redirecionamento aqui após o registro.");
-      }
+    registerModal.style.display = "none";
+
+    if (
+      window.agendaSystem &&
+      typeof window.agendaSystem.checkAuthStatus === "function"
+    ) {
+      console.warn(
+        "[SIMULADO] Integrar a lógica de login/redirecionamento aqui após o registro."
+      );
+    }
   }
 }
 
-
-// ==========================================================
-// 3. FUNÇÕES DE FEEDBACK VISUAL
-// ==========================================================
-
-// --- Elementos do Responsável ---
-const passwordInputResponsavel = document.getElementById('senhaCadastroResponsavel');
+const passwordInputResponsavel = document.getElementById(
+  "senhaCadastroResponsavel"
+);
 const validationListResponsavel = {
-  length: document.getElementById('p-length'),
-  upper: document.getElementById('p-upper'),
-  lower: document.getElementById('p-lower'),
-  number: document.getElementById('p-number'),
-  special: document.getElementById('p-special'),
+  length: document.getElementById("p-length"),
+  upper: document.getElementById("p-upper"),
+  lower: document.getElementById("p-lower"),
+  number: document.getElementById("p-number"),
+  special: document.getElementById("p-special"),
 };
 
 /**
-* Atualiza o feedback visual de força da senha para o Responsável.
-*/
+ * atualiza o feedback visual de força da senha para o Responsável.
+ */
 function updatePasswordFeedback(results) {
   const rules = [
-      { key: 'isLongEnough', element: validationListResponsavel.length },
-      { key: 'hasUpperCase', element: validationListResponsavel.upper },
-      { key: 'hasLowerCase', element: validationListResponsavel.lower },
-      { key: 'hasNumber', element: validationListResponsavel.number },
-      { key: 'hasSpecialChar', element: validationListResponsavel.special },
+    { key: "isLongEnough", element: validationListResponsavel.length },
+    { key: "hasUpperCase", element: validationListResponsavel.upper },
+    { key: "hasLowerCase", element: validationListResponsavel.lower },
+    { key: "hasNumber", element: validationListResponsavel.number },
+    { key: "hasSpecialChar", element: validationListResponsavel.special },
   ];
-  
-  // Seletor específico para o botão do Responsável
-  const submitBtn = document.querySelector('#registerPaneResponsavel button[type="submit"]');
+
+  const submitBtn = document.querySelector(
+    '#registerPaneResponsavel button[type="submit"]'
+  );
 
   let allValid = true;
 
-  rules.forEach(rule => {
-      const isValid = results[rule.key];
-      const icon = rule.element?.querySelector('i'); // Uso de optional chaining para segurança
+  rules.forEach((rule) => {
+    const isValid = results[rule.key];
+    const icon = rule.element?.querySelector("i");
 
-      if (!isValid) allValid = false; 
+    if (!isValid) allValid = false;
 
-      if (rule.element) {
-          rule.element.classList.toggle('valid', isValid);
-          rule.element.classList.toggle('invalid', !isValid);
-      }
+    if (rule.element) {
+      rule.element.classList.toggle("valid", isValid);
+      rule.element.classList.toggle("invalid", !isValid);
+    }
 
-      if (icon) {
-          icon.className = isValid ? 'fas fa-check-circle' : 'fas fa-times-circle';
-      }
+    if (icon) {
+      icon.className = isValid ? "fas fa-check-circle" : "fas fa-times-circle";
+    }
   });
 
   if (submitBtn) {
-      submitBtn.disabled = !allValid;
+    submitBtn.disabled = !allValid;
   }
 }
-
-// --- Elementos do Orientador Educacional ---
-const passwordInputOrientador = document.getElementById('senhaCadastroOrientador');
+const passwordInputOrientador = document.getElementById(
+  "senhaCadastroOrientador"
+);
 const validationListOrientador = {
-  length: document.getElementById('p-orientador-length'),
-  upper: document.getElementById('p-orientador-upper'),
-  lower: document.getElementById('p-orientador-lower'),
-  number: document.getElementById('p-orientador-number'),
-  special: document.getElementById('p-orientador-special'),
+  length: document.getElementById("p-orientador-length"),
+  upper: document.getElementById("p-orientador-upper"),
+  lower: document.getElementById("p-orientador-lower"),
+  number: document.getElementById("p-orientador-number"),
+  special: document.getElementById("p-orientador-special"),
 };
 
-/**
-* Atualiza o feedback visual de força da senha para o Orientador.
-*/
 function updateOrientadorPasswordFeedback(results) {
   const rules = [
-      { key: 'isLongEnough', element: validationListOrientador.length },
-      { key: 'hasUpperCase', element: validationListOrientador.upper },
-      { key: 'hasLowerCase', element: validationListOrientador.lower },
-      { key: 'hasNumber', element: validationListOrientador.number },
-      { key: 'hasSpecialChar', element: validationListOrientador.special },
+    { key: "isLongEnough", element: validationListOrientador.length },
+    { key: "hasUpperCase", element: validationListOrientador.upper },
+    { key: "hasLowerCase", element: validationListOrientador.lower },
+    { key: "hasNumber", element: validationListOrientador.number },
+    { key: "hasSpecialChar", element: validationListOrientador.special },
   ];
-  
-  // 🚨 CORREÇÃO: Seletor específico para o botão do Orientador Educacional
-  const submitBtn = document.querySelector('#registerPaneCoordenador button[type="submit"]');
+
+  const submitBtn = document.querySelector(
+    '#registerPaneCoordenador button[type="submit"]'
+  );
   let allValid = true;
 
-  rules.forEach(rule => {
-      const isValid = results[rule.key];
-      const icon = rule.element?.querySelector('i'); // Uso de optional chaining para segurança
+  rules.forEach((rule) => {
+    const isValid = results[rule.key];
+    const icon = rule.element?.querySelector("i");
+    if (!isValid) allValid = false;
 
-      if (!isValid) allValid = false;
+    if (rule.element) {
+      rule.element.classList.toggle("valid", isValid);
+      rule.element.classList.toggle("invalid", !isValid);
+    }
 
-      if (rule.element) {
-           rule.element.classList.toggle('valid', isValid);
-           rule.element.classList.toggle('invalid', !isValid);
-      }
-
-      if (icon) {
-          icon.className = isValid ? 'fas fa-check-circle' : 'fas fa-times-circle';
-      }
+    if (icon) {
+      icon.className = isValid ? "fas fa-check-circle" : "fas fa-times-circle";
+    }
   });
-  
+
   if (submitBtn) {
-      // Habilita o botão somente se todos os requisitos de senha forem válidos
-      submitBtn.disabled = !allValid;
+    submitBtn.disabled = !allValid;
   }
 }
 
-
-// ==========================================================
-// 4. LISTENERS DE INPUT PARA FEEDBACK EM TEMPO REAL
-// ==========================================================
-
 if (passwordInputResponsavel) {
-  passwordInputResponsavel.addEventListener('input', (e) => {
-      const password = e.target.value;
-      const results = validatePassword(password);
-      updatePasswordFeedback(results);
+  passwordInputResponsavel.addEventListener("input", (e) => {
+    const password = e.target.value;
+    const results = validatePassword(password);
+    updatePasswordFeedback(results);
   });
 }
 
 if (passwordInputOrientador) {
-  passwordInputOrientador.addEventListener('input', (e) => {
-      const password = e.target.value;
-      const results = validatePassword(password);
-      updateOrientadorPasswordFeedback(results);
+  passwordInputOrientador.addEventListener("input", (e) => {
+    const password = e.target.value;
+    const results = validatePassword(password);
+    updateOrientadorPasswordFeedback(results);
   });
 }
 
-
-// ==========================================================
-// 5. LISTENER DE SUBMISSÃO DO FORMULÁRIO (REGISTRO)
-//    - AGORA USA showNotification PARA TODOS OS ERROS
-// ==========================================================
-
-const registerForm = document.getElementById('registerForm');
+const registerForm = document.getElementById("registerForm");
 
 if (registerForm && window.agendaSystem) {
-  registerForm.addEventListener('submit', (e) => {
-      e.preventDefault(); 
+  registerForm.addEventListener("submit", (e) => {
+    e.preventDefault();
 
-      const system = window.agendaSystem;
-      const userTypeElement = document.getElementById('registerUserTypeHidden');
-      
-      if (!userTypeElement) {
-          system.showNotification("Erro de configuração: Tipo de usuário não encontrado.", 'error');
-          return;
+    const system = window.agendaSystem;
+    const userTypeElement = document.getElementById("registerUserTypeHidden");
+
+    if (!userTypeElement) {
+      system.showNotification(
+        "Erro de configuração: Tipo de usuário não encontrado.",
+        "error"
+      );
+      return;
+    }
+
+    const userType = userTypeElement.value;
+    let password = "";
+    let email = "";
+    let userData = {};
+    let errorMsg = "";
+
+    // --- Coleta de Dados e Validação de Campos Específicos ---
+    if (userType === "responsavel") {
+      email = document.getElementById("email_responsavel")?.value || "";
+      password =
+        document.getElementById("senhaCadastroResponsavel")?.value || "";
+
+      userData = {
+        name: document.getElementById("nome_responsavel")?.value.trim() || "",
+        phone:
+          document.getElementById("telefone_responsavel")?.value.trim() || "",
+        parentesco: document.getElementById("grau_parentesco")?.value || "",
+        userType: "responsavel",
+      };
+
+      if (!userData.name) errorMsg = "Informe o nome completo do Responsável.";
+      else if (!email) errorMsg = "O campo E-mail é obrigatório.";
+      else if (!password) errorMsg = "A senha é obrigatória.";
+      else if (!userData.parentesco)
+        errorMsg = "Selecione o grau de parentesco.";
+    } else if (userType === "coordenador") {
+      email = document.getElementById("email_orientador")?.value || "";
+      password =
+        document.getElementById("senhaCadastroOrientador")?.value || "";
+
+      userData = {
+        name: document.getElementById("nome_orientador")?.value.trim() || "",
+        phone:
+          document.getElementById("telefone_orientador")?.value.trim() || "",
+        cpf: document.getElementById("cpf_orientador")?.value.trim() || "",
+        escola:
+          document.getElementById("escola_orientador_register")?.value || "",
+        chaveAcesso:
+          document.getElementById("ChaveAcessoOrientador")?.value || "",
+        userType: "coordenador",
+      };
+
+      // Validação de campos obrigatórios (Orientador)
+      if (!userData.name)
+        errorMsg = "Informe o nome completo do Orientador Educacional.";
+      else if (!email) errorMsg = "O campo E-mail é obrigatório.";
+      else if (!password) errorMsg = "A senha é obrigatória.";
+      else if (!userData.cpf) errorMsg = "O CPF é obrigatório.";
+      else if (!userData.escola) errorMsg = "Selecione a Escola.";
+      else if (userData.chaveAcesso !== "ETEC123")
+        errorMsg = "Chave de Acesso inválida."; // Chave de acesso simulada
+      else if (!system.validateCPF(userData.cpf))
+        errorMsg = "CPF inválido ou incompleto.";
+    }
+
+    // 1. Erro de campo obrigatório (Exclui erros de senha e chama notificação)
+    if (errorMsg) {
+      system.showNotification(errorMsg, "error");
+      return;
+    }
+
+    // 2. Validação da Força da Senha
+    const results = validatePassword(password);
+
+    if (!results.isValid) {
+      // Gera mensagem de erro detalhada da senha (chama notificação de aviso/warning)
+      let passwordErrorMsg = "A senha não atende a todos os requisitos: ";
+      if (!results.isLongEnough) passwordErrorMsg += "8+ caracteres, ";
+      if (!results.hasUpperCase) passwordErrorMsg += "Letra Maiúscula, ";
+      if (!results.hasLowerCase) passwordErrorMsg += "Letra Minúscula, ";
+      if (!results.hasNumber) passwordErrorMsg += "Número, ";
+      if (!results.hasSpecialChar) passwordErrorMsg += "Caractere Especial, ";
+
+      passwordErrorMsg = passwordErrorMsg.replace(/, $/, ".");
+
+      system.showNotification(passwordErrorMsg, "warning");
+
+      // Força a atualização do feedback visual
+      if (userType === "responsavel") {
+        updatePasswordFeedback(results);
+      } else if (userType === "coordenador") {
+        updateOrientadorPasswordFeedback(results);
       }
-
-      const userType = userTypeElement.value;
-      let password = '';
-      let email = '';
-      let userData = {};
-      let errorMsg = '';
-
-      // --- Coleta de Dados e Validação de Campos Específicos ---
-      if (userType === 'responsavel') {
-          email = document.getElementById('email_responsavel')?.value || '';
-          password = document.getElementById('senhaCadastroResponsavel')?.value || '';
-          
-          userData = {
-              name: document.getElementById('nome_responsavel')?.value.trim() || '',
-              phone: document.getElementById('telefone_responsavel')?.value.trim() || '',
-              parentesco: document.getElementById('grau_parentesco')?.value || '',
-              userType: 'responsavel'
-          };
-
-          if (!userData.name) errorMsg = 'Informe o nome completo do Responsável.';
-          else if (!email) errorMsg = 'O campo E-mail é obrigatório.';
-          else if (!password) errorMsg = 'A senha é obrigatória.';
-          else if (!userData.parentesco) errorMsg = 'Selecione o grau de parentesco.';
-
-      } else if (userType === 'coordenador') {
-          email = document.getElementById('email_orientador')?.value || '';
-          password = document.getElementById('senhaCadastroOrientador')?.value || '';
-
-          userData = {
-              name: document.getElementById('nome_orientador')?.value.trim() || '',
-              phone: document.getElementById('telefone_orientador')?.value.trim() || '',
-              cpf: document.getElementById('cpf_orientador')?.value.trim() || '',
-              escola: document.getElementById('escola_orientador_register')?.value || '',
-              chaveAcesso: document.getElementById('ChaveAcessoOrientador')?.value || '',
-              userType: 'coordenador'
-          };
-          
-          // Validação de campos obrigatórios (Orientador)
-          if (!userData.name) errorMsg = 'Informe o nome completo do Orientador Educacional.';
-          else if (!email) errorMsg = 'O campo E-mail é obrigatório.';
-          else if (!password) errorMsg = 'A senha é obrigatória.';
-          else if (!userData.cpf) errorMsg = 'O CPF é obrigatório.';
-          else if (!userData.escola) errorMsg = 'Selecione a Escola.';
-          else if (userData.chaveAcesso !== 'ETEC123') errorMsg = 'Chave de Acesso inválida.'; // Chave de acesso simulada
-          else if (!system.validateCPF(userData.cpf)) errorMsg = 'CPF inválido ou incompleto.';
-      }
-      
-      // 1. Erro de campo obrigatório (Exclui erros de senha e chama notificação)
-      if (errorMsg) {
-          system.showNotification(errorMsg, 'error');
-          return; 
-      }
-
-      // 2. Validação da Força da Senha
-      const results = validatePassword(password);
-
-      if (!results.isValid) {
-          // Gera mensagem de erro detalhada da senha (chama notificação de aviso/warning)
-          let passwordErrorMsg = "A senha não atende a todos os requisitos: ";
-          if (!results.isLongEnough) passwordErrorMsg += "8+ caracteres, ";
-          if (!results.hasUpperCase) passwordErrorMsg += "Letra Maiúscula, ";
-          if (!results.hasLowerCase) passwordErrorMsg += "Letra Minúscula, ";
-          if (!results.hasNumber) passwordErrorMsg += "Número, ";
-          if (!results.hasSpecialChar) passwordErrorMsg += "Caractere Especial, ";
-          
-          passwordErrorMsg = passwordErrorMsg.replace(/, $/, '.');
-
-          system.showNotification(passwordErrorMsg, 'warning');
-          
-          // Força a atualização do feedback visual
-          if (userType === 'responsavel') {
-              updatePasswordFeedback(results); 
-          } else if (userType === 'coordenador') {
-              updateOrientadorPasswordFeedback(results); 
-          }
-          
-      } else {
-          // 3. Senha e campos válidos: Inicia o processo de registro (simulado)
-          userData.email = email;
-          handleUserRegistration(userData, password, email);  
-      }
+    } else {
+      // 3. Senha e campos válidos: Inicia o processo de registro (simulado)
+      userData.email = email;
+      handleUserRegistration(userData, password, email);
+    }
   });
 }
