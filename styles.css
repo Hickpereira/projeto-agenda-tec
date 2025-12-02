@@ -2043,7 +2043,7 @@ body.dark-mode .user-profile:hover {
 .hero-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 ;
+  padding: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--spacing-2xl);
@@ -2057,7 +2057,7 @@ body.dark-mode .user-profile:hover {
 }
 
 .hero-title {
-  font-size: 3.0rem;
+  font-size: 3rem;
   font-weight: 800;
   color: var(--text-primary);
   margin-bottom: var(--spacing-lg);
@@ -2065,7 +2065,7 @@ body.dark-mode .user-profile:hover {
 }
 
 .hero-description {
-  font-size: 1.0rem;
+  font-size: 1rem;
   color: var(--text-secondary);
   margin-bottom: var(--spacing-xl);
   line-height: 1.6;
@@ -2784,13 +2784,13 @@ body.dark-mode .login-info {
 }
 
 footer i {
-  color:   #ff161f;
+  color: #ff161f;
   font-size: 25px;
   transition: all 0.3s ease;
 }
 
 footer body.dark-mode i {
-  color:  #ff161f;
+  color: #ff161f;
 }
 /* Notificações */
 .notification-container {
@@ -2804,7 +2804,6 @@ footer body.dark-mode i {
 
 .notification-container > * {
   pointer-events: auto;
-
 }
 
 .notification {
@@ -3864,7 +3863,6 @@ footer body.dark-mode i {
   max-height: 300px;
   overflow-y: auto;
   overflow-x: hidden;
-
 }
 
 .timeline-item {
@@ -4304,7 +4302,6 @@ footer body.dark-mode i {
   gap: 1000;
   overflow: visible;
   max-height: none;
-
 }
 
 .calendar-day {
@@ -4348,7 +4345,6 @@ footer body.dark-mode i {
   color: var(--text-secondary);
   cursor: not-allowed;
   opacity: 0.5;
-  
 }
 
 .calendar-day.empty {
@@ -4366,7 +4362,6 @@ footer body.dark-mode i {
 .calendar-day.has-schedules {
   background: rgba(255, 22, 31, 0.05);
   border-color: var(--primary-color);
- 
 }
 
 .calendar-day-number {
@@ -4618,12 +4613,9 @@ footer body.dark-mode i {
     display: none;
   }
   .calendar-day {
-   padding: 90px;
+    padding: 90px;
   }
-
 }
-
-
 
 /* Responsividade para personalização */
 @media (max-width: 768px) {
@@ -5143,7 +5135,6 @@ footer body.dark-mode i {
   top: 0;
   bottom: 0;
   width: 2px;
-  
 }
 
 .timeline-item {
@@ -5266,7 +5257,6 @@ footer body.dark-mode i {
 }
 
 .schedule-item.upcoming {
-
 }
 
 .schedule-item.past {
@@ -5881,41 +5871,37 @@ footer body.dark-mode i {
   .monthly-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  .img-calendario{
+  .img-calendario {
     margin-right: 20vh;
   }
-  .hero-illustration{
+  .hero-illustration {
     box-shadow: none;
     border: none;
   }
 
+  .reports-content {
+    padding: 1px;
+  }
 
-.reports-content {
-  padding: 1px;
-}
+  .reports-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+    justify-content: flex-end;
+  }
 
-.reports-actions {
-  display: flex;
-  gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-lg);
-  justify-content: flex-end;
-}
+  .reports-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: var(--spacing-lg);
+  }
 
-.reports-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: var(--spacing-lg);
-}
-
-.report-card {
- 
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: var(--transition);
-}
-
-
+  .report-card {
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: var(--transition);
+  }
 
   .week-day,
   .month-day {
@@ -5991,7 +5977,7 @@ footer body.dark-mode i {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  transition:0.2s;
+  transition: 0.2s;
 }
 
 .profile-photo-upload-btn:hover {
@@ -6151,7 +6137,7 @@ body.dark-mode .verify-status.verifying {
   .input-with-button {
     flex-direction: column;
   }
-  
+
   .btn-verify {
     width: 100%;
   }
@@ -6220,14 +6206,13 @@ body.dark-mode .verify-status.verifying {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
     font-size: 11px;
     aspect-ratio: none !important;
-   
   }
 
   .calendar-day:not(.empty):not(.past) {
     height: 102px !important;
     min-height: 32px !important;
     max-height: 32px !important;
-    aspect-ratio: none !important; 
+    aspect-ratio: none !important;
   }
 
   .calendar-day-number {
@@ -6325,8 +6310,6 @@ body.dark-mode .verify-status.verifying {
     border: none !important;
   }
 }
-
-
 
 /* Estiliza o indicador de força da senha */
 .password-strength-indicator {

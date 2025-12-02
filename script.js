@@ -2369,7 +2369,7 @@ class AgendaSystem {
                                 <i class="fas fa-chart-bar"></i>
                                 Gerar Relatório
                             </button>
-                            <button class="btn btn-outline" id="exportReportBtn">
+                            <button class="btn btn-outline" id="exportReportBtn" >
                                 <i class="fas fa-download"></i>
                                 Exportar
                             </button>
@@ -3820,7 +3820,7 @@ class AgendaSystem {
                     <span class="slot-duration">${slot.duration} min</span>
                 </div>
                 <div class="slot-actions">
-                    <button class="btn btn-sm btn-outline" onclick="agendaSystem.editTimeSlot('${
+                    <button class="btn btn-sm btn-outline"  style="display:none; onclick="agendaSystem.editTimeSlot('${
                       slot.id
                     }')">
                         <i class="fas fa-edit"></i>
