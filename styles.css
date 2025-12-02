@@ -506,7 +506,7 @@ body.dark-mode .notification.info .notification-icon {
 body.dark-mode .notification::before {
   background: linear-gradient(90deg, #ff161f, #ff3d47, #ff161f);
 }
-aaaaaaaaaaaaaaaaaaa
+
 body.dark-mode .notification.success::before {
   background: linear-gradient(90deg, #10b981, #34d058, #10b981);
 }
@@ -542,7 +542,7 @@ body.dark-mode .hero {
   background: none;
 }
 
-/* Garantir que não fiquem blocos brancos em seções comuns no dark */
+/* Garantir que não  blocos brancos em seções comuns no dark */
 body.dark-mode .header,
 body.dark-mode .nav-menu,
 body.dark-mode .auth-form,
@@ -2778,6 +2778,20 @@ body.dark-mode .login-info {
   color: var(--text-secondary);
 }
 
+.social-icons {
+  display: flex;
+  gap: 15px;
+}
+
+footer i {
+  color:   #ff161f;
+  font-size: 25px;
+  transition: all 0.3s ease;
+}
+
+footer body.dark-mode i {
+  color:  #ff161f;
+}
 /* Notificações */
 .notification-container {
   position: fixed;
@@ -2790,6 +2804,7 @@ body.dark-mode .login-info {
 
 .notification-container > * {
   pointer-events: auto;
+
 }
 
 .notification {
