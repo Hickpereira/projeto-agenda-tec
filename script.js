@@ -1852,7 +1852,6 @@ class AgendaSystem {
                 `
                     : isAccepted && attendanceStatus === "pendente"
                     ? `
-<<<<<<< HEAD
                     <div class="request-actions" style="flex-direction: column; align-items: flex-end;">
                         ${
                           canUpdateAttendance
@@ -1869,7 +1868,7 @@ class AgendaSystem {
                             : `
                                 <div style="text-align: right; margin-bottom: 5px;">
                                     <small style="color: #666; font-weight: 500;">
-                                        <i class="fas fa-clock"></i> Liberação às ${timeString}
+                                        <i class="fas fa-clock"></i> Liberação às ${timeString} (+40min)
                                     </small>
                                 </div>
                                 <div style="display: flex; gap: 10px; opacity: 0.5; pointer-events: none;">
@@ -1882,15 +1881,6 @@ class AgendaSystem {
                                 </div>
                             `
                         }
-=======
-                    <div class="request-actions">
-                     <button class="btn btn-success" onclick="agendaSystem.showAttendanceFeedbackModal('${request.id}', 'concluido')">
-    <i class="fas fa-check-circle"></i> Atendimento Concluído
-</button>
-<button class="btn btn-warning" onclick="agendaSystem.showAttendanceFeedbackModal('${request.id}', 'faltou')">
-    <i class="fas fa-user-times"></i> Faltou ao Atendimento
-</button>
->>>>>>> 7082866c23d2300535ec4e4353f5a83cc1b1adb9
                     </div>
                 `
                     : ""
