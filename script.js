@@ -3972,6 +3972,7 @@ class AgendaSystem {
                         </span>
                         
                         ${
+                          //
                           schedule.status === "rejected" &&
                           schedule.rejectionReason
                             ? `<span class="schedule-status-detail">Motivo: ${schedule.rejectionReason}</span>`
@@ -3979,6 +3980,7 @@ class AgendaSystem {
                             ? ``
                             : ""
                         }
+                      
                     </div>
                     <div class="schedule-details">
                         ${
