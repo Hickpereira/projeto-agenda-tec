@@ -1833,12 +1833,12 @@ class AgendaSystem {
                     : isAccepted && attendanceStatus === "pendente"
                     ? `
                     <div class="request-actions">
-                        <button class="btn btn-success" onclick="agendaSystem.markAttendanceStatus('${request.id}', 'concluido')">
-                            <i class="fas fa-check-circle"></i> Atendimento Concluído
-                        </button>
-                        <button class="btn btn-warning" onclick="agendaSystem.showAttendanceFeedbackModal('${request.id}')">
-                            <i class="fas fa-user-times"></i> Faltou ao Atendimento
-                        </button>
+                     <button class="btn btn-success" onclick="agendaSystem.showAttendanceFeedbackModal('${request.id}', 'concluido')">
+    <i class="fas fa-check-circle"></i> Atendimento Concluído
+</button>
+<button class="btn btn-warning" onclick="agendaSystem.showAttendanceFeedbackModal('${request.id}', 'faltou')">
+    <i class="fas fa-user-times"></i> Faltou ao Atendimento
+</button>
                     </div>
                 `
                     : ""
@@ -1939,7 +1939,6 @@ class AgendaSystem {
       currentModal.remove();
     }
 
-    // Recriar modal com dados atualizados
     await this.showRequestsList();
   }
 
@@ -1951,7 +1950,7 @@ class AgendaSystem {
         return;
       }
 
-      // Atualizar no Firebase
+      //atualiza bd
       if (window.db) {
         const requestRef = db.collection("solicitacoes").doc(requestId);
         await requestRef.update({
@@ -1960,7 +1959,7 @@ class AgendaSystem {
         });
       }
 
-      // Atualizar localmente
+      //atualiza local
       request.attendanceStatus = status;
       this.saveRequests();
 
@@ -1980,34 +1979,47 @@ class AgendaSystem {
     }
   }
 
-  showAttendanceFeedbackModal(requestId) {
+  showAttendanceFeedbackModal(requestId, targetStatus) {
     const request = this.requests.find((req) => req.id === requestId);
     if (!request) {
       this.showNotification("Solicitação não encontrada.", "error");
       return;
     }
 
+    const isConcluido = targetStatus === "concluido";
+    const modalTitle = isConcluido
+      ? "Concluir Atendimento"
+      : "Registrar Falta ao Atendimento";
+    const btnClass = isConcluido ? "btn-success" : "btn-warning";
+    const btnIcon = isConcluido ? "fa-check-circle" : "fa-user-times";
+    const btnText = isConcluido ? "Confirmar Conclusão" : "Confirmar Falta";
+
+    const placeholderText = isConcluido
+      ? "Descreva como foi o atendimento, encaminhamentos ou observações..."
+      : "Descreva o motivo da falta ou qualquer observação relevante...";
+
     const modalHTML = `
       <div id="attendanceFeedbackModal" class="modal">
         <div class="modal-content">
           <div class="modal-header">
-            <h2>Registrar Falta ao Atendimento</h2>
+            <h2>${modalTitle}</h2>
             <span class="close" id="closeAttendanceFeedback">&times;</span>
           </div>
           <form id="attendanceFeedbackForm" class="auth-form">
             <div class="form-group">
-              <label for="attendanceFeedback">Feedback/Observação (opcional):</label>
+              <label for="attendanceFeedback">Feedback/Observação (Obrigatório):</label>
               <textarea 
                 id="attendanceFeedback" 
                 name="feedback" 
                 rows="4" 
-                placeholder="Descreva o motivo da falta ou qualquer observação relevante..."
+                placeholder="${placeholderText}"
                 style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: var(--border-radius); font-family: inherit; resize: vertical;"
+                required
               ></textarea>
             </div>
             <div class="form-actions">
-              <button type="submit" class="btn btn-warning">
-                <i class="fas fa-user-times"></i> Confirmar Falta
+              <button type="submit" class="btn ${btnClass}">
+                <i class="fas ${btnIcon}"></i> ${btnText}
               </button>
               <button type="button" class="btn btn-outline" onclick="agendaSystem.closeAttendanceFeedbackModal()">
                 Cancelar
@@ -2020,7 +2032,6 @@ class AgendaSystem {
 
     document.body.insertAdjacentHTML("beforeend", modalHTML);
 
-    // Event listeners
     document
       .getElementById("closeAttendanceFeedback")
       .addEventListener("click", () => {
@@ -2032,7 +2043,12 @@ class AgendaSystem {
       .addEventListener("submit", async (e) => {
         e.preventDefault();
         const feedback = document.getElementById("attendanceFeedback").value;
-        await this.markAttendanceStatusWithFeedback(requestId, feedback);
+        //envia status
+        await this.markAttendanceStatusWithFeedback(
+          requestId,
+          feedback,
+          targetStatus
+        );
       });
 
     this.showModal("attendanceFeedbackModal");
@@ -2045,38 +2061,47 @@ class AgendaSystem {
     }
   }
 
-  async markAttendanceStatusWithFeedback(requestId, feedback) {
+  //slav bd
+  async markAttendanceStatusWithFeedback(requestId, feedback, status) {
     try {
-      const request = this.requests.find((req) => req.id === requestId);
-      if (!request) {
-        this.showNotification("Solicitação não encontrada.", "error");
+      if (!feedback || feedback.trim().length < 3) {
+        this.showNotification("Por favor, preencha o feedback.", "warning");
         return;
       }
 
-      // Atualizar no Firebase
+      //atualiza BD
       if (window.db) {
         const requestRef = db.collection("solicitacoes").doc(requestId);
         await requestRef.update({
-          attendanceStatus: "faltou",
-          attendanceFeedback: feedback || "",
+          attendanceStatus: status, //salvaconcluido ou faltou
+          attendanceFeedback: feedback,
+          postAttendanceFeedback: feedback, //relatorio
           attendanceUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          closedAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
       }
 
-      // Atualizar localmente
-      request.attendanceStatus = "faltou";
-      request.attendanceFeedback = feedback || "";
+      //atualiza local
+      const request = this.requests.find((req) => req.id === requestId);
+      if (request) {
+        request.attendanceStatus = status;
+        request.attendanceFeedback = feedback;
+        request.postAttendanceFeedback = feedback;
+      }
       this.saveRequests();
 
       this.closeAttendanceFeedbackModal();
-      this.showNotification(
-        "Falta ao atendimento registrada com sucesso!",
-        "success"
-      );
+
+      const msg =
+        status === "concluido"
+          ? "Atendimento concluído com sucesso!"
+          : "Falta registrada com sucesso!";
+      this.showNotification(msg, "success");
+
       this.refreshRequestsModal();
     } catch (error) {
-      console.error("Erro ao registrar falta:", error);
-      this.showNotification("Erro ao registrar falta ao atendimento.", "error");
+      console.error("Erro ao atualizar status:", error);
+      this.showNotification("Erro ao salvar os dados.", "error");
     }
   }
 
