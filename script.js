@@ -2695,10 +2695,18 @@ class AgendaSystem {
                                     .map(
                                       (schedule) => `
                                     <div class="schedule-slot">
-                                        <div class="slot-time">${schedule.time}</div>
-                                        <div class="slot-info">
-                                            <div class="slot-subject">${schedule.subject}</div>
-                                            <div class="slot-user">${schedule.userName}</div>
+                                        <div class="slot-time">${
+                                          schedule.time
+                                        }</div>
+                                      <div class="slot-info">
+                                        <div class="slot-subject">${
+                                          schedule.subject
+                                        }</div>
+                                        
+                                        <div class="slot-user">${
+                                          schedule.responsavelNome ||
+                                          "Solicitante"
+                                        }</div>
                                         </div>
                                     </div>
                                 `
@@ -3058,7 +3066,7 @@ class AgendaSystem {
                                 ${statusText}
                             </span>
                         </div>
-                        <div class="agendamento-content">
+                       <div class="agendamento-content">
                             <h4 class="agendamento-subject">${
                               schedule.subject
                             }</h4>
@@ -3067,24 +3075,30 @@ class AgendaSystem {
                                 ? `<p class="agendamento-message">${schedule.message}</p>`
                                 : ""
                             }
+                            
                             <div class="agendamento-details">
-                                ${
-                                  schedule.orientador
-                                    ? `
-                                    <p><strong>Orientador:</strong> ${schedule.orientador.name} - ${schedule.orientador.specialty}</p>
-                                `
-                                    : ""
-                                }
-                                ${
-                                  schedule.userName
-                                    ? `<p><strong>Solicitante:</strong> ${schedule.userName}</p>`
-                                    : ""
-                                }
-                                ${
-                                  schedule.userEmail
-                                    ? `<p><strong>Email:</strong> ${schedule.userEmail}</p>`
-                                    : ""
-                                }
+                                <p><strong>Solicitante:</strong> ${
+                                  schedule.responsavelNome || "N/A"
+                                }</p>
+                                <p><strong>Email:</strong> ${
+                                  schedule.responsavelEmail || "N/A"
+                                }</p>
+                                <p><strong>Telefone:</strong> ${
+                                  schedule.responsavelTelefone || "N/A"
+                                }</p>
+                                
+                                <hr style="margin: 8px 0; border-color: var(--border-color); opacity: 0.5;">
+                                
+                                <p><strong>Aluno:</strong> ${
+                                  schedule.alunoNome || "N/A"
+                                }</p>
+                                <p><strong>Série:</strong> ${this.formatGrade(
+                                  schedule.alunoSerie
+                                )}</p>
+                                <p><strong>Turma:</strong> ${
+                                  schedule.alunoTurma || "N/A"
+                                }</p>
+                                
                                 ${
                                   schedule.responseDate
                                     ? `<p><strong>Confirmado em:</strong> ${this.formatDate(
@@ -3093,7 +3107,7 @@ class AgendaSystem {
                                     : ""
                                 }
                             </div>
-                        </div>
+                            </div>
                         ${
                           this.userType === "coordenador"
                             ? `
@@ -3854,12 +3868,12 @@ class AgendaSystem {
                     <span class="blocked-reason">${date.reason}</span>
                 </div>
                 <div class="date-actions">
-                    <button class="btn btn-sm btn-outline" onclick="agendaSystem.editBlockedDate('${
+                    <button class="btn btn-sm btn-outline" style="display:none; onclick="agendaSystem.editBlockedDate('${
                       date.id
                     }')">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-sm btn-danger" onclick="agendaSystem.deleteBlockedDate('${
+                    <button class="btn btn-sm btn-danger"  " onclick="agendaSystem.deleteBlockedDate('${
                       date.id
                     }')">
                         <i class="fas fa-trash"></i>
@@ -3967,9 +3981,6 @@ class AgendaSystem {
                         }
                     </div>
                     <div class="schedule-details">
-                       <p><strong>Orientador:</strong> ${
-                         schedule.orientadorNome
-                       }</p>
                         ${
                           schedule.studentName
                             ? `<p><strong>Aluno:</strong> ${schedule.studentName}</p>`
@@ -3994,14 +4005,32 @@ class AgendaSystem {
                           schedule.date
                         )}</p>
                         <p><strong>Horário:</strong> ${schedule.time}</p>
-                        ${
-                          this.userType === "coordenador"
-                            ? `
-                            <p><strong>Solicitante:</strong> ${schedule.userName}</p>
-                            <p><strong>Email:</strong> ${schedule.userEmail}</p>
+                       ${
+                         this.userType === "coordenador"
+                           ? `
+                            <hr style="margin: 8px 0; border-color: var(--border-color); opacity: 0.5;">
+                            
+                            <p><strong>Solicitante:</strong> ${
+                              schedule.responsavelNome || "N/A"
+                            }</p>
+                            <p><strong>Email:</strong> ${
+                              schedule.responsavelEmail || "N/A"
+                            }</p>
+                            <p><strong>Telefone:</strong> ${
+                              schedule.responsavelTelefone || "N/A"
+                            }</p>
+                            <p><strong>Aluno:</strong> ${
+                              schedule.alunoNome || "N/A"
+                            }</p>
+                           <p><strong>Série:</strong> ${this.formatGrade(
+                             schedule.alunoSerie
+                           )}</p>
+                                <p><strong>Turma:</strong> ${
+                                  schedule.alunoTurma || "N/A"
+                                }</p>
                         `
-                            : ""
-                        }
+                           : ""
+                       }
                         ${
                           schedule.message
                             ? `<p><strong>Mensagem:</strong> ${schedule.message}</p>`

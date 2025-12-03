@@ -4130,7 +4130,8 @@ footer body.dark-mode i {
   flex-direction: column;
   gap: var(--spacing-md);
   max-height: 400px;
-  overflow-y: auto;
+
+  overflow-x: hidden;
 }
 
 .time-slot-item,
@@ -4916,6 +4917,8 @@ footer body.dark-mode i {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
+
+  overflow-x: hidden;
 }
 
 .time-slot-item,
