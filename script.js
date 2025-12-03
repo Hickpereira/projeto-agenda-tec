@@ -1732,8 +1732,26 @@ class AgendaSystem {
     const attendanceStatus = request.attendanceStatus || "pendente";
     const attendanceStatusText = this.getAttendanceStatusText(attendanceStatus);
 
-    // Se precisa de feedback, destacar visualmente
+    //vê se precisa de feedback e deixa claro visualmente
     const feedbackClass = needsFeedback ? "needs-feedback" : "";
+
+    //data e hora do agendamento
+    const scheduleDateTime = new Date(`${request.date}T${request.time}:00`);
+
+    //definindo tempo de liberação - 40 min
+    const allowedActionTime = new Date(scheduleDateTime.getTime() + 40 * 60000);
+
+    //hora atual
+    const now = new Date();
+
+    //verifica se pode liberar
+    const canUpdateAttendance = now >= allowedActionTime;
+
+    //formata hora
+    const timeString = allowedActionTime.toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
     return `
             <div class="request-item ${statusClass} ${feedbackClass}">
@@ -1810,7 +1828,9 @@ class AgendaSystem {
                         }
                     </div>
                 </div>
+                
                 ${
+                  /* BLOCO DE AÇÕES (BOTÕES) */
                   !isReadOnly && !isAccepted
                     ? `
                     <div class="request-actions">
@@ -1832,13 +1852,35 @@ class AgendaSystem {
                 `
                     : isAccepted && attendanceStatus === "pendente"
                     ? `
-                    <div class="request-actions">
-                     <button class="btn btn-success" onclick="agendaSystem.showAttendanceFeedbackModal('${request.id}', 'concluido')">
-    <i class="fas fa-check-circle"></i> Atendimento Concluído
-</button>
-<button class="btn btn-warning" onclick="agendaSystem.showAttendanceFeedbackModal('${request.id}', 'faltou')">
-    <i class="fas fa-user-times"></i> Faltou ao Atendimento
-</button>
+                    <div class="request-actions" style="flex-direction: column; align-items: flex-end;">
+                        ${
+                          canUpdateAttendance
+                            ? `
+                                <div style="display: flex; gap: 10px;">
+                                    <button class="btn btn-success" onclick="agendaSystem.showAttendanceFeedbackModal('${request.id}', 'concluido')">
+                                        <i class="fas fa-check-circle"></i> Atendimento Concluído
+                                    </button>
+                                    <button class="btn btn-warning" onclick="agendaSystem.showAttendanceFeedbackModal('${request.id}', 'faltou')">
+                                        <i class="fas fa-user-times"></i> Faltou ao Atendimento
+                                    </button>
+                                </div>
+                            `
+                            : `
+                                <div style="text-align: right; margin-bottom: 5px;">
+                                    <small style="color: #666; font-weight: 500;">
+                                        <i class="fas fa-clock"></i> Liberação às ${timeString}
+                                    </small>
+                                </div>
+                                <div style="display: flex; gap: 10px; opacity: 0.5; pointer-events: none;">
+                                    <button class="btn btn-success" disabled>
+                                        <i class="fas fa-check-circle"></i> Atendimento Concluído
+                                    </button>
+                                    <button class="btn btn-warning" disabled>
+                                        <i class="fas fa-user-times"></i> Faltou ao Atendimento
+                                    </button>
+                                </div>
+                            `
+                        }
                     </div>
                 `
                     : ""
@@ -5013,187 +5055,78 @@ class AgendaSystem {
   }
 
   exportReport() {
-    // Filtrar apenas agendamentos encerrados para o relatório detalhado
-    const completedRequests = this.requests.filter(
-      (r) =>
-        r.attendanceStatus === "concluido" || r.attendanceStatus === "faltou"
-    );
+    //verifica sea biblioteca carregou
+    if (typeof XLSX === "undefined") {
+      this.showNotification(
+        "Erro: A biblioteca de Excel não foi carregada. Verifique o index.html.",
+        "error"
+      );
+      return;
+    }
 
-    const reportData = {
-      generatedAt: new Date().toISOString(),
-      totalRequests: this.requests.length,
-      pendingRequests: this.requests.filter((r) => r.status === "pending")
-        .length,
-      approvedRequests: this.requests.filter((r) => r.status === "approved")
-        .length,
-      rejectedRequests: this.requests.filter((r) => r.status === "rejected")
-        .length,
-      completedRequests: completedRequests.length,
-      requests: this.requests.map((r) => ({
-        id: r.id,
-        solicitante: r.userName || r.responsavelNome || "N/A",
-        email: r.userEmail || r.responsavelEmail || "N/A",
-        assunto: r.subject,
-        data: r.date,
-        horario: r.time,
-        status: this.getStatusText(r.status),
-        statusAtendimento:
-          r.attendanceStatus === "concluido"
-            ? "Atendimento Realizado"
-            : r.attendanceStatus === "faltou"
-            ? "Aluno Não Compareceu"
-            : "Pendente",
-        feedbackPosAtendimento:
-          r.postAttendanceFeedback || r.attendanceFeedback || "Não fornecido",
-        criadoEm: r.createdAt
-          ? new Date(r.createdAt).toLocaleString("pt-BR")
-          : "N/A",
-      })),
-    };
+    //pega dados para excel
+    const dadosParaExcel = this.requests.map((r) => {
+      //dados nulos ou vazios
+      const solicitante = r.userName || r.responsavelNome || "N/A";
+      const email = r.userEmail || r.responsavelEmail || "N/A";
+      const aluno = r.alunoNome || "N/A";
+      const turma = r.alunoTurma
+        ? `${r.alunoTurma} (${this.formatGrade(r.alunoSerie)})`
+        : "N/A";
+      const assunto = r.subject || "";
+      const statusTexto = this.getStatusText(r.status);
 
-    const dataStr = JSON.stringify(reportData, null, 2);
-    const dataBlob = new Blob([dataStr], { type: "application/json" });
-    const url = URL.createObjectURL(dataBlob);
+      let statusAtendimento = "Pendente";
+      if (r.attendanceStatus === "concluido") statusAtendimento = "Realizado";
+      else if (r.attendanceStatus === "faltou")
+        statusAtendimento = "Aluno não compareceu";
 
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `relatorio-agendamentos-${
+      const feedback = r.postAttendanceFeedback || r.attendanceFeedback || "";
+
+      // titulos das colunas
+      return {
+        Data: this.formatDate(r.date),
+        Horário: r.time,
+        Solicitante: solicitante,
+        Email: email,
+        Aluno: aluno,
+        Turma: turma,
+        Assunto: assunto,
+        "Status Atual": statusTexto,
+        "Situação do Atendimento": statusAtendimento,
+        "Feedback / Observações": feedback,
+      };
+    });
+
+    // cria planilha worsheet apartir do .json
+    const worksheet = XLSX.utils.json_to_sheet(dadosParaExcel);
+
+    //largura das colunas
+    const colunas = [
+      { wch: 12 }, // Data
+      { wch: 8 }, // Hora
+      { wch: 30 }, // Solicitante
+      { wch: 30 }, // Email
+      { wch: 25 }, // Aluno
+      { wch: 25 }, // Turma
+      { wch: 25 }, // Assunto
+      { wch: 15 }, // Status
+      { wch: 20 }, // Situação
+      { wch: 50 }, // Feedback (mais largo)
+    ];
+    worksheet["!cols"] = colunas;
+
+    // cria aruivo e adiciona na planilhas
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Relatório Agenda");
+
+    //baixa arquivo .xls
+    const nomeArquivo = `Relatorio_Agendamentos_${
       new Date().toISOString().split("T")[0]
-    }.json`;
-    link.click();
+    }.xlsx`;
+    XLSX.writeFile(workbook, nomeArquivo);
 
-    URL.revokeObjectURL(url);
-    this.showNotification("Relatório exportado com sucesso!", "success");
-  }
-
-  printReport() {
-    const printWindow = window.open("", "_blank");
-    const reportContent = `
-            <html>
-                <head>
-                    <title>Relatório de Agendamentos</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; margin: 20px; }
-                        h1, h2 { color: #333; }
-                        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                        th { background-color: #f2f2f2; }
-                        .stats { display: flex; justify-content: space-around; margin: 20px 0; }
-                        .stat { text-align: center; }
-                        .stat-number { font-size: 24px; font-weight: bold; color: #FF161F; }
-                    </style>
-                </head>
-                <body>
-                    <h1>Relatório de Agendamentos - Agenda TEC</h1>
-                    <p>Gerado em: ${new Date().toLocaleDateString("pt-BR")}</p>
-                    
-                    <div class="stats">
-                        <div class="stat">
-                            <div class="stat-number">${
-                              this.requests.length
-                            }</div>
-                            <div>Total de Solicitações</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-number">${
-                              this.requests.filter(
-                                (r) => r.status === "pending"
-                              ).length
-                            }</div>
-                            <div>Pendentes</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-number">${
-                              this.requests.filter(
-                                (r) => r.status === "approved"
-                              ).length
-                            }</div>
-                            <div>Aprovadas</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-number">${
-                              this.requests.filter(
-                                (r) => r.status === "rejected"
-                              ).length
-                            }</div>
-                            <div>Rejeitadas</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-number">${
-                              this.requests.filter(
-                                (r) => r.status === "cancelled"
-                              ).length
-                            }</div>
-                            <div>Canceladas</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-number">${
-                              this.requests.filter(
-                                (r) =>
-                                  r.attendanceStatus === "concluido" ||
-                                  r.attendanceStatus === "faltou"
-                              ).length
-                            }</div>
-                            <div>Encerrados</div>
-                        </div>
-                    </div>
-                    <h2>Detalhes das Solicitações</h2>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Data</th>
-                                <th>Horário</th>
-                                <th>Solicitante</th>
-                                <th>Assunto</th>
-                                <th>Status</th>
-                                <th>Status Atendimento</th>
-                                <th>Feedback Pós-Atendimento</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${this.requests
-                              .map((request) => {
-                                const statusAtendimento =
-                                  request.attendanceStatus === "concluido"
-                                    ? "Atendimento Realizado"
-                                    : request.attendanceStatus === "faltou"
-                                    ? "Aluno Não Compareceu"
-                                    : "Pendente";
-                                const feedback =
-                                  request.postAttendanceFeedback ||
-                                  request.attendanceFeedback ||
-                                  "Não fornecido";
-
-                                return `
-                                <tr>
-                                    <td>${this.formatDate(request.date)}</td>
-                                    <td>${request.time}</td>
-                                    <td>${
-                                      request.userName ||
-                                      request.responsavelNome ||
-                                      "N/A"
-                                    }</td>
-                                    <td>${request.subject}</td>
-                                    <td>${this.getStatusText(
-                                      request.status
-                                    )}</td>
-                                    <td>${statusAtendimento}</td>
-                                    <td style="max-width: 300px; word-wrap: break-word;">${feedback}</td>
-                                </tr>
-                            `;
-                              })
-                              .join("")}
-                        </tbody>
-                    </table>
-                </body>
-            </html>
-        `;
-
-    printWindow.document.write(reportContent);
-    printWindow.document.close();
-    printWindow.print();
-
-    this.showNotification("Relatório enviado para impressão!", "success");
+    this.showNotification("Relatório Excel ( gerado com sucesso!", "success");
   }
 
   async showProfileModal() {
