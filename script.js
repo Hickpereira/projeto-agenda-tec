@@ -1833,12 +1833,12 @@ class AgendaSystem {
                     : isAccepted && attendanceStatus === "pendente"
                     ? `
                     <div class="request-actions">
-                        <button class="btn btn-success" onclick="agendaSystem.markAttendanceStatus('${request.id}', 'concluido')">
-                            <i class="fas fa-check-circle"></i> Atendimento Concluído
-                        </button>
-                        <button class="btn btn-warning" onclick="agendaSystem.showAttendanceFeedbackModal('${request.id}')">
-                            <i class="fas fa-user-times"></i> Faltou ao Atendimento
-                        </button>
+                     <button class="btn btn-success" onclick="agendaSystem.showAttendanceFeedbackModal('${request.id}', 'concluido')">
+    <i class="fas fa-check-circle"></i> Atendimento Concluído
+</button>
+<button class="btn btn-warning" onclick="agendaSystem.showAttendanceFeedbackModal('${request.id}', 'faltou')">
+    <i class="fas fa-user-times"></i> Faltou ao Atendimento
+</button>
                     </div>
                 `
                     : ""
@@ -1939,7 +1939,6 @@ class AgendaSystem {
       currentModal.remove();
     }
 
-    // Recriar modal com dados atualizados
     await this.showRequestsList();
   }
 
@@ -1951,7 +1950,7 @@ class AgendaSystem {
         return;
       }
 
-      // Atualizar no Firebase
+      //atualiza bd
       if (window.db) {
         const requestRef = db.collection("solicitacoes").doc(requestId);
         await requestRef.update({
@@ -1960,7 +1959,7 @@ class AgendaSystem {
         });
       }
 
-      // Atualizar localmente
+      //atualiza local
       request.attendanceStatus = status;
       this.saveRequests();
 
@@ -1980,34 +1979,47 @@ class AgendaSystem {
     }
   }
 
-  showAttendanceFeedbackModal(requestId) {
+  showAttendanceFeedbackModal(requestId, targetStatus) {
     const request = this.requests.find((req) => req.id === requestId);
     if (!request) {
       this.showNotification("Solicitação não encontrada.", "error");
       return;
     }
 
+    const isConcluido = targetStatus === "concluido";
+    const modalTitle = isConcluido
+      ? "Concluir Atendimento"
+      : "Registrar Falta ao Atendimento";
+    const btnClass = isConcluido ? "btn-success" : "btn-warning";
+    const btnIcon = isConcluido ? "fa-check-circle" : "fa-user-times";
+    const btnText = isConcluido ? "Confirmar Conclusão" : "Confirmar Falta";
+
+    const placeholderText = isConcluido
+      ? "Descreva como foi o atendimento, encaminhamentos ou observações..."
+      : "Descreva o motivo da falta ou qualquer observação relevante...";
+
     const modalHTML = `
       <div id="attendanceFeedbackModal" class="modal">
         <div class="modal-content">
           <div class="modal-header">
-            <h2>Registrar Falta ao Atendimento</h2>
+            <h2>${modalTitle}</h2>
             <span class="close" id="closeAttendanceFeedback">&times;</span>
           </div>
           <form id="attendanceFeedbackForm" class="auth-form">
             <div class="form-group">
-              <label for="attendanceFeedback">Feedback/Observação (opcional):</label>
+              <label for="attendanceFeedback">Feedback/Observação (Obrigatório):</label>
               <textarea 
                 id="attendanceFeedback" 
                 name="feedback" 
                 rows="4" 
-                placeholder="Descreva o motivo da falta ou qualquer observação relevante..."
+                placeholder="${placeholderText}"
                 style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: var(--border-radius); font-family: inherit; resize: vertical;"
+                required
               ></textarea>
             </div>
             <div class="form-actions">
-              <button type="submit" class="btn btn-warning">
-                <i class="fas fa-user-times"></i> Confirmar Falta
+              <button type="submit" class="btn ${btnClass}">
+                <i class="fas ${btnIcon}"></i> ${btnText}
               </button>
               <button type="button" class="btn btn-outline" onclick="agendaSystem.closeAttendanceFeedbackModal()">
                 Cancelar
@@ -2020,7 +2032,6 @@ class AgendaSystem {
 
     document.body.insertAdjacentHTML("beforeend", modalHTML);
 
-    // Event listeners
     document
       .getElementById("closeAttendanceFeedback")
       .addEventListener("click", () => {
@@ -2032,7 +2043,12 @@ class AgendaSystem {
       .addEventListener("submit", async (e) => {
         e.preventDefault();
         const feedback = document.getElementById("attendanceFeedback").value;
-        await this.markAttendanceStatusWithFeedback(requestId, feedback);
+        //envia status
+        await this.markAttendanceStatusWithFeedback(
+          requestId,
+          feedback,
+          targetStatus
+        );
       });
 
     this.showModal("attendanceFeedbackModal");
@@ -2045,38 +2061,47 @@ class AgendaSystem {
     }
   }
 
-  async markAttendanceStatusWithFeedback(requestId, feedback) {
+  //slav bd
+  async markAttendanceStatusWithFeedback(requestId, feedback, status) {
     try {
-      const request = this.requests.find((req) => req.id === requestId);
-      if (!request) {
-        this.showNotification("Solicitação não encontrada.", "error");
+      if (!feedback || feedback.trim().length < 3) {
+        this.showNotification("Por favor, preencha o feedback.", "warning");
         return;
       }
 
-      // Atualizar no Firebase
+      //atualiza BD
       if (window.db) {
         const requestRef = db.collection("solicitacoes").doc(requestId);
         await requestRef.update({
-          attendanceStatus: "faltou",
-          attendanceFeedback: feedback || "",
+          attendanceStatus: status, //salvaconcluido ou faltou
+          attendanceFeedback: feedback,
+          postAttendanceFeedback: feedback, //relatorio
           attendanceUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          closedAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
       }
 
-      // Atualizar localmente
-      request.attendanceStatus = "faltou";
-      request.attendanceFeedback = feedback || "";
+      //atualiza local
+      const request = this.requests.find((req) => req.id === requestId);
+      if (request) {
+        request.attendanceStatus = status;
+        request.attendanceFeedback = feedback;
+        request.postAttendanceFeedback = feedback;
+      }
       this.saveRequests();
 
       this.closeAttendanceFeedbackModal();
-      this.showNotification(
-        "Falta ao atendimento registrada com sucesso!",
-        "success"
-      );
+
+      const msg =
+        status === "concluido"
+          ? "Atendimento concluído com sucesso!"
+          : "Falta registrada com sucesso!";
+      this.showNotification(msg, "success");
+
       this.refreshRequestsModal();
     } catch (error) {
-      console.error("Erro ao registrar falta:", error);
-      this.showNotification("Erro ao registrar falta ao atendimento.", "error");
+      console.error("Erro ao atualizar status:", error);
+      this.showNotification("Erro ao salvar os dados.", "error");
     }
   }
 
@@ -5243,7 +5268,7 @@ class AgendaSystem {
         phoneBtn.classList.remove("verified");
       }
 
-      // Carregar foto de perfil
+      // carregar foto de perfil
       if (data.foto_perfil) {
         const photoPreview = document.getElementById("profilePhotoPreview");
         const photoPlaceholder = document.getElementById(
@@ -5254,7 +5279,7 @@ class AgendaSystem {
           photoPreview.style.display = "block";
           photoPlaceholder.style.display = "none";
         }
-        // Atualizar foto no header também
+        // atualiza foto header
         const headerAvatar = document.getElementById("headerUserAvatar");
         if (headerAvatar) {
           headerAvatar.innerHTML = `<img src="${data.foto_perfil}" alt="Foto" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
@@ -5351,13 +5376,13 @@ class AgendaSystem {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validar tipo de arquivo
+    // valida tipo de arq
     if (!file.type.startsWith("image/")) {
       this.showNotification("Por favor, selecione uma imagem.", "error");
       return;
     }
 
-    // Validar tamanho (máximo 5MB)
+    // tamanho max 5mb
     if (file.size > 5 * 1024 * 1024) {
       this.showNotification("A imagem deve ter no máximo 5MB.", "error");
       return;
@@ -5372,7 +5397,7 @@ class AgendaSystem {
 
       this.showNotification("Enviando foto...", "info");
 
-      // Inicializar Firebase Storage se ainda não foi
+      // inicia firebase storage
       if (!firebase.storage) {
         const storageScript = document.createElement("script");
         storageScript.src =
@@ -5395,7 +5420,6 @@ class AgendaSystem {
       uploadTask.on(
         "state_changed",
         (snapshot) => {
-          // Progresso do upload (opcional)
           const progress =
             (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
           console.log("Upload progress:", progress + "%");
@@ -5452,10 +5476,10 @@ class AgendaSystem {
     }
   }
 
-  // ========== FUNÇÕES DE MÁSCARA E VALIDAÇÃO ==========
+  //FUNÇÕES DE MÁSCARA E VALIDAÇÃO
 
   initMasks() {
-    // Máscara de telefone
+    // Mascra de telefone
     const telefoneInputs = document.querySelectorAll(
       'input[type="tel"], input[id*="telefone"], input[name*="telefone"]'
     );
@@ -5579,110 +5603,6 @@ class AgendaSystem {
 
     return true;
   }
-
-  // ========== FUNÇÕES DE VERIFICAÇÃO FICTÍCIAS ==========
-
-  async verifyEmail() {
-    const emailInput = document.getElementById("profileEmail");
-    const statusElement = document.getElementById("emailVerifyStatus");
-    const verifyBtn = document.getElementById("verifyEmailBtn");
-
-    if (!emailInput || !statusElement || !verifyBtn) return;
-
-    const email = emailInput.value.trim();
-
-    if (!email) {
-      statusElement.textContent = "Por favor, preencha o e-mail.";
-      statusElement.className = "verify-status error";
-      return;
-    }
-
-    // Validar formato básico de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      statusElement.textContent = "Formato de e-mail inválido.";
-      statusElement.className = "verify-status error";
-      return;
-    }
-
-    // Desabilitar botão durante verificação
-    verifyBtn.disabled = true;
-    verifyBtn.innerHTML =
-      '<i class="fas fa-spinner fa-spin"></i> <span>Verificando...</span>';
-    statusElement.textContent = "Verificando e-mail...";
-    statusElement.className = "verify-status verifying";
-
-    // Simular verificação (fictícia) - aguardar 2 segundos
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    const isVerified = Math.random() > 0.2; // 80% de chance de sucesso
-
-    if (isVerified) {
-      statusElement.textContent = "✓ E-mail verificado com sucesso!";
-      statusElement.className = "verify-status success";
-      verifyBtn.innerHTML =
-        '<i class="fas fa-check-circle"></i> <span>Verificado</span>';
-      verifyBtn.classList.add("verified");
-    } else {
-      statusElement.textContent =
-        "✗ Não foi possível verificar o e-mail. Tente novamente.";
-      statusElement.className = "verify-status error";
-      verifyBtn.innerHTML =
-        '<i class="fas fa-check-circle"></i> <span>Verificar</span>';
-      verifyBtn.disabled = false;
-    }
-  }
-
-  async verifyPhone() {
-    const phoneInput = document.getElementById("profileTelefone");
-    const statusElement = document.getElementById("phoneVerifyStatus");
-    const verifyBtn = document.getElementById("verifyPhoneBtn");
-
-    if (!phoneInput || !statusElement || !verifyBtn) return;
-
-    const phone = phoneInput.value.trim();
-    const phoneDigits = this.onlyDigits(phone);
-
-    if (!phone) {
-      statusElement.textContent = "Por favor, preencha o telefone.";
-      statusElement.className = "verify-status error";
-      return;
-    }
-
-    // Validar tamanho do telefone
-    if (phoneDigits.length < 10 || phoneDigits.length > 11) {
-      statusElement.textContent =
-        "Telefone inválido. Digite um telefone válido.";
-      statusElement.className = "verify-status error";
-      return;
-    }
-
-    verifyBtn.disabled = true;
-    verifyBtn.innerHTML =
-      '<i class="fas fa-spinner fa-spin"></i> <span>Verificando...</span>';
-    statusElement.textContent = "Enviando código de verificação...";
-    statusElement.className = "verify-status verifying";
-
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    const isVerified = Math.random() > 0.2;
-
-    if (isVerified) {
-      statusElement.textContent =
-        "✓ Código enviado! Telefone verificado com sucesso!";
-      statusElement.className = "verify-status success";
-      verifyBtn.innerHTML =
-        '<i class="fas fa-check-circle"></i> <span>Verificado</span>';
-      verifyBtn.classList.add("verified");
-    } else {
-      statusElement.textContent =
-        "✗ Não foi possível enviar o código. Tente novamente.";
-      statusElement.className = "verify-status error";
-      verifyBtn.innerHTML =
-        '<i class="fas fa-check-circle"></i> <span>Verificar</span>';
-      verifyBtn.disabled = false;
-    }
-  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -5740,9 +5660,6 @@ function handleUserRegistration(userData, password, email) {
       window.agendaSystem &&
       typeof window.agendaSystem.checkAuthStatus === "function"
     ) {
-      console.warn(
-        "[SIMULADO] Integrar a lógica de login/redirecionamento aqui após o registro."
-      );
     }
   }
 }
@@ -5880,7 +5797,6 @@ if (registerForm && window.agendaSystem) {
     let userData = {};
     let errorMsg = "";
 
-    // --- Coleta de Dados e Validação de Campos Específicos ---
     if (userType === "responsavel") {
       email = document.getElementById("email_responsavel")?.value || "";
       password =
@@ -5923,23 +5839,20 @@ if (registerForm && window.agendaSystem) {
       else if (!password) errorMsg = "A senha é obrigatória.";
       else if (!userData.cpf) errorMsg = "O CPF é obrigatório.";
       else if (!userData.escola) errorMsg = "Selecione a Escola.";
-      else if (userData.chaveAcesso !== "ETEC123")
-        errorMsg = "Chave de Acesso inválida."; // Chave de acesso simulada
+      else if (userData.chaveAcesso !== "")
+        errorMsg = "Chave de Acesso inválida."; //
       else if (!system.validateCPF(userData.cpf))
         errorMsg = "CPF inválido ou incompleto.";
     }
 
-    // 1. Erro de campo obrigatório (Exclui erros de senha e chama notificação)
     if (errorMsg) {
       system.showNotification(errorMsg, "error");
       return;
     }
 
-    // 2. Validação da Força da Senha
     const results = validatePassword(password);
 
     if (!results.isValid) {
-      // Gera mensagem de erro detalhada da senha (chama notificação de aviso/warning)
       let passwordErrorMsg = "A senha não atende a todos os requisitos: ";
       if (!results.isLongEnough) passwordErrorMsg += "8+ caracteres, ";
       if (!results.hasUpperCase) passwordErrorMsg += "Letra Maiúscula, ";
@@ -5951,14 +5864,12 @@ if (registerForm && window.agendaSystem) {
 
       system.showNotification(passwordErrorMsg, "warning");
 
-      // Força a atualização do feedback visual
       if (userType === "responsavel") {
         updatePasswordFeedback(results);
       } else if (userType === "coordenador") {
         updateOrientadorPasswordFeedback(results);
       }
     } else {
-      // 3. Senha e campos válidos: Inicia o processo de registro (simulado)
       userData.email = email;
       handleUserRegistration(userData, password, email);
     }

@@ -4323,6 +4323,8 @@ footer body.dark-mode i {
   min-height: 90px;
 }
 
+
+
 .calendar-day:not(.empty):not(.past) {
   min-height: 120px;
 }
@@ -6055,6 +6057,7 @@ body.dark-mode .form-actions {
   white-space: nowrap;
   min-width: 110px;
   justify-content: center;
+  display: none;
 }
 
 .btn-verify:hover:not(:disabled) {
@@ -6274,6 +6277,10 @@ body.dark-mode .verify-status.verifying {
     justify-content: center;
     align-items: center;
     aspect-ratio: none !important;
+  }
+
+  .agend .calendar-day{
+    padding: 20px 0px !important;
   }
 
   .calendar-day:not(.empty):not(.past) {
