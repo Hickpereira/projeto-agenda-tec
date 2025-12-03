@@ -5243,7 +5243,7 @@ class AgendaSystem {
         phoneBtn.classList.remove("verified");
       }
 
-      // Carregar foto de perfil
+      // carregar foto de perfil
       if (data.foto_perfil) {
         const photoPreview = document.getElementById("profilePhotoPreview");
         const photoPlaceholder = document.getElementById(
@@ -5254,7 +5254,7 @@ class AgendaSystem {
           photoPreview.style.display = "block";
           photoPlaceholder.style.display = "none";
         }
-        // Atualizar foto no header também
+        // atualiza foto header
         const headerAvatar = document.getElementById("headerUserAvatar");
         if (headerAvatar) {
           headerAvatar.innerHTML = `<img src="${data.foto_perfil}" alt="Foto" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
@@ -5351,13 +5351,13 @@ class AgendaSystem {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validar tipo de arquivo
+    // valida tipo de arq
     if (!file.type.startsWith("image/")) {
       this.showNotification("Por favor, selecione uma imagem.", "error");
       return;
     }
 
-    // Validar tamanho (máximo 5MB)
+    // tamanho max 5mb
     if (file.size > 5 * 1024 * 1024) {
       this.showNotification("A imagem deve ter no máximo 5MB.", "error");
       return;
@@ -5372,7 +5372,7 @@ class AgendaSystem {
 
       this.showNotification("Enviando foto...", "info");
 
-      // Inicializar Firebase Storage se ainda não foi
+      // inicia firebase storage
       if (!firebase.storage) {
         const storageScript = document.createElement("script");
         storageScript.src =
@@ -5395,7 +5395,6 @@ class AgendaSystem {
       uploadTask.on(
         "state_changed",
         (snapshot) => {
-          // Progresso do upload (opcional)
           const progress =
             (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
           console.log("Upload progress:", progress + "%");
@@ -5452,10 +5451,10 @@ class AgendaSystem {
     }
   }
 
-  // ========== FUNÇÕES DE MÁSCARA E VALIDAÇÃO ==========
+  //FUNÇÕES DE MÁSCARA E VALIDAÇÃO
 
   initMasks() {
-    // Máscara de telefone
+    // Mascra de telefone
     const telefoneInputs = document.querySelectorAll(
       'input[type="tel"], input[id*="telefone"], input[name*="telefone"]'
     );
@@ -5579,110 +5578,6 @@ class AgendaSystem {
 
     return true;
   }
-
-  // ========== FUNÇÕES DE VERIFICAÇÃO FICTÍCIAS ==========
-
-  async verifyEmail() {
-    const emailInput = document.getElementById("profileEmail");
-    const statusElement = document.getElementById("emailVerifyStatus");
-    const verifyBtn = document.getElementById("verifyEmailBtn");
-
-    if (!emailInput || !statusElement || !verifyBtn) return;
-
-    const email = emailInput.value.trim();
-
-    if (!email) {
-      statusElement.textContent = "Por favor, preencha o e-mail.";
-      statusElement.className = "verify-status error";
-      return;
-    }
-
-    // Validar formato básico de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      statusElement.textContent = "Formato de e-mail inválido.";
-      statusElement.className = "verify-status error";
-      return;
-    }
-
-    // Desabilitar botão durante verificação
-    verifyBtn.disabled = true;
-    verifyBtn.innerHTML =
-      '<i class="fas fa-spinner fa-spin"></i> <span>Verificando...</span>';
-    statusElement.textContent = "Verificando e-mail...";
-    statusElement.className = "verify-status verifying";
-
-    // Simular verificação (fictícia) - aguardar 2 segundos
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    const isVerified = Math.random() > 0.2; // 80% de chance de sucesso
-
-    if (isVerified) {
-      statusElement.textContent = "✓ E-mail verificado com sucesso!";
-      statusElement.className = "verify-status success";
-      verifyBtn.innerHTML =
-        '<i class="fas fa-check-circle"></i> <span>Verificado</span>';
-      verifyBtn.classList.add("verified");
-    } else {
-      statusElement.textContent =
-        "✗ Não foi possível verificar o e-mail. Tente novamente.";
-      statusElement.className = "verify-status error";
-      verifyBtn.innerHTML =
-        '<i class="fas fa-check-circle"></i> <span>Verificar</span>';
-      verifyBtn.disabled = false;
-    }
-  }
-
-  async verifyPhone() {
-    const phoneInput = document.getElementById("profileTelefone");
-    const statusElement = document.getElementById("phoneVerifyStatus");
-    const verifyBtn = document.getElementById("verifyPhoneBtn");
-
-    if (!phoneInput || !statusElement || !verifyBtn) return;
-
-    const phone = phoneInput.value.trim();
-    const phoneDigits = this.onlyDigits(phone);
-
-    if (!phone) {
-      statusElement.textContent = "Por favor, preencha o telefone.";
-      statusElement.className = "verify-status error";
-      return;
-    }
-
-    // Validar tamanho do telefone
-    if (phoneDigits.length < 10 || phoneDigits.length > 11) {
-      statusElement.textContent =
-        "Telefone inválido. Digite um telefone válido.";
-      statusElement.className = "verify-status error";
-      return;
-    }
-
-    verifyBtn.disabled = true;
-    verifyBtn.innerHTML =
-      '<i class="fas fa-spinner fa-spin"></i> <span>Verificando...</span>';
-    statusElement.textContent = "Enviando código de verificação...";
-    statusElement.className = "verify-status verifying";
-
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    const isVerified = Math.random() > 0.2;
-
-    if (isVerified) {
-      statusElement.textContent =
-        "✓ Código enviado! Telefone verificado com sucesso!";
-      statusElement.className = "verify-status success";
-      verifyBtn.innerHTML =
-        '<i class="fas fa-check-circle"></i> <span>Verificado</span>';
-      verifyBtn.classList.add("verified");
-    } else {
-      statusElement.textContent =
-        "✗ Não foi possível enviar o código. Tente novamente.";
-      statusElement.className = "verify-status error";
-      verifyBtn.innerHTML =
-        '<i class="fas fa-check-circle"></i> <span>Verificar</span>';
-      verifyBtn.disabled = false;
-    }
-  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -5740,9 +5635,6 @@ function handleUserRegistration(userData, password, email) {
       window.agendaSystem &&
       typeof window.agendaSystem.checkAuthStatus === "function"
     ) {
-      console.warn(
-        "[SIMULADO] Integrar a lógica de login/redirecionamento aqui após o registro."
-      );
     }
   }
 }
@@ -5880,7 +5772,6 @@ if (registerForm && window.agendaSystem) {
     let userData = {};
     let errorMsg = "";
 
-    // --- Coleta de Dados e Validação de Campos Específicos ---
     if (userType === "responsavel") {
       email = document.getElementById("email_responsavel")?.value || "";
       password =
@@ -5923,23 +5814,20 @@ if (registerForm && window.agendaSystem) {
       else if (!password) errorMsg = "A senha é obrigatória.";
       else if (!userData.cpf) errorMsg = "O CPF é obrigatório.";
       else if (!userData.escola) errorMsg = "Selecione a Escola.";
-      else if (userData.chaveAcesso !== "ETEC123")
-        errorMsg = "Chave de Acesso inválida."; // Chave de acesso simulada
+      else if (userData.chaveAcesso !== "")
+        errorMsg = "Chave de Acesso inválida."; //
       else if (!system.validateCPF(userData.cpf))
         errorMsg = "CPF inválido ou incompleto.";
     }
 
-    // 1. Erro de campo obrigatório (Exclui erros de senha e chama notificação)
     if (errorMsg) {
       system.showNotification(errorMsg, "error");
       return;
     }
 
-    // 2. Validação da Força da Senha
     const results = validatePassword(password);
 
     if (!results.isValid) {
-      // Gera mensagem de erro detalhada da senha (chama notificação de aviso/warning)
       let passwordErrorMsg = "A senha não atende a todos os requisitos: ";
       if (!results.isLongEnough) passwordErrorMsg += "8+ caracteres, ";
       if (!results.hasUpperCase) passwordErrorMsg += "Letra Maiúscula, ";
@@ -5951,14 +5839,12 @@ if (registerForm && window.agendaSystem) {
 
       system.showNotification(passwordErrorMsg, "warning");
 
-      // Força a atualização do feedback visual
       if (userType === "responsavel") {
         updatePasswordFeedback(results);
       } else if (userType === "coordenador") {
         updateOrientadorPasswordFeedback(results);
       }
     } else {
-      // 3. Senha e campos válidos: Inicia o processo de registro (simulado)
       userData.email = email;
       handleUserRegistration(userData, password, email);
     }
