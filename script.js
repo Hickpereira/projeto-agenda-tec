@@ -2585,10 +2585,6 @@ class AgendaSystem {
     this.showModal("reportsModal");
   }
 
-  showResponsibleNotifications() {
-    // Implementar notificações para responsáveis
-  }
-
   addScheduleViewButton() {
     const dashboardGrid = document.querySelector(
       "#coordenadorDashboard .dashboard-grid"
