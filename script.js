@@ -5051,7 +5051,7 @@ class AgendaSystem {
   }
 
   exportReport() {
-    //verifica sea biblioteca carregou
+    //verifica se biblioteca foi carregada
     if (typeof XLSX === "undefined") {
       this.showNotification(
         "Erro: A biblioteca de Excel não foi carregada. Verifique o index.html.",
@@ -5060,9 +5060,8 @@ class AgendaSystem {
       return;
     }
 
-    //pega dados para excel
+    //busca dados para excel
     const dadosParaExcel = this.requests.map((r) => {
-      //dados nulos ou vazios
       const solicitante = r.userName || r.responsavelNome || "N/A";
       const email = r.userEmail || r.responsavelEmail || "N/A";
       const aluno = r.alunoNome || "N/A";
@@ -5079,7 +5078,6 @@ class AgendaSystem {
 
       const feedback = r.postAttendanceFeedback || r.attendanceFeedback || "";
 
-      // titulos das colunas
       return {
         Data: this.formatDate(r.date),
         Horário: r.time,
@@ -5094,35 +5092,144 @@ class AgendaSystem {
       };
     });
 
-    // cria planilha worsheet apartir do .json
+    //cria planilhas
     const worksheet = XLSX.utils.json_to_sheet(dadosParaExcel);
 
-    //largura das colunas
+    //largura colunas
     const colunas = [
-      { wch: 12 }, // Data
-      { wch: 8 }, // Hora
-      { wch: 30 }, // Solicitante
-      { wch: 30 }, // Email
-      { wch: 25 }, // Aluno
-      { wch: 25 }, // Turma
-      { wch: 25 }, // Assunto
-      { wch: 15 }, // Status
-      { wch: 20 }, // Situação
-      { wch: 50 }, // Feedback (mais largo)
+      { wch: 12 },
+      { wch: 8 },
+      { wch: 30 },
+      { wch: 30 },
+      { wch: 25 },
+      { wch: 25 },
+      { wch: 25 },
+      { wch: 15 },
+      { wch: 20 },
+      { wch: 50 },
     ];
     worksheet["!cols"] = colunas;
 
-    // cria aruivo e adiciona na planilhas
+    //cria e baixa arq
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Relatório Agenda");
-
-    //baixa arquivo .xls
     const nomeArquivo = `Relatorio_Agendamentos_${
       new Date().toISOString().split("T")[0]
     }.xlsx`;
     XLSX.writeFile(workbook, nomeArquivo);
 
-    this.showNotification("Relatório Excel ( gerado com sucesso!", "success");
+    this.showNotification(
+      "Relatório Excel (.xlsx) gerado com sucesso!",
+      "success"
+    );
+  }
+
+  printReport(apenasRealizadas = false) {
+    const printWindow = window.open("", "_blank");
+
+    let dadosParaImprimir = this.requests;
+    let tituloRelatorio = "Relatório Geral de Agendamentos";
+
+    if (apenasRealizadas) {
+      tituloRelatorio = "Relatório de Reuniões Realizadas";
+      dadosParaImprimir = this.requests.filter(
+        (r) => r.attendanceStatus === "concluido"
+      );
+    }
+
+    if (dadosParaImprimir.length === 0) {
+      this.showNotification(
+        "Nenhuma reunião encontrada para exportar.",
+        "info"
+      );
+      printWindow.close();
+      return;
+    }
+
+    const reportContent = `
+            <html>
+                <head>
+                    <title>${tituloRelatorio}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; font-size: 12px; }
+                        h1 { color: #333; text-align: center; }
+                        .header-info { text-align: center; margin-bottom: 20px; color: #666; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }
+                        th { background-color: #f2f2f2; font-weight: bold; }
+                        tr:nth-child(even) { background-color: #f9f9f9; }
+                        .status-badge { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+                    </style>
+                </head>
+                <body>
+                    <h1>${tituloRelatorio} - Agenda TEC</h1>
+                    <div class="header-info">
+                        Gerado em: ${new Date().toLocaleDateString(
+                          "pt-BR"
+                        )} às ${new Date().toLocaleTimeString("pt-BR")} <br>
+                        Total de registros: ${dadosParaImprimir.length}
+                    </div>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 80px;">Data</th>
+                                <th style="width: 60px;">Horário</th>
+                                <th>Solicitante / Aluno</th>
+                                <th>Assunto</th>
+                                <th>Status Atendimento</th>
+                                <th>Feedback / Observações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${dadosParaImprimir
+                              .map((request) => {
+                                const solicitante =
+                                  request.userName ||
+                                  request.responsavelNome ||
+                                  "N/A";
+                                const aluno = request.alunoNome || "N/A";
+                                const turma = request.alunoTurma
+                                  ? `(${request.alunoTurma})`
+                                  : "";
+
+                                let statusAtendimento = "Pendente";
+                                if (request.attendanceStatus === "concluido")
+                                  statusAtendimento = "Realizado";
+                                else if (request.attendanceStatus === "faltou")
+                                  statusAtendimento = "Faltou";
+                                else if (request.status === "cancelled")
+                                  statusAtendimento = "Cancelado";
+                                else if (request.status === "rejected")
+                                  statusAtendimento = "Rejeitado";
+
+                                const feedback =
+                                  request.postAttendanceFeedback ||
+                                  request.attendanceFeedback ||
+                                  "-";
+
+                                return `
+                                <tr>
+                                    <td>${this.formatDate(request.date)}</td>
+                                    <td>${request.time}</td>
+                                    <td><strong>${solicitante}</strong><br><small>Aluno: ${aluno} ${turma}</small></td>
+                                    <td>${request.subject}</td>
+                                    <td>${statusAtendimento}</td>
+                                    <td style="max-width: 300px; word-wrap: break-word;">${feedback}</td>
+                                </tr>`;
+                              })
+                              .join("")}
+                        </tbody>
+                    </table>
+                    <script>
+                        window.onload = function() { window.print(); }
+                    </script>
+                </body>
+            </html>
+        `;
+
+    printWindow.document.write(reportContent);
+    printWindow.document.close();
   }
 
   async showProfileModal() {
