@@ -980,40 +980,10 @@ class AgendaSystem {
                                 <option value="3medio">3º Ensino Médio</option>
                             </select>
                         </div>
-                         <div class="form-group">
-    <label for="studentClass">Turma</label>
-    <select id="studentClass" name="studentClass" required>
-        <option value="" disabled selected>Selecione um curso...</option>
-        <option value="Administração">Administração</option>
-        <option value="Alimentos">Alimentos</option>
-        <option value="Automação Industrial">Automação Industrial</option>
-        <option value="Comércio">Comércio</option>
-        <option value="Desenho de Construção Civil">Desenho de Construção Civil</option>
-        <option value="Design de Interiores">Design de Interiores</option>
-        <option value="Desenvolvimento de Sistemas">Desenvolvimento de Sistemas</option>
-        <option value="Edificações">Edificações</option>
-        <option value="Eletromecânica">Eletromecânica</option>
-        <option value="Eletrônica">Eletrônica</option>
-        <option value="Eletrotécnica">Eletrotécnica</option>
-        <option value="Guia de Turismo">Guia de Turismo</option>
-        <option value="Informática">Informática</option>
-        <option value="Informática para Internet">Informática para Internet</option>
-        <option value="Manutenção Automotiva">Manutenção Automotiva</option>
-        <option value="Marketing">Marketing</option>
-        <option value="Mecânica">Mecânica</option>
-        <option value="Mecatrônica">Mecatrônica</option>
-        <option value="Meio Ambiente">Meio Ambiente</option>
-        <option value="Nutrição e Dietética">Nutrição e Dietética</option>
-        <option value="Programação de Jogos Digitais">Programação de Jogos Digitais</option>
-        <option value="Química">Química</option>
-        <option value="Recursos Humanos">Recursos Humanos</option>
-        <option value="Redes de Computadores">Redes de Computadores</option>
-        <option value="Secretariado">Secretariado</option>
-        <option value="Serviços Jurídicos">Serviços Jurídicos</option>
-        <option value="Sistemas de Energia Renovável">Sistemas de Energia Renovável</option>
-        <option value="Transações Imobiliárias">Transações Imobiliárias</option>
-    </select>
-</div>
+                        <div class="form-group">
+                            <label for="studentClass">Turma</label>
+                            <input type="text" id="studentClass" name="studentClass" placeholder="Ex: AMS, ADM, JOGOS Etc..." required>
+                        </div>
                         <div class="form-group">
                             <label for="scheduleSubject">Assunto</label>
                             <input type="text" id="scheduleSubject" name="subject" placeholder="Ex: Dúvidas sobre rendimento escolar" required>
@@ -2573,7 +2543,7 @@ class AgendaSystem {
                         </button>
                     </div>
                     
-                    <div class="tab-content agend">
+                    <div class="tab-content">
                         <div id="weekly-tab" class="tab-pane active">
                             <div class="weekly-schedule" id="weeklySchedule">
                                 ${this.generateWeeklySchedule(
@@ -4002,7 +3972,7 @@ class AgendaSystem {
                         </span>
                         
                         ${
-                          //
+                          //j
                           schedule.status === "rejected" &&
                           schedule.rejectionReason
                             ? `<span class="schedule-status-detail">Motivo: ${schedule.rejectionReason}</span>`
@@ -4013,12 +3983,6 @@ class AgendaSystem {
                       
                     </div>
                     <div class="schedule-details">
-<<<<<<< HEAD
-=======
-                       <p><strong>Orientador:</strong> ${
-                         schedule.orientadorNome
-                       }</p>
->>>>>>> 9e0413308f02ab978258be938ab6860d3b89360e
                         ${
                           schedule.studentName
                             ? `<p><strong>Aluno:</strong> ${schedule.studentName}</p>`
