@@ -1,3 +1,59 @@
+<<<<<<< HEAD
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda TEC - Sistema de Agendamento Online</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <link rel="shortcut icon" type="imagex/png" href="./img/calendario.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="nav-brand">
+                <div class="brand-logo">
+                    <img src="img/logo.png" alt="" class="img-logo">
+                </div>
+            </div>
+            
+            <nav class="nav">
+                <div class="nav-toggle" id="nav-toggle">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
+               
+              
+                <div class="nav-menu" id="nav-menu">
+                    <!-- Menu para usuários não logados -->
+                    <div id="guest-menu" class="navvdd">
+                        <div class="nav-links">
+                            <a href="#home" class="nav-link active">
+                                <i class="fas fa-home"></i>
+                                <span>Início</span>
+                            </a>
+                            <a href="#about" class="nav-link">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Sobre</span>
+                            </a>
+                           
+                        </div>
+                        <div class="nav-buttons">
+                            <button class="btn btn-outline" id="loginBtn">
+                                <i class="fas fa-sign-in-alt"></i>
+                                <span>Entrar</span>
+                            </button>
+                            <button class="btn btn-primary" id="registerBtn">
+                                <i class="fas fa-user-plus"></i>
+                                <span>Cadastrar</span>
+                            </button>
+                        </div>
+=======
     <!DOCTYPE html>
     <html lang="pt-BR">
     <head>
@@ -25,6 +81,7 @@
                         <span class="bar"></span>
                         <span class="bar"></span>
                         <span class="bar"></span>
+>>>>>>> 9e0413308f02ab978258be938ab6860d3b89360e
                     </div>
                 
                 
@@ -53,6 +110,129 @@
                                 </button>
                             </div>
                         </div>
+<<<<<<< HEAD
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Hero Section -->
+        <section id="home" class="hero">
+            <div class="hero-container">
+                <div class="hero-content">
+                    <h1 class="hero-title">Agendamento Educacional Inteligente</h1>
+                    <p class="hero-description">
+                        Conecte-se facilmente com os orientadores educacionais da sua escola. 
+                        Agende reuniões de forma rápida e organizada.
+                    </p>
+                    <div class="hero-buttons">
+                        <button class="btn btn-primary btn-large" id="startScheduling">
+                            <i class="fas fa-calendar-plus"></i>
+                            Começar Agendamento
+                        </button>
+                        <a href="#about"><button class="btn btn-outline btn-large" id="learnMore">
+                            <i class="fas fa-info-circle"></i>
+                            Saiba Mais
+                        </button></a>
+                    </div>
+                </div>
+                <div class="hero-image">
+                    <div class="hero-illustration">
+                       <img src="img/calendario.png" alt="" class="img-calendario">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="about" class="features" >
+            <div class="container" >
+                <div class="section-header" style="margin-bottom: 40px;">
+                    <h2>Por que escolher a Nova Agenda TEC?</h2>
+                    <p>Uma plataforma completa para gestão de agendamentos educacionais</p>
+                </div>
+                
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <h3>Agendamento 24horas/7dias</h3>
+                        <p>Agende reuniões a qualquer hora do dia, com confirmação automática e lembretes.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3>Orientadores</h3>
+                        <p>Escolha entre diferentes orientadores especializados para atender suas necessidades.</p>
+                    </div>
+                   
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3>Seguro e Confiável</h3>
+                        <p>Seus dados protegidos com criptografia e backup automático.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+       
+
+    </main>
+
+<!-- ABA LOGIN -->
+<div id="loginModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span class="close" id="closeLogin">&times;</span>
+        </div>
+        <form id="loginForm" class="auth-form">
+            <div class="requests-tabs">
+                <button type="button" class="tab-btn active" id="loginTabResponsavel" data-target="loginPaneResponsavel">Responsável</button>
+                <button type="button" class="tab-btn" id="loginTabCoordenador" data-target="loginPaneCoordenador">Orientador Educacional</button>
+            </div>
+            <input type="hidden" name="loginUserType" id="loginUserType" value="responsavel">
+
+            <!-- ABA LOGIN -- Responsavel -->    
+            <div class="tab-content">
+                <div class="tab-pane active" id="loginPaneResponsavel">
+                    <div class="login-info">
+                        <h4>Responsável</h4>
+                        <p>Use seu email e senha cadastrados</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginEmail">Email</label>
+                        <input type="email" id="loginEmail" name="email" placeholder="Digite seu E-mail cadastrado">
+                    </div>
+                    <div class="form-group">
+                        <label for="senhaLoginResponsavel">Senha</label>
+                        <input type="password" id="senhaLoginResponsavel" name="password" placeholder="Digite sua senha cadastrada">
+                        <p class="forgot-password-link">
+                            <a href="#" id="forgotPasswordLink">Esqueci minha senha</a>
+                        </p>
+                    </div>
+                    
+                        <div class="divider"><span>OU</span></div>
+                        <button type="button" class="btn btn-google btn-full" id="registerGoogleBtn">
+                            <i class="fab fa-google"></i>
+                            <span>Continuar com Google</span>
+                        </button>
+
+        <!-- ABA LOGIN -- Orientador -->   
+                </div>
+                <div class="tab-pane" id="loginPaneCoordenador">
+                    <div class="login-info">
+                        <h4>Orientador Educacional</h4>
+                        <p>Use seu email e senha cadastrados</p>
+=======
+>>>>>>> 9e0413308f02ab978258be938ab6860d3b89360e
                         
                         <!-- Menu para usuários logados -->
                         <div id="user-menu" class="hidden">
@@ -341,12 +521,32 @@
                         
         
 
+<<<<<<< HEAD
+    <!-- Dashboard -->
+    <div id="dashboard" class="dashboard hidden">
+
+        <!-- Responsável Dashboard -->
+        <div id="responsavelDashboard" class="dashboard-content hidden">
+            <div class="dashboard-title-section">
+                <h2>Painel do Responsável</h2>
+                <p>Gerencie seus agendamentos</p>
+            </div>
+            <div class="dashboard-grid">
+                <div class="dashboard-card">
+                    <h3>Agendar Reunião</h3>
+                    <p>Selecione um horário disponível para agendar sua reunião</p>
+                    <button class="btn btn-primary" id="scheduleMeetingBtn">
+                        <i class="fas fa-calendar-plus"></i>
+                        Agendar
+                    </button>
+=======
         <!-- Modal de Perfil do Orientador -->
         <div id="profileModal" class="modal">
             <div class="modal-content" style="max-width: 600px;">
                 <div class="modal-header">
                     <h2>Meu Perfil</h2>
                     <span class="close" id="closeProfile">&times;</span>
+>>>>>>> 9e0413308f02ab978258be938ab6860d3b89360e
                 </div>
                 <div class="profile-content">
                     <!-- Seção de Foto de Perfil -->
